@@ -244,28 +244,15 @@
     .btn.primary{
       background:var(--primary);
       border-color:var(--primary);
-      color:#12b017;
+      color:#fff;
     }
     .btn.primary:hover{background:var(--primary2)}
-    .btn.ghost{background:#ffffff; color:var(--text);}
+    .btn.ghost{background:#fff; color:var(--text);}
     .btn.danger{border-color:#fecaca; color:#b91c1c; background:#fff;}
 
     .hint{font-size:12px;color:var(--muted);margin-top:8px}
     .req{color:#ef4444;font-weight:900}
     .row-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-top:10px}
-
-    /* ACTIONS TOP */
-    .form-actions-top{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      justify-content:space-between;
-      margin:12px 0;
-      flex-wrap:wrap;
-    }
-    .form-actions-top .left, .form-actions-top .right{
-      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
-    }
 
     /* SECTION header actions */
     .sec-actions{
@@ -274,6 +261,7 @@
       flex-wrap:wrap;
       align-items:center;
       justify-content:flex-end;
+      margin-top:10px;
     }
     .btn.small{
       padding:8px 10px;
@@ -301,17 +289,116 @@
       flex-wrap:wrap;
     }
 
-    /* PRINT (PDF) */
+    /* ===== PRINT SHEET (estilo papel) ===== */
+    .print-sheet{ display:none; }
+
     @media print{
-      .form-actions-top,
-      .bottom,
-      .topbar,
-      button{
-        display:none !important;
+      /* some toda a UI do app */
+      .topbar, .bottom, .wrap, button { display:none !important; }
+      body{ background:#fff !important; }
+
+      /* mostra só a folha */
+      .print-sheet{
+        display:block !important;
+        color:#000;
       }
-      body{background:#fff !important;}
-      .panel, .item{break-inside: avoid; page-break-inside: avoid;}
-      @page{ margin: 12mm; }
+
+      @page{
+        size: A4 landscape;
+        margin: 8mm;
+      }
+
+      .ps-card{
+        border:1px solid #000;
+        padding:0;
+      }
+
+      .ps-title{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        padding:8px;
+        border-bottom:1px solid #000;
+        font-weight:800;
+        letter-spacing:.2px;
+        font-size:12px;
+      }
+      .ps-logo{ height:18px; object-fit:contain; }
+
+      .ps-meta{
+        display:grid;
+        grid-template-columns: 1.2fr 1fr 1fr 1fr 0.8fr;
+        font-size:11px;
+        border-bottom:1px solid #000;
+      }
+      .ps-meta > div{
+        padding:6px 8px;
+        border-right:1px solid #000;
+        min-height:26px;
+      }
+      .ps-meta > div:last-child{ border-right:none; }
+
+      .ps-table{
+        width:100%;
+        border-collapse:collapse;
+        font-size:10.5px;
+      }
+      .ps-table th, .ps-table td{
+        border:1px solid #000;
+        padding:4px 6px;
+        vertical-align:top;
+      }
+      .ps-table th{
+        background:#f2f2f2;
+        font-weight:800;
+        text-transform:uppercase;
+        letter-spacing:.2px;
+      }
+
+      .ps-col-n{ width:34px; text-align:center; }
+      .ps-col-mark{ width:60px; text-align:center; }
+      .ps-col-obs{ width:280px; }
+
+      .ps-sec{
+        background:#e9e9e9;
+        font-weight:800;
+        text-transform:uppercase;
+        letter-spacing:.2px;
+      }
+
+      .ps-check{
+        display:inline-block;
+        width:12px; height:12px;
+        border:1px solid #000;
+        vertical-align:middle;
+        margin:0 2px;
+        position:relative;
+      }
+      .ps-check.on::after{
+        content:"";
+        position:absolute;
+        left:2px; top:2px;
+        width:6px; height:3px;
+        border-left:2px solid #000;
+        border-bottom:2px solid #000;
+        transform:rotate(-45deg);
+      }
+
+      .ps-foot{
+        display:grid;
+        grid-template-columns: 1.3fr 1fr 1fr 1fr 1fr;
+        border-top:1px solid #000;
+        font-size:11px;
+      }
+      .ps-foot > div{
+        padding:6px 8px;
+        border-right:1px solid #000;
+        min-height:42px;
+      }
+      .ps-foot > div:last-child{ border-right:none; }
+
+      .ps-small{ font-size:10px; }
+      .ps-line{ border-top:1px solid #000; margin-top:6px; }
     }
   </style>
 </head>
@@ -324,12 +411,11 @@
         <img src="assets/suzano-logo.png" alt="Suzano" onerror="this.style.display='none'">
         <div class="t">
           <b>ITR — Checklist (CM)</b>
-              
         </div>
-        <div class="box">
-        <button type="button" class="btn ghost" id="btnVoltarInicio">Início</button>
-        <button type="button" class="btn" id="btnExportarPDF">Exportar PDF</button>
-      </div>
+        <div class="box" style="display:flex;gap:8px;flex-wrap:wrap">
+          <button type="button" class="btn ghost" id="btnVoltarInicio">Início</button>
+          <button type="button" class="btn" id="btnExportarPDF">Exportar PDF</button>
+        </div>
       </div>
 
       <div class="chips">
@@ -341,10 +427,8 @@
   </div>
 
   <div class="wrap">
-
-    <div class="form-actions-top">
-      
-      <div class="right">
+    <div class="panel" style="margin-top:12px">
+      <div class="row-actions" style="margin-top:0">
         <button type="button" class="btn" id="btnExport">Exportar JSON</button>
         <button type="button" class="btn danger" id="btnLimpar">Limpar rascunho</button>
       </div>
@@ -365,10 +449,10 @@
         <div class="field sm3">
           <label>Tipo de manutenção</label>
           <select id="tipoManut">
-  <option value="" selected disabled>Selecione…</option>
-  <option value="preventiva">Preventiva</option>
-  <option value="corretiva">Corretiva</option>
-</select>
+            <option value="" selected disabled>Selecione…</option>
+            <option value="preventiva">Preventiva</option>
+            <option value="corretiva">Corretiva</option>
+          </select>
         </div>
         <div class="field sm3">
           <label>Data</label>
@@ -437,11 +521,11 @@
 
         <div class="field sm6">
           <label>Resultado final</label>
-         <select id="resultadoFinal">
-  <option value="" selected disabled>Selecione…</option>
-  <option value="apto">APTO</option>
-  <option value="nao_apto">NÃO APTO</option>
-</select>
+          <select id="resultadoFinal">
+            <option value="" selected disabled>Selecione…</option>
+            <option value="apto">APTO</option>
+            <option value="nao_apto">NÃO APTO</option>
+          </select>
           <div class="hint">Dica: marque <b>NÃO APTO</b> se houver item crítico em <b>Ruim</b>.</div>
         </div>
 
@@ -461,6 +545,9 @@
     </div>
   </div>
 
+  <!-- PRINT-ONLY -->
+  <div id="printSheet" class="print-sheet" aria-hidden="true"></div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import {
@@ -473,7 +560,6 @@
       getDoc
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // ===== Firebase config (sua) =====
     const firebaseConfig = {
       apiKey: "AIzaSyBmOVLv4eCvEwXtqyP8KJGy8aAqsY1JCpI",
       authDomain: "checklist-cmc.firebaseapp.com",
@@ -488,15 +574,14 @@
     const COL = "checklists";
 
     const params = new URLSearchParams(location.search);
-    const docId = params.get("id"); // se existir, abre/edita doc
-    const mode = params.get("mode"); // "new" quando vier do index
+    const docId = params.get("id");
+    const mode = params.get("mode");
 
     const KEY_DRAFT = "itr_rascunho_v2_template2";
 
     const qs = (sel, root=document)=> root.querySelector(sel);
     const qsa = (sel, root=document)=> [...root.querySelectorAll(sel)];
 
-    // ===== Checklist completo (do papel) =====
     const CHECKLIST = [
       { id:"motor", title:"Motor", badge:"Itens 1–14", items:[
         { n:"1",  text:"Motor - Verificar funcionamento e vazamento." },
@@ -612,11 +697,9 @@
       const btn = qs(`.seg button[data-v="${status}"]`, itemEl);
       if(!btn) return;
 
-      // marca ativo
       qsa(".seg button", itemEl).forEach(b=>b.classList.remove("active"));
       btn.classList.add("active");
 
-      // extra
       const extra = qs(".extra", itemEl);
       if(status==="regular" || status==="ruim") extra.classList.add("show");
       else extra.classList.remove("show");
@@ -627,7 +710,6 @@
     function approveAllInSection(sectionId, sectionTitle){
       const ok = confirm(`Aprovar todos como "Bom" na seção "${sectionTitle}"?\n\nIsso vai marcar TODOS os itens desta seção como BOM.`);
       if(!ok) return;
-
       const items = qsa(`.item[data-section="${sectionId}"]`);
       items.forEach(item => setStatusForItem(item, "bom"));
       updateCounters();
@@ -649,7 +731,6 @@
           create("button", {type:"button", class:"btn small", text:"Aprovar todos (Bom)"})
         ]);
 
-        // Para encaixar bem no layout, adiciona actions abaixo do h2 em telas menores
         wrapper.appendChild(header);
         wrapper.appendChild(actions);
 
@@ -698,7 +779,6 @@
             "data-n": it.n
           }, [body, extra]);
 
-          // interações
           qsa("button", seg).forEach(btn=>{
             btn.addEventListener("click", ()=>{
               qsa("button", seg).forEach(b=>b.classList.remove("active"));
@@ -794,6 +874,141 @@
       URL.revokeObjectURL(a.href);
     }
 
+    // ===== PRINT helpers =====
+    function esc(s){
+      return (s ?? "").toString()
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function buildPrintSheet(payload){
+      const host = document.getElementById("printSheet");
+      const logoSrc = "assets/suzano-logo.png";
+
+      const tipo = payload.tipoManut ? payload.tipoManut.toUpperCase() : "";
+      const data = payload.data || "";
+      const placa = payload.placa || "";
+      const rmt = payload.rmt || "";
+      const hsFinal = payload.hsFinal || "";
+
+      const lines = [];
+      const itens = payload.itens || [];
+
+      CHECKLIST.forEach(sec=>{
+        const secItems = itens.filter(x=>x.section===sec.id);
+
+        lines.push(`
+          <tr class="ps-sec">
+            <td colspan="6">${esc(sec.title)}</td>
+          </tr>
+        `);
+
+        secItems.forEach(it=>{
+          const bom = it.status==="bom";
+          const reg = it.status==="regular";
+          const ruim = it.status==="ruim";
+
+          const orig = sec.items.find(i=>String(i.n)===String(it.n));
+          const desc = orig ? orig.text : "";
+
+          const obsParts = [];
+          if(it.obs) obsParts.push(it.obs);
+          if(it.extra) obsParts.push(it.extra);
+          const obs = obsParts.join(" | ");
+
+          lines.push(`
+            <tr>
+              <td class="ps-col-n">${esc(it.n)}</td>
+              <td>${esc(desc)}</td>
+              <td class="ps-col-mark"><span class="ps-check ${bom?"on":""}"></span></td>
+              <td class="ps-col-mark"><span class="ps-check ${reg?"on":""}"></span></td>
+              <td class="ps-col-mark"><span class="ps-check ${ruim?"on":""}"></span></td>
+              <td class="ps-col-obs">${esc(obs)}</td>
+            </tr>
+          `);
+        });
+      });
+
+      const resApto = payload.resultadoFinal==="apto";
+      const resNao = payload.resultadoFinal==="nao_apto";
+
+      host.innerHTML = `
+        <div class="ps-card">
+          <div class="ps-title">
+            <div>ITR - INSPEÇÃO TÉCNICA DE ROTINA - CM</div>
+            <img class="ps-logo" src="${logoSrc}" onerror="this.style.display='none'">
+          </div>
+
+          <div class="ps-meta">
+            <div><b>PLACA:</b> ${esc(placa)}</div>
+            <div><b>RMT:</b> ${esc(rmt)}</div>
+            <div><b>TIPO MANUTENÇÃO:</b> ${esc(tipo)}</div>
+            <div><b>DATA:</b> ${esc(data)}</div>
+            <div><b>HS FINAL:</b> ${esc(hsFinal)}</div>
+          </div>
+
+          <table class="ps-table">
+            <thead>
+              <tr>
+                <th class="ps-col-n">Nº</th>
+                <th>ITENS A SEREM INSPECIONADOS</th>
+                <th class="ps-col-mark">BOM</th>
+                <th class="ps-col-mark">REGULAR</th>
+                <th class="ps-col-mark">RUIM</th>
+                <th class="ps-col-obs">OBSERVAÇÃO</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${lines.join("")}
+            </tbody>
+          </table>
+
+          <div class="ps-foot">
+            <div>
+              <b>DATA VISTORIA:</b> ${esc(payload.dataVistoria)}<br>
+              <b>HORA VISTORIA:</b> ${esc(payload.horaVistoria)}<br>
+              <div class="ps-line"></div>
+              <span class="ps-small"><b>RESPONSÁVEL PELA VERIFICAÇÃO / INSPEÇÃO FINAL</b></span>
+            </div>
+            <div>
+              <b>DATA REVISTORIA:</b> ${esc(payload.dataRevistoria)}<br>
+              <b>HORA REVISTORIA:</b> ${esc(payload.horaRevistoria)}<br>
+              <div class="ps-line"></div>
+              <span class="ps-small">REVISTORIA</span>
+            </div>
+            <div>
+              <b>MECÂNICO INSPEÇÃO:</b><br>${esc(payload.mecanicoInspecao)}
+              <div class="ps-line"></div>
+            </div>
+            <div>
+              <b>TÉC. MANUT. SUZANO:</b><br>${esc(payload.tecnicoSuzano)}
+              <div class="ps-line"></div>
+            </div>
+            <div>
+              <b>RESULTADO:</b><br>
+              <span class="ps-check ${resApto?"on":""}"></span> APTO
+              &nbsp;&nbsp;
+              <span class="ps-check ${resNao?"on":""}"></span> NÃO APTO
+              <div class="ps-line"></div>
+              <span class="ps-small"><b>JUST. (se NÃO APTO):</b> ${esc(payload.justNaoApto)}</span>
+            </div>
+          </div>
+
+          <div class="ps-foot" style="border-top:none">
+            <div style="grid-column:1 / span 3">
+              <b>MOTORISTA:</b> ${esc(payload.motorista)}<div class="ps-line"></div>
+            </div>
+            <div style="grid-column:4 / span 2">
+              <b>INSPECIONADOR:</b> ${esc(payload.inspecionador)}<div class="ps-line"></div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
     // ===== Firestore save FINAL =====
     async function salvarFinalNoFirestore(){
       const payload = buildPayload();
@@ -817,7 +1032,6 @@
             updatedAt: serverTimestamp()
           });
         }
-
 
         alert("Checklist FINALIZADO e salvo no banco.");
         location.href = "index.html";
@@ -864,13 +1078,9 @@
             const itemId = `${it.section}_${it.n}`.replace(/\./g,"_");
             const itemEl = qs(`.item[data-itemid="${itemId}"]`);
             if(!itemEl) return;
-
-            if(it.status){
-              setStatusForItem(itemEl, it.status);
-            }
+            if(it.status) setStatusForItem(itemEl, it.status);
             const ta = qs("textarea", itemEl);
             if(ta && it.obs) ta.value = it.obs;
-
             const extraInp = qs(".extra input", itemEl);
             if(extraInp && it.extra) extraInp.value = it.extra;
           });
@@ -917,13 +1127,9 @@
             const itemId = `${it.section}_${it.n}`.replace(/\./g,"_");
             const itemEl = qs(`.item[data-itemid="${itemId}"]`);
             if(!itemEl) return;
-
-            if(it.status){
-              setStatusForItem(itemEl, it.status);
-            }
+            if(it.status) setStatusForItem(itemEl, it.status);
             const ta = qs("textarea", itemEl);
             if(ta && it.obs) ta.value = it.obs;
-
             const extraInp = qs(".extra input", itemEl);
             if(extraInp && it.extra) extraInp.value = it.extra;
           });
@@ -961,31 +1167,23 @@
     });
 
     qs("#btnExportarPDF")?.addEventListener("click", ()=>{
+      const payload = buildPayload();
+      buildPrintSheet(payload);
       window.print();
     });
 
-    // ===== // ===== init =====
-renderSections();
+    // ===== init =====
+    renderSections();
 
-// Se abriu com ?id=..., carrega do Firestore.
-// Se abriu com ?mode=new, fica em branco (não carrega draft e não seta data padrão).
-// Se abriu sem nada, você pode escolher: carregar rascunho automático (mantive).
-const loadedFromDb = await loadFromFirestoreIfNeeded();
+    const loadedFromDb = await loadFromFirestoreIfNeeded();
 
-if (!loadedFromDb) {
-  if (mode === "new") {
-    // NOVO EM BRANCO: não carrega draft e não coloca valores padrão
-    // (se quiser, também pode limpar um draft antigo pra não confundir)
-    // localStorage.removeItem(KEY_DRAFT);
-  } else {
-    // Sem id e sem mode=new → pode carregar o rascunho automático (opcional)
-    loadDraft();
-
-    // Se você quiser REMOVER também o auto-load de rascunho,
-    // basta comentar a linha loadDraft();
-  }
-}
-
+    if (!loadedFromDb) {
+      if (mode === "new") {
+        // NOVO EM BRANCO: não carrega draft e não coloca valores padrão
+      } else {
+        loadDraft();
+      }
+    }
   </script>
 
 </body>
