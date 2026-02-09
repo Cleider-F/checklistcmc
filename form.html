@@ -1,0 +1,992 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ITR — Inspeção Técnica de Rotina (CM)</title>
+  <meta name="theme-color" content="#0b1220" />
+
+  <style>
+    :root{
+      --bg:#0b1220;
+      --bg2:#0f172a;
+      --surface:#f3f4f6;
+      --card:#ffffff;
+
+      --text:#0f172a;
+      --muted:#64748b;
+      --border:#e5e7eb;
+
+      --primary:#16a34a;
+      --primary2:#15803d;
+
+      --ok:#16a34a;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+
+      --shadow:0 10px 25px rgba(0,0,0,.08);
+      --shadow-soft:0 4px 12px rgba(0,0,0,.06);
+      --radius:16px;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:var(--surface);
+      color:var(--text);
+    }
+
+    /* TOPBAR */
+    .topbar{
+      position:sticky; top:0; z-index:50;
+      background:linear-gradient(180deg, rgba(11,18,32,.98), rgba(11,18,32,.92));
+      border-bottom:1px solid rgba(255,255,255,.08);
+      backdrop-filter: blur(10px);
+    }
+    .topbar-inner{
+      max-width:1080px;
+      margin:0 auto;
+      padding:10px 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px; min-width:0;
+      color:#fff;
+    }
+    .brand img{
+      width:34px; height:34px; border-radius:10px;
+      background:#fff;
+      object-fit:contain;
+      padding:4px;
+    }
+    .brand .t{display:flex; flex-direction:column; min-width:0;}
+    .brand .t b{font-size:14px; line-height:1.1; letter-spacing:.2px;}
+    .brand .t span{
+      font-size:12px; color:rgba(255,255,255,.7);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+
+    .chips{
+      display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;
+    }
+    .chip{
+      display:flex; align-items:center; gap:8px;
+      padding:7px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+      color:#fff;
+      font-size:12px;
+    }
+    .dot{width:8px;height:8px;border-radius:999px}
+    .dot.ok{background:var(--ok)}
+    .dot.warn{background:var(--warn)}
+    .dot.bad{background:var(--bad)}
+    .chip b{font-size:12px}
+
+    /* LAYOUT */
+    .wrap{
+      max-width:1080px;
+      margin:0 auto;
+      padding:14px 12px 98px;
+    }
+
+    .panel{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+      padding:14px;
+      margin-top:12px;
+    }
+    .panel h2{
+      margin:0;
+      font-size:14px;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      flex-wrap:wrap;
+    }
+    .badge{
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      color:var(--muted);
+      background:#fff;
+      white-space:nowrap;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:10px;
+      margin-top:10px;
+    }
+    .field{grid-column: span 12;}
+    @media(min-width:720px){
+      .field.sm6{grid-column: span 6;}
+      .field.sm4{grid-column: span 4;}
+      .field.sm3{grid-column: span 3;}
+      .field.sm2{grid-column: span 2;}
+    }
+
+    label{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      margin:0 0 6px;
+    }
+    input, select, textarea{
+      width:100%;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:10px 12px;
+      font-size:14px;
+      background:#fff;
+      outline:none;
+    }
+    textarea{min-height:84px; resize:vertical}
+
+    /* ITEM CARD */
+    .item{
+      position:relative;
+      border:1px solid var(--border);
+      border-radius:18px;
+      box-shadow:var(--shadow-soft);
+      background:#fff;
+      overflow:hidden;
+      margin-top:10px;
+    }
+    .item::before{
+      content:"";
+      position:absolute;
+      left:0; top:0; bottom:0;
+      width:4px;
+      background:#cbd5e1;
+    }
+    .item-body{
+      padding:12px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:10px;
+    }
+    @media(min-width:720px){
+      .item-body{grid-template-columns: 1fr 320px;}
+    }
+
+    .item-title{font-size:13px; line-height:1.25;}
+    .item-sub{font-size:12px; color:var(--muted); margin-top:4px;}
+
+    .seg{
+      display:flex; gap:6px; justify-content:flex-end; flex-wrap:wrap;
+    }
+    .seg button{
+      border:1px solid var(--border);
+      background:#fff;
+      padding:8px 10px;
+      border-radius:999px;
+      font-size:12px;
+      cursor:pointer;
+      font-weight:700;
+    }
+    .seg button.active{border-width:2px}
+
+    .status-label{
+      font-size:12px;
+      font-weight:800;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.3px;
+      margin-top:8px;
+    }
+
+    .extra{
+      display:none;
+      padding:0 12px 12px;
+      border-top:1px dashed var(--border);
+      background:rgba(15,23,42,.02);
+    }
+    .extra.show{display:block}
+    .extra .row{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:10px;
+      padding-top:12px;
+    }
+    @media(min-width:720px){
+      .extra .row{grid-template-columns: 1fr 1fr;}
+    }
+
+    .st-bom{ background:rgba(22,163,74,.06); }
+    .st-bom::before{ background:var(--ok); }
+    .st-regular{ background:rgba(245,158,11,.08); }
+    .st-regular::before{ background:var(--warn); }
+    .st-ruim{ background:rgba(239,68,68,.08); }
+    .st-ruim::before{ background:var(--bad); }
+
+    .seg button[data-v="bom"].active{ border-color:var(--ok); color:var(--ok); }
+    .seg button[data-v="regular"].active{ border-color:var(--warn); color:var(--warn); }
+    .seg button[data-v="ruim"].active{ border-color:var(--bad); color:var(--bad); }
+
+    /* BUTTONS */
+    .btn{
+      border:1px solid var(--border);
+      background:#fff;
+      padding:10px 12px;
+      border-radius:16px;
+      cursor:pointer;
+      font-weight:800;
+      font-size:14px;
+    }
+    .btn.primary{
+      background:var(--primary);
+      border-color:var(--primary);
+      color:#12b017;
+    }
+    .btn.primary:hover{background:var(--primary2)}
+    .btn.ghost{background:#ffffff; color:var(--text);}
+    .btn.danger{border-color:#fecaca; color:#b91c1c; background:#fff;}
+
+    .hint{font-size:12px;color:var(--muted);margin-top:8px}
+    .req{color:#ef4444;font-weight:900}
+    .row-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-top:10px}
+
+    /* ACTIONS TOP */
+    .form-actions-top{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      margin:12px 0;
+      flex-wrap:wrap;
+    }
+    .form-actions-top .left, .form-actions-top .right{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+    }
+
+    /* SECTION header actions */
+    .sec-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:flex-end;
+    }
+    .btn.small{
+      padding:8px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
+    }
+
+    /* BOTTOM BAR */
+    .bottom{
+      position:fixed; left:0; right:0; bottom:0;
+      background:rgba(255,255,255,.92);
+      border-top:1px solid var(--border);
+      backdrop-filter: blur(10px);
+      z-index:60;
+    }
+    .bottom-inner{
+      max-width:1080px;
+      margin:0 auto;
+      padding:10px 12px;
+      display:flex;
+      gap:10px;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    /* PRINT (PDF) */
+    @media print{
+      .form-actions-top,
+      .bottom,
+      .topbar,
+      button{
+        display:none !important;
+      }
+      body{background:#fff !important;}
+      .panel, .item{break-inside: avoid; page-break-inside: avoid;}
+      @page{ margin: 12mm; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <img src="assets/suzano-logo.png" alt="Suzano" onerror="this.style.display='none'">
+        <div class="t">
+          <b>ITR — Checklist (CM)</b>
+              
+        </div>
+        <div class="box">
+        <button type="button" class="btn ghost" id="btnVoltarInicio">Início</button>
+        <button type="button" class="btn" id="btnExportarPDF">Exportar PDF</button>
+      </div>
+      </div>
+
+      <div class="chips">
+        <div class="chip"><span class="dot ok"></span><b id="cBom">0</b> Bom</div>
+        <div class="chip"><span class="dot warn"></span><b id="cReg">0</b> Regular</div>
+        <div class="chip"><span class="dot bad"></span><b id="cRuim">0</b> Ruim</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <div class="form-actions-top">
+      
+      <div class="right">
+        <button type="button" class="btn" id="btnExport">Exportar JSON</button>
+        <button type="button" class="btn danger" id="btnLimpar">Limpar rascunho</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Dados do veículo / ITR <span class="badge">Cabeçalho</span></h2>
+
+      <div class="grid">
+        <div class="field sm3">
+          <label>Placa</label>
+          <input id="placa" placeholder="SFV9I84" />
+        </div>
+        <div class="field sm3">
+          <label>RMT</label>
+          <input id="rmt" placeholder="(se houver)" />
+        </div>
+        <div class="field sm3">
+          <label>Tipo de manutenção</label>
+          <select id="tipoManut">
+  <option value="" selected disabled>Selecione…</option>
+  <option value="preventiva">Preventiva</option>
+  <option value="corretiva">Corretiva</option>
+</select>
+        </div>
+        <div class="field sm3">
+          <label>Data</label>
+          <input id="data" type="date" />
+        </div>
+
+        <div class="field sm3">
+          <label>HS Final</label>
+          <input id="hsFinal" placeholder="Ex.: 1234" />
+        </div>
+        <div class="field sm3">
+          <label>Placa Cavalo</label>
+          <input id="placaCavalo" placeholder="(se aplicável)" />
+        </div>
+        <div class="field sm6">
+          <label>Observação geral</label>
+          <input id="obsGeral" placeholder="Opcional" />
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Checklist <span class="badge">Itens do formulário</span></h2>
+      <div class="hint">Regra: se marcar <b>Regular</b> ou <b>Ruim</b>, a observação vira obrigatória.</div>
+      <div id="sections"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Responsáveis / Verificação final <span class="badge">Rodapé</span></h2>
+
+      <div class="grid">
+        <div class="field sm3">
+          <label>Data vistoria</label>
+          <input id="dataVistoria" type="date" />
+        </div>
+        <div class="field sm3">
+          <label>Hora vistoria</label>
+          <input id="horaVistoria" type="time" />
+        </div>
+        <div class="field sm3">
+          <label>Data revistoria</label>
+          <input id="dataRevistoria" type="date" />
+        </div>
+        <div class="field sm3">
+          <label>Hora revistoria</label>
+          <input id="horaRevistoria" type="time" />
+        </div>
+
+        <div class="field sm6">
+          <label>Mecânico inspeção</label>
+          <input id="mecanicoInspecao" />
+        </div>
+        <div class="field sm6">
+          <label>Técnico de manutenção (Suzano)</label>
+          <input id="tecnicoSuzano" />
+        </div>
+
+        <div class="field sm6">
+          <label>Motorista</label>
+          <input id="motorista" />
+        </div>
+        <div class="field sm6">
+          <label>Inspecionador</label>
+          <input id="inspecionador" />
+        </div>
+
+        <div class="field sm6">
+          <label>Resultado final</label>
+         <select id="resultadoFinal">
+  <option value="" selected disabled>Selecione…</option>
+  <option value="apto">APTO</option>
+  <option value="nao_apto">NÃO APTO</option>
+</select>
+          <div class="hint">Dica: marque <b>NÃO APTO</b> se houver item crítico em <b>Ruim</b>.</div>
+        </div>
+
+        <div class="field sm6">
+          <label>Justificativa do resultado <span class="req">*</span> (se NÃO APTO)</label>
+          <textarea id="justNaoApto" placeholder="Obrigatório quando NÃO APTO"></textarea>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="bottom">
+    <div class="bottom-inner">
+      <button type="button" class="btn ghost" id="btnSalvar">Salvar rascunho</button>
+      <button type="button" class="btn primary" id="btnFinalizar">Finalizar</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      doc,
+      addDoc,
+      updateDoc,
+      serverTimestamp,
+      getDoc
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // ===== Firebase config (sua) =====
+    const firebaseConfig = {
+      apiKey: "AIzaSyBmOVLv4eCvEwXtqyP8KJGy8aAqsY1JCpI",
+      authDomain: "checklist-cmc.firebaseapp.com",
+      projectId: "checklist-cmc",
+      storageBucket: "checklist-cmc.firebasestorage.app",
+      messagingSenderId: "897550915134",
+      appId: "1:897550915134:web:5c936ef89256ba1cec236f"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const COL = "checklists";
+
+    const params = new URLSearchParams(location.search);
+    const docId = params.get("id"); // se existir, abre/edita doc
+    const mode = params.get("mode"); // "new" quando vier do index
+
+    const KEY_DRAFT = "itr_rascunho_v2_template2";
+
+    const qs = (sel, root=document)=> root.querySelector(sel);
+    const qsa = (sel, root=document)=> [...root.querySelectorAll(sel)];
+
+    // ===== Checklist completo (do papel) =====
+    const CHECKLIST = [
+      { id:"motor", title:"Motor", badge:"Itens 1–14", items:[
+        { n:"1",  text:"Motor - Verificar funcionamento e vazamento." },
+        { n:"2",  text:"Silencioso - Verificar funcionamento" },
+        { n:"3",  text:"Embreagem - Verificar funcionamento." },
+        { n:"4",  text:"Câmbio - Verificar funcionamento." },
+        { n:"5",  text:"Bloqueio 1º e 2º estágio: Verificar funcionamento no painel e fazer teste" },
+        { n:"6",  text:"Manga de eixo: Verificar folgas" },
+        { n:"7",  text:"Cardans: Verificar folgas" },
+        { n:"8",  text:"Barras de direção - Verificar empone e condições" },
+        { n:"9",  text:"Amortecedores - Verificar vazamento e condições" },
+        { n:"10", text:"Terminal de direção - Verificar folga e condições" },
+        { n:"11", text:"Caixa de direção: Verificar folga e vazamento" },
+        { n:"12", text:"Estabilizador - Verificar estado" },
+        { n:"13", text:"Coluna de volante" },
+        { n:"14", text:"Alinhamento - Verificar indício de desgaste irregular dos pneus." },
+      ]},
+      { id:"vazamentos", title:"Vazamentos", badge:"Itens 15–18", items:[
+        { n:"15", text:"Compressor - Verificar vazamento" },
+        { n:"16", text:"Canos diesel - Verificar vazamento" },
+        { n:"17", text:"Reservatório de ar - drenar água do reservatório" },
+        { n:"18", text:"Verificar Pressão de ar do CM / Verificar vazamento - Registrar Pressão encontrada:", extraPressure:true },
+      ]},
+      { id:"freios", title:"Freios", badge:"Itens 19–24", items:[
+        { n:"19", text:"Cuícas de freio - Verificar funcionamento e fixação." },
+        { n:"20", text:"Lonas / Tambor de freio / Espelhos - Inspecionar espessura das lonas, trincas e desgaste no tambor. E analisar a necessidade de troca." },
+        { n:"21", text:"Eixo S - verificar enbuchamento, folga." },
+        { n:"22", text:"Catracas de Freio - Verificar funcionamento e regulagem." },
+        { n:"23", text:"Tubulação - Verificar fixação e conexões." },
+        { n:"24", text:"Mangotes das cuícas" },
+      ]},
+      { id:"chassi", title:"Chassi", badge:"Itens 25–31 (inclui 28.1)", items:[
+        { n:"25", text:"Balança e Feixe de mola - verificar estado e trincas" },
+        { n:"26", text:"Tirantes - verifica estado" },
+        { n:"27", text:"Cubos - verificar vazamento e fixação" },
+        { n:"28", text:"5ª roda - verificar folga (Fazer desengate se necessário para medição do kit e Pino Rei)" },
+        { n:"28.1", text:"5ª roda - verificar (trava/contrapino) da barra de travamento." },
+        { n:"29", text:"Parafuso de ajuste - verificar regulagem mecanismo de trava (5ª roda)" },
+        { n:"30", text:"Paralama / Lameiros analisar rasgos ou trincas." },
+        { n:"31", text:"Placas / Lacres verificar situação visual e fixação" },
+      ]},
+      { id:"eletrica", title:"Inspeção Elétrica", badge:"Itens 32–45", items:[
+        { n:"32", text:"Bateria - Verificar conexão, fixação e proteção da Bateria." },
+        { n:"33", text:"Buzina / Alarme de ré - Verificar funcionamento" },
+        { n:"34", text:"Farol de serviço - Verificar funcionamento." },
+        { n:"35", text:"Luzes de posição, ré, freio e placa - Verificar funcionamento." },
+        { n:"36", text:"Luzes de seta e alerta - Verificar funcionamento." },
+        { n:"37", text:"Chave geral - verificar estado e funcionamento." },
+        { n:"38", text:"Luz interna: Conferir funcionamento" },
+        { n:"39", text:"Corujinha de teto / Quebra sol" },
+        { n:"40", text:"Ignição verificar funcionamento." },
+        { n:"41", text:"Limpadores de para-brisa e esguicho - verificar funcionamento." },
+        { n:"42", text:"Instrumentos do painel - Bloqueio, freio motor" },
+        { n:"43", text:"Bloqueio: Fazer teste de funcionamento 1º e 2º estágio" },
+        { n:"44", text:"Tacógrafo - Verificar funcionamento." },
+        { n:"45", text:"Tomadas / Chicotes: Verificar estado e funcionamento." },
+      ]},
+      { id:"cabine", title:"Cabine", badge:"Itens 46–54", items:[
+        { n:"46", text:"Macaco Hidráulico cabine: Verificar funcionamento" },
+        { n:"47", text:"Retrovisor - inspecionar a fixação." },
+        { n:"48", text:"Estribo - inspecionar fixação e trincas." },
+        { n:"49", text:"Portas - inspecionar funcionamento fechaduras e vidros." },
+        { n:"50", text:"Para-brisa / vidros - inspecionar estado, trincas e conservação." },
+        { n:"51", text:"Extintor - inspecionar validade e carga." },
+        { n:"52", text:"Cinto de Segurança - inspecionar funcionamento." },
+        { n:"53", text:"Cone de Sinalização" },
+        { n:"54", text:"Cabine - inspecionar avarias." },
+      ]},
+      { id:"pneus", title:"Inspeção de Pneus", badge:"Itens 55–58", items:[
+        { n:"55", text:"Rodas - Verificar trincas e condições gerais" },
+        { n:"56", text:"Pneus direcionais: Verificar condições e sulco (Não pode ter pneus reformados no direcional)" },
+        { n:"57", text:"Pneus Tração - Verificar condições e sulco" },
+        { n:"58", text:"Estepe de rodas: Verificar se está completo e torque" },
+      ]},
+    ];
+
+    function create(tag, attrs={}, children=[]){
+      const el = document.createElement(tag);
+      for(const [k,v] of Object.entries(attrs)){
+        if(k==="class") el.className = v;
+        else if(k==="text") el.textContent = v;
+        else if(k.startsWith("data-")) el.setAttribute(k, v);
+        else el[k] = v;
+      }
+      children.forEach(c => el.appendChild(c));
+      return el;
+    }
+
+    function setItemVisualState(itemEl, status){
+      itemEl.classList.remove("st-bom","st-regular","st-ruim");
+      if(status === "bom") itemEl.classList.add("st-bom");
+      if(status === "regular") itemEl.classList.add("st-regular");
+      if(status === "ruim") itemEl.classList.add("st-ruim");
+      const label = qs(".status-label", itemEl);
+      label.textContent = status ? status.toUpperCase() : "SEM STATUS";
+    }
+
+    function updateCounters(){
+      const bom = qsa('.seg button[data-v="bom"].active').length;
+      const reg = qsa('.seg button[data-v="regular"].active').length;
+      const ruim = qsa('.seg button[data-v="ruim"].active').length;
+      qs("#cBom").textContent = bom;
+      qs("#cReg").textContent = reg;
+      qs("#cRuim").textContent = ruim;
+    }
+
+    function getStatus(itemEl){
+      const a = qs(".seg button.active", itemEl);
+      return a ? a.getAttribute("data-v") : null;
+    }
+
+    function setStatusForItem(itemEl, status){
+      const btn = qs(`.seg button[data-v="${status}"]`, itemEl);
+      if(!btn) return;
+
+      // marca ativo
+      qsa(".seg button", itemEl).forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+
+      // extra
+      const extra = qs(".extra", itemEl);
+      if(status==="regular" || status==="ruim") extra.classList.add("show");
+      else extra.classList.remove("show");
+
+      setItemVisualState(itemEl, status);
+    }
+
+    function approveAllInSection(sectionId, sectionTitle){
+      const ok = confirm(`Aprovar todos como "Bom" na seção "${sectionTitle}"?\n\nIsso vai marcar TODOS os itens desta seção como BOM.`);
+      if(!ok) return;
+
+      const items = qsa(`.item[data-section="${sectionId}"]`);
+      items.forEach(item => setStatusForItem(item, "bom"));
+      updateCounters();
+    }
+
+    function renderSections(){
+      const host = qs("#sections");
+      host.innerHTML = "";
+
+      CHECKLIST.forEach(sec=>{
+        const wrapper = create("div", {class:"panel", id:`sec_${sec.id}`}, []);
+
+        const header = create("h2", {}, [
+          create("span",{text:sec.title}),
+          create("span",{class:"badge", text:sec.badge}),
+        ]);
+
+        const actions = create("div", {class:"sec-actions"}, [
+          create("button", {type:"button", class:"btn small", text:"Aprovar todos (Bom)"})
+        ]);
+
+        // Para encaixar bem no layout, adiciona actions abaixo do h2 em telas menores
+        wrapper.appendChild(header);
+        wrapper.appendChild(actions);
+
+        actions.querySelector("button").addEventListener("click", ()=>{
+          approveAllInSection(sec.id, sec.title);
+        });
+
+        sec.items.forEach(it=>{
+          const itemId = `${sec.id}_${it.n}`.replace(/\./g,"_");
+
+          const titleBox = create("div", {}, [
+            create("div",{class:"item-title", text:`${it.n} — ${it.text}`}),
+            create("div",{class:"item-sub", text:"Selecione: Bom / Regular / Ruim"})
+          ]);
+
+          const seg = create("div",{class:"seg"},[
+            create("button",{type:"button","data-v":"bom", text:"Bom"}),
+            create("button",{type:"button","data-v":"regular", text:"Regular"}),
+            create("button",{type:"button","data-v":"ruim", text:"Ruim"}),
+          ]);
+
+          const statusLabel = create("div",{class:"status-label", text:"SEM STATUS"});
+
+          const extra = create("div",{class:"extra"},[
+            create("div",{class:"row"},[
+              create("div",{},[
+                create("label",{text:"Observação (obrigatória se Regular/Ruim)"}),
+                create("textarea",{placeholder:"Descreva o problema / ação necessária"})
+              ]),
+              create("div",{},[
+                create("label",{text: it.extraPressure ? "Pressão encontrada (Item 18)" : "Informação extra (opcional)"}),
+                create("input",{placeholder: it.extraPressure ? "Ex.: 8 bar" : "(se necessário)"})
+              ])
+            ])
+          ]);
+
+          const body = create("div",{class:"item-body"},[
+            create("div",{},[titleBox, statusLabel]),
+            seg,
+          ]);
+
+          const item = create("div",{
+            class:"item",
+            "data-itemid": itemId,
+            "data-section": sec.id,
+            "data-n": it.n
+          }, [body, extra]);
+
+          // interações
+          qsa("button", seg).forEach(btn=>{
+            btn.addEventListener("click", ()=>{
+              qsa("button", seg).forEach(b=>b.classList.remove("active"));
+              btn.classList.add("active");
+
+              const v = btn.getAttribute("data-v");
+              if(v==="regular" || v==="ruim") extra.classList.add("show");
+              else extra.classList.remove("show");
+
+              setItemVisualState(item, v);
+              updateCounters();
+            });
+          });
+
+          setItemVisualState(item, null);
+          wrapper.appendChild(item);
+        });
+
+        host.appendChild(wrapper);
+      });
+    }
+
+    function buildPayload(){
+      const itens = qsa(".item").map(item=>{
+        return {
+          section: item.dataset.section,
+          n: item.dataset.n,
+          status: getStatus(item),
+          obs: (qs("textarea", item)?.value || "").trim(),
+          extra: (qs(".extra input", item)?.value || "").trim()
+        };
+      });
+
+      return {
+        placa: qs("#placa").value.trim(),
+        rmt: qs("#rmt").value.trim(),
+        tipoManut: qs("#tipoManut").value,
+        data: qs("#data").value,
+        hsFinal: qs("#hsFinal").value.trim(),
+        placaCavalo: qs("#placaCavalo").value.trim(),
+        obsGeral: qs("#obsGeral").value.trim(),
+
+        dataVistoria: qs("#dataVistoria").value,
+        horaVistoria: qs("#horaVistoria").value,
+        dataRevistoria: qs("#dataRevistoria").value,
+        horaRevistoria: qs("#horaRevistoria").value,
+        mecanicoInspecao: qs("#mecanicoInspecao").value.trim(),
+        tecnicoSuzano: qs("#tecnicoSuzano").value.trim(),
+        motorista: qs("#motorista").value.trim(),
+        inspecionador: qs("#inspecionador").value.trim(),
+
+        resultadoFinal: qs("#resultadoFinal").value,
+        justNaoApto: qs("#justNaoApto").value.trim(),
+
+        counters:{
+          bom:Number(qs("#cBom").textContent||0),
+          regular:Number(qs("#cReg").textContent||0),
+          ruim:Number(qs("#cRuim").textContent||0),
+        },
+
+        itens,
+        savedAt:new Date().toISOString(),
+        version:"itr_template2_v2"
+      };
+    }
+
+    function validateFinal(payload){
+      const missing = payload.itens.filter(x=>!x.status);
+      if(missing.length){
+        alert(`Faltam ${missing.length} itens sem classificação (Bom/Regular/Ruim).`);
+        return false;
+      }
+      const needObs = payload.itens.filter(x => (x.status==="regular" || x.status==="ruim") && !x.obs);
+      if(needObs.length){
+        alert(`Existem ${needObs.length} itens em Regular/Ruim sem observação.`);
+        return false;
+      }
+      if(payload.resultadoFinal==="nao_apto" && !payload.justNaoApto){
+        alert("Justificativa obrigatória quando o resultado final for NÃO APTO.");
+        return false;
+      }
+      return true;
+    }
+
+    function downloadJSON(obj, filename){
+      const blob = new Blob([JSON.stringify(obj, null, 2)], {type:"application/json"});
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(a.href);
+    }
+
+    // ===== Firestore save FINAL =====
+    async function salvarFinalNoFirestore(){
+      const payload = buildPayload();
+      payload.statusDoc = "final";
+
+      if(!validateFinal(payload)) return;
+
+      const btn = qs("#btnFinalizar");
+      try{
+        if(btn){ btn.disabled = true; btn.textContent = "Salvando…"; }
+
+        if(docId){
+          await updateDoc(doc(db, COL, docId), {
+            ...payload,
+            updatedAt: serverTimestamp()
+          });
+        } else {
+          await addDoc(collection(db, COL), {
+            ...payload,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+        }
+
+
+        alert("Checklist FINALIZADO e salvo no banco.");
+        location.href = "index.html";
+      } catch (err){
+        console.error(err);
+        alert("Falha ao salvar no Firestore. Verifique regras/índices e conexão.");
+      } finally{
+        if(btn){ btn.disabled = false; btn.textContent = "Finalizar"; }
+      }
+    }
+
+    async function loadFromFirestoreIfNeeded(){
+      if(!docId) return false;
+      try{
+        const snap = await getDoc(doc(db, COL, docId));
+        if(!snap.exists()) return false;
+        const d = snap.data();
+
+        const setVal = (id, v)=>{ if(v!==undefined && v!==null) qs("#"+id).value = v; };
+
+        setVal("placa", d.placa);
+        setVal("rmt", d.rmt);
+        if(d.tipoManut) setVal("tipoManut", d.tipoManut);
+        setVal("data", d.data);
+        setVal("hsFinal", d.hsFinal);
+        setVal("placaCavalo", d.placaCavalo);
+        setVal("obsGeral", d.obsGeral);
+
+        setVal("dataVistoria", d.dataVistoria);
+        setVal("horaVistoria", d.horaVistoria);
+        setVal("dataRevistoria", d.dataRevistoria);
+        setVal("horaRevistoria", d.horaRevistoria);
+
+        setVal("mecanicoInspecao", d.mecanicoInspecao);
+        setVal("tecnicoSuzano", d.tecnicoSuzano);
+        setVal("motorista", d.motorista);
+        setVal("inspecionador", d.inspecionador);
+
+        if(d.resultadoFinal) setVal("resultadoFinal", d.resultadoFinal);
+        setVal("justNaoApto", d.justNaoApto);
+
+        if(Array.isArray(d.itens)){
+          d.itens.forEach(it=>{
+            const itemId = `${it.section}_${it.n}`.replace(/\./g,"_");
+            const itemEl = qs(`.item[data-itemid="${itemId}"]`);
+            if(!itemEl) return;
+
+            if(it.status){
+              setStatusForItem(itemEl, it.status);
+            }
+            const ta = qs("textarea", itemEl);
+            if(ta && it.obs) ta.value = it.obs;
+
+            const extraInp = qs(".extra input", itemEl);
+            if(extraInp && it.extra) extraInp.value = it.extra;
+          });
+        }
+
+        updateCounters();
+        return true;
+      } catch(e){
+        console.error(e);
+        return false;
+      }
+    }
+
+    function loadDraft(){
+      const raw = localStorage.getItem(KEY_DRAFT);
+      if(!raw) return;
+      try{
+        const d = JSON.parse(raw);
+        const setVal = (id, v)=>{ if(v!==undefined && v!==null) qs("#"+id).value = v; };
+
+        setVal("placa", d.placa);
+        setVal("rmt", d.rmt);
+        if(d.tipoManut) setVal("tipoManut", d.tipoManut);
+        setVal("data", d.data);
+        setVal("hsFinal", d.hsFinal);
+        setVal("placaCavalo", d.placaCavalo);
+        setVal("obsGeral", d.obsGeral);
+
+        setVal("dataVistoria", d.dataVistoria);
+        setVal("horaVistoria", d.horaVistoria);
+        setVal("dataRevistoria", d.dataRevistoria);
+        setVal("horaRevistoria", d.horaRevistoria);
+
+        setVal("mecanicoInspecao", d.mecanicoInspecao);
+        setVal("tecnicoSuzano", d.tecnicoSuzano);
+        setVal("motorista", d.motorista);
+        setVal("inspecionador", d.inspecionador);
+
+        if(d.resultadoFinal) setVal("resultadoFinal", d.resultadoFinal);
+        setVal("justNaoApto", d.justNaoApto);
+
+        if(Array.isArray(d.itens)){
+          d.itens.forEach(it=>{
+            const itemId = `${it.section}_${it.n}`.replace(/\./g,"_");
+            const itemEl = qs(`.item[data-itemid="${itemId}"]`);
+            if(!itemEl) return;
+
+            if(it.status){
+              setStatusForItem(itemEl, it.status);
+            }
+            const ta = qs("textarea", itemEl);
+            if(ta && it.obs) ta.value = it.obs;
+
+            const extraInp = qs(".extra input", itemEl);
+            if(extraInp && it.extra) extraInp.value = it.extra;
+          });
+        }
+
+        updateCounters();
+      } catch(e){}
+    }
+
+    // ===== Actions =====
+    qs("#btnSalvar")?.addEventListener("click", ()=>{
+      const payload = buildPayload();
+      payload.statusDoc = "rascunho";
+      localStorage.setItem(KEY_DRAFT, JSON.stringify(payload));
+      alert("Rascunho salvo no aparelho.");
+    });
+
+    qs("#btnFinalizar")?.addEventListener("click", salvarFinalNoFirestore);
+
+    qs("#btnExport")?.addEventListener("click", ()=>{
+      const payload = buildPayload();
+      const placa = (payload.placa || "SEM_PLACA").replace(/\s+/g,"_");
+      downloadJSON(payload, `ITR_${placa}_${Date.now()}.json`);
+    });
+
+    qs("#btnLimpar")?.addEventListener("click", ()=>{
+      if(confirm("Limpar rascunho salvo?")){
+        localStorage.removeItem(KEY_DRAFT);
+        alert("Rascunho removido.");
+      }
+    });
+
+    qs("#btnVoltarInicio")?.addEventListener("click", ()=>{
+      location.href = "index.html";
+    });
+
+    qs("#btnExportarPDF")?.addEventListener("click", ()=>{
+      window.print();
+    });
+
+    // ===== // ===== init =====
+renderSections();
+
+// Se abriu com ?id=..., carrega do Firestore.
+// Se abriu com ?mode=new, fica em branco (não carrega draft e não seta data padrão).
+// Se abriu sem nada, você pode escolher: carregar rascunho automático (mantive).
+const loadedFromDb = await loadFromFirestoreIfNeeded();
+
+if (!loadedFromDb) {
+  if (mode === "new") {
+    // NOVO EM BRANCO: não carrega draft e não coloca valores padrão
+    // (se quiser, também pode limpar um draft antigo pra não confundir)
+    // localStorage.removeItem(KEY_DRAFT);
+  } else {
+    // Sem id e sem mode=new → pode carregar o rascunho automático (opcional)
+    loadDraft();
+
+    // Se você quiser REMOVER também o auto-load de rascunho,
+    // basta comentar a linha loadDraft();
+  }
+}
+
+  </script>
+
+</body>
+</html>

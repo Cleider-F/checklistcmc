@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Checklist CMC — Início</title>
+  <meta name="theme-color" content="#0b1220" />
+
+  <style>
+    :root{
+      --bg:#0b1220;
+      --surface:#f3f4f6;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --border:#e5e7eb;
+
+      --primary:#16a34a;
+      --primary2:#15803d;
+
+      --ok:#16a34a;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+
+      --shadow:0 10px 25px rgba(0,0,0,.08);
+      --shadow-soft:0 4px 12px rgba(0,0,0,.06);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:var(--surface);
+      color:var(--text);
+    }
+
+    /* topbar minimal */
+    .topbar{
+      position:sticky; top:0; z-index:50;
+      background:linear-gradient(180deg, rgba(11,18,32,.98), rgba(11,18,32,.92));
+      border-bottom:1px solid rgba(255,255,255,.08);
+      backdrop-filter: blur(10px);
+    }
+    .topbar-inner{
+      max-width:1080px; margin:0 auto;
+      padding:10px 12px;
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px; min-width:0; color:#fff;
+    }
+    .brand img{
+      width:34px; height:34px; border-radius:10px;
+      background:#fff; object-fit:contain; padding:4px;
+    }
+    .brand .t{display:flex; flex-direction:column; min-width:0}
+    .brand .t b{font-size:14px; line-height:1.1}
+    .brand .t span{font-size:12px;color:rgba(255,255,255,.7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+    .chips{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
+    .chip{
+      display:flex; align-items:center; gap:8px;
+      padding:7px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+      color:#fff; font-size:12px;
+    }
+    .dot{width:8px;height:8px;border-radius:999px}
+    .dot.ok{background:var(--ok)}
+    .dot.warn{background:var(--warn)}
+    .dot.bad{background:var(--bad)}
+
+    .wrap{max-width:1080px;margin:0 auto;padding:14px 12px 70px;}
+
+    .panel{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:14px;
+      margin-top:12px;
+    }
+    .panel h2{
+      margin:0 0 10px;
+      font-size:14px;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    }
+    .badge{
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      color:var(--muted);
+      background:#fff;
+      white-space:nowrap;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:10px;
+    }
+    .field{grid-column: span 12;}
+    @media(min-width:720px){
+      .field.sm6{grid-column: span 6;}
+      .field.sm4{grid-column: span 4;}
+      .field.sm3{grid-column: span 3;}
+    }
+    label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}
+    input, select{
+      width:100%;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:10px 12px;
+      font-size:14px;
+      background:#fff;
+      outline:none;
+    }
+
+    .btn{
+      border:1px solid var(--border);
+      background:#fff;
+      padding:10px 12px;
+      border-radius:16px;
+      cursor:pointer;
+      font-weight:800;
+    }
+    .btn.primary{
+      background:var(--primary);
+      border-color:var(--primary);
+      color:#fff;
+    }
+    .btn.primary:hover{background:var(--primary2)}
+    .btn.danger{
+      border-color:#fecaca;
+      color:#b91c1c;
+      background:#fff;
+    }
+    .row-actions{display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end}
+
+    /* cards list */
+    .list{display:grid; gap:10px;}
+    .card{
+      position:relative;
+      border:1px solid var(--border);
+      border-radius:18px;
+      box-shadow:var(--shadow-soft);
+      background:#fff;
+      overflow:hidden;
+      padding:12px;
+    }
+    .card::before{
+      content:"";
+      position:absolute; left:0; top:0; bottom:0;
+      width:4px; background:#cbd5e1;
+    }
+    .c-bom{background:rgba(22,163,74,.06)}
+    .c-bom::before{background:var(--ok)}
+    .c-naoapto{background:rgba(239,68,68,.08)}
+    .c-naoapto::before{background:var(--bad)}
+    .c-rascunho{background:rgba(245,158,11,.08)}
+    .c-rascunho::before{background:var(--warn)}
+
+    .card-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+    .card-title{display:flex;flex-direction:column;gap:3px}
+    .card-title b{font-size:14px}
+    .meta{font-size:12px;color:var(--muted)}
+    .pill{
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      color:var(--muted);
+      background:#fff;
+      white-space:nowrap;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.3px;
+    }
+    .pill.ok{border-color:rgba(22,163,74,.25); color:var(--ok)}
+    .pill.bad{border-color:rgba(239,68,68,.25); color:var(--bad)}
+    .pill.warn{border-color:rgba(245,158,11,.25); color:var(--warn)}
+
+    .card-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:10px}
+    .hint{font-size:12px;color:var(--muted);margin-top:8px}
+    .empty{padding:14px;border:1px dashed var(--border);border-radius:14px;color:var(--muted)}
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <img src="assets/suzano-logo.png" alt="Suzano" onerror="this.style.display='none'">
+        <div class="t">
+          <b>Checklist CMC</b>
+          <span>Formulários • Firestore • GitHub Pages</span>
+        </div>
+      </div>
+
+      <div class="chips">
+        <div class="chip"><span class="dot ok"></span><b id="countApto">0</b> Aptos</div>
+        <div class="chip"><span class="dot bad"></span><b id="countNaoApto">0</b> Não aptos</div>
+        <div class="chip"><span class="dot warn"></span><b id="countRasc">0</b> Rascunhos</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <div class="panel">
+      <h2>Novo checklist <span class="badge">Ação rápida</span></h2>
+      <div class="row-actions">
+        <button class="btn primary" id="btnNovo">+ Criar novo formulário</button>
+      </div>
+      <div class="hint">Abre o <code>form.html</code> em modo novo e salva no Firestore quando você finalizar.</div>
+    </div>
+
+    <div class="panel">
+      <h2>Filtros <span class="badge">Busca e período</span></h2>
+      <div class="grid">
+        <div class="field sm6">
+          <label>Buscar (placa, RMT, motorista, inspecionador)</label>
+          <input id="q" placeholder="Ex.: SFV9I84" />
+        </div>
+        <div class="field sm3">
+          <label>Resultado</label>
+          <select id="fResultado">
+            <option value="all">Todos</option>
+            <option value="apto">Apto</option>
+            <option value="nao_apto">Não apto</option>
+            <option value="rascunho">Rascunho</option>
+          </select>
+        </div>
+        <div class="field sm3">
+          <label>Ordenação</label>
+          <select id="fOrder">
+            <option value="new">Mais recentes</option>
+            <option value="old">Mais antigos</option>
+          </select>
+        </div>
+
+        <div class="field sm3">
+          <label>Data inicial</label>
+          <input id="dIni" type="date" />
+        </div>
+        <div class="field sm3">
+          <label>Data final</label>
+          <input id="dFim" type="date" />
+        </div>
+
+        <div class="field sm6" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+          <button class="btn" id="btnAplicar">Aplicar</button>
+          <button class="btn" id="btnLimpar">Limpar filtros</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Formulários salvos <span class="badge" id="badgeTotal">0</span></h2>
+      <div id="list" class="list"></div>
+      <div id="empty" class="empty" style="display:none">Nenhum formulário encontrado.</div>
+      <div class="hint" id="status"></div>
+    </div>
+
+  </div>
+
+  <!-- Firebase (v10 modular) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      doc,
+      deleteDoc,
+      getDocs,
+      query,
+      orderBy,
+      where,
+      limit,
+      Timestamp
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // ===== Seu config (fornecido) =====
+    const firebaseConfig = {
+      apiKey: "AIzaSyBmOVLv4eCvEwXtqyP8KJGy8aAqsY1JCpI",
+      authDomain: "checklist-cmc.firebaseapp.com",
+      projectId: "checklist-cmc",
+      storageBucket: "checklist-cmc.firebasestorage.app",
+      messagingSenderId: "897550915134",
+      appId: "1:897550915134:web:5c936ef89256ba1cec236f"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // ===== Coleção =====
+    // Padrão sugerido: "checklists"
+    const COL = "checklists";
+
+    const $ = (id)=>document.getElementById(id);
+
+    // Helpers
+    function normalize(s){ return (s||"").toString().toLowerCase().trim(); }
+    function fmtDate(iso){
+      if(!iso) return "";
+      // iso: YYYY-MM-DD
+      const [y,m,d] = iso.split("-");
+      return `${d}/${m}/${y}`;
+    }
+    function fmtTS(ts){
+      try{
+        const d = ts?.toDate ? ts.toDate() : null;
+        if(!d) return "";
+        const pad=n=>String(n).padStart(2,"0");
+        return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      }catch(e){ return ""; }
+    }
+
+    // UI actions
+    $("btnNovo").addEventListener("click", ()=>{
+      // abre seu formulário em modo novo
+      window.location.href = "form.html?mode=new";
+    });
+
+    $("btnAplicar").addEventListener("click", ()=>load());
+    $("btnLimpar").addEventListener("click", ()=>{
+      $("q").value = "";
+      $("fResultado").value = "all";
+      $("fOrder").value = "new";
+      $("dIni").value = "";
+      $("dFim").value = "";
+      load();
+    });
+
+    function setStatus(msg){ $("status").textContent = msg || ""; }
+
+    function setCounts({apto=0, naoApto=0, rasc=0}){
+      $("countApto").textContent = apto;
+      $("countNaoApto").textContent = naoApto;
+      $("countRasc").textContent = rasc;
+    }
+
+    // ===== Render card =====
+    function cardTemplate(id, data){
+      const placa = data.placa || "SEM PLACA";
+      const rmt = data.rmt ? `RMT: ${data.rmt}` : "";
+      const tipo = data.tipoManut ? data.tipoManut.toUpperCase() : "";
+      const dataCheck = data.data ? fmtDate(data.data) : "";
+      const motorista = data.motorista ? `Motorista: ${data.motorista}` : "";
+      const inspec = data.inspecionador ? `Insp.: ${data.inspecionador}` : "";
+
+      // estado (rascunho/finalizado) e resultado
+      // sugerido: data.statusDoc = "rascunho" | "final"
+      const statusDoc = data.statusDoc || "rascunho";
+      const resultado = data.resultadoFinal || (statusDoc==="rascunho" ? "rascunho" : "apto");
+
+      const klass =
+        (statusDoc === "rascunho") ? "c-rascunho" :
+        (resultado === "nao_apto") ? "c-naoapto" :
+        "c-bom";
+
+      const pill =
+        (statusDoc === "rascunho") ? `<span class="pill warn">RASCUNHO</span>` :
+        (resultado === "nao_apto") ? `<span class="pill bad">NÃO APTO</span>` :
+        `<span class="pill ok">APTO</span>`;
+
+      const created = fmtTS(data.createdAt);
+      const updated = fmtTS(data.updatedAt);
+
+      const div = document.createElement("div");
+      div.className = `card ${klass}`;
+      div.innerHTML = `
+        <div class="card-top">
+          <div class="card-title">
+            <b>${placa}</b>
+            <div class="meta">
+              ${[dataCheck, tipo, rmt].filter(Boolean).join(" • ")}
+            </div>
+            <div class="meta">
+              ${[motorista, inspec].filter(Boolean).join(" • ")}
+            </div>
+            <div class="meta">
+              ${created ? `Criado: ${created}` : ""} ${updated ? `• Atualizado: ${updated}` : ""}
+            </div>
+          </div>
+          ${pill}
+        </div>
+
+        <div class="card-actions">
+          <button class="btn" data-open="${id}">Abrir</button>
+          <button class="btn" data-dup="${id}">Duplicar</button>
+          <button class="btn danger" data-del="${id}">Excluir</button>
+        </div>
+      `;
+      return div;
+    }
+
+    async function duplicateDoc(id, data){
+      // duplica e abre o novo doc no form
+      const now = Timestamp.now();
+      const copy = {
+        ...data,
+        statusDoc: "rascunho",
+        resultadoFinal: data.resultadoFinal || "apto",
+        createdAt: now,
+        updatedAt: now,
+        duplicatedFrom: id
+      };
+      // remove campos que não devem copiar 1:1 se você quiser
+      delete copy.savedAt;
+
+      const ref = await addDoc(collection(db, COL), copy);
+      window.location.href = `form.html?id=${ref.id}`;
+    }
+
+    async function removeDoc(id){
+      if(!confirm("Excluir este formulário? Essa ação não tem volta.")) return;
+      await deleteDoc(doc(db, COL, id));
+      await load();
+    }
+
+    function applyClientFilters(rows){
+      const q = normalize($("q").value);
+      const fRes = $("fResultado").value;
+      const dIni = $("dIni").value;
+      const dFim = $("dFim").value;
+
+      let out = rows;
+
+      // filtro texto
+      if(q){
+        out = out.filter(r=>{
+          const d = r.data;
+          const hay = [
+            d.placa, d.rmt, d.motorista, d.inspecionador, d.mecanicoInspecao, d.tecnicoSuzano
+          ].map(normalize).join(" ");
+          return hay.includes(q);
+        });
+      }
+
+      // filtro resultado/rascunho
+      if(fRes !== "all"){
+        out = out.filter(r=>{
+          const d = r.data;
+          const statusDoc = d.statusDoc || "rascunho";
+          const resultado = d.resultadoFinal || "apto";
+          if(fRes==="rascunho") return statusDoc==="rascunho";
+          if(statusDoc==="rascunho") return false;
+          return resultado === fRes;
+        });
+      }
+
+      // filtro por data do checklist (campo "data" YYYY-MM-DD)
+      if(dIni){
+        out = out.filter(r => (r.data.data || "") >= dIni);
+      }
+      if(dFim){
+        out = out.filter(r => (r.data.data || "") <= dFim);
+      }
+
+      return out;
+    }
+
+    function updateCountersFromRows(rows){
+      let apto=0, naoApto=0, rasc=0;
+      rows.forEach(r=>{
+        const d = r.data;
+        const statusDoc = d.statusDoc || "rascunho";
+        if(statusDoc==="rascunho"){ rasc++; return; }
+        if(d.resultadoFinal==="nao_apto") naoApto++;
+        else apto++;
+      });
+      setCounts({apto, naoApto, rasc});
+    }
+
+    async function load(){
+      setStatus("Carregando…");
+      $("empty").style.display = "none";
+      $("list").innerHTML = "";
+
+      // Query simples e segura:
+      // - ordena por updatedAt (se existir); senão createdAt
+      // Obs: Isso exige que seus docs tenham esses campos.
+      const ord = $("fOrder").value === "old" ? "asc" : "desc";
+
+      let qy = query(collection(db, COL), orderBy("updatedAt", ord), limit(200));
+
+      // Se ainda não existir updatedAt nos seus docs, troque por createdAt:
+      // let qy = query(collection(db, COL), orderBy("createdAt", ord), limit(200));
+
+      let snap;
+      try{
+        snap = await getDocs(qy);
+      }catch(err){
+        console.error(err);
+        setStatus("Erro ao ler o Firestore. Verifique regras/índices.");
+        $("empty").style.display = "block";
+        return;
+      }
+
+      const rows = snap.docs.map(d=>({ id:d.id, data:d.data() }));
+
+      // Filtros client-side (mais simples no início)
+      const filtered = applyClientFilters(rows);
+
+      // Contadores considerando o conjunto filtrado
+      updateCountersFromRows(filtered);
+
+      $("badgeTotal").textContent = filtered.length;
+
+      if(!filtered.length){
+        $("empty").style.display = "block";
+        setStatus("Nenhum registro para os filtros atuais.");
+        return;
+      }
+
+      // render
+      filtered.forEach(r=>{
+        const card = cardTemplate(r.id, r.data);
+        $("list").appendChild(card);
+
+        // wire actions
+        card.querySelector('[data-open]')?.addEventListener("click", ()=>{
+          window.location.href = `form.html?id=${r.id}`;
+        });
+
+        card.querySelector('[data-dup]')?.addEventListener("click", ()=>{
+          duplicateDoc(r.id, r.data);
+        });
+
+        card.querySelector('[data-del]')?.addEventListener("click", ()=>{
+          removeDoc(r.id);
+        });
+      });
+
+      setStatus(`Carregado: ${filtered.length} registro(s).`);
+    }
+
+    // Boot
+    load();
+  </script>
+
+</body>
+</html>
