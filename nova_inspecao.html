@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Nova Inspeção</title>
+  <style>
+
+  </style>
+</head>
+<body>
+
+<h2>Nova Inspeção</h2>
+
+<input id="placa" placeholder="Placa"><br><br>
+
+<select id="tipo">
+  <option value="">Tipo</option>
+  <option value="carreta">Carreta</option>
+  <option value="prancha">Prancha</option>
+  <option value="comboio">Comboio</option>
+  <option value="cavalo">Cavalo Mecânico</option>
+</select><br><br>
+
+<select id="tipoManutencao">
+  <option value="">Tipo de manutenção</option>
+  <option value="preventiva">Preventiva</option>
+  <option value="revisao">Revisão</option>
+  <option value="cnpj">CNPJ</option>
+  <option value="gm">GM</option>
+</select><br><br>
+
+<div id="kmField" style="display:none;">
+  <input id="km" placeholder="KM"><br><br>
+</div>
+
+<div id="horimetroField" style="display:none;">
+  <input id="horimetro" placeholder="Horímetro"><br><br>
+</div>
+
+<div id="compartimentosField" style="display:none;">
+  <input id="compartimentos" type="number" placeholder="Qtd Compartimentos"><br><br>
+</div>
+
+<hr>
+
+<h3>Não Conformidades</h3>
+
+<input id="descricao" placeholder="Descrição"><br><br>
+<input id="eixo" placeholder="Ex: 2° eixo"><br><br>
+
+<select id="lado">
+  <option value="">Lado</option>
+  <option value="esquerdo">Esquerdo</option>
+  <option value="direito">Direito</option>
+</select><br><br>
+
+<select id="tipoItem">
+  <option value="normal">Normal</option>
+  <option value="avaria">Avaria</option>
+</select><br><br>
+
+<div id="compartimentoItem" style="display:none;">
+  <input id="compartimentoItemInput" type="number" placeholder="Compartimento"><br><br>
+</div>
+
+<button onclick="adicionarItem()">Adicionar Item</button>
+
+<hr>
+
+<div id="listaItens"></div>
+
+<hr>
+
+<button onclick="criar()">Finalizar Inspeção</button>
+
+
+</div>
+
+<link rel="stylesheet" href="navbar.css">
+
+<script type="module">
+
+import { db } from "./firebase.js";
+import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+let naoConformidades = [];
+
+// 🔄 Controle de campos por tipo
+document.getElementById("tipo").addEventListener("change", () => {
+  const tipo = document.getElementById("tipo").value;
+
+  document.getElementById("kmField").style.display = "none";
+  document.getElementById("horimetroField").style.display = "none";
+  document.getElementById("compartimentosField").style.display = "none";
+  document.getElementById("compartimentoItem").style.display = "none";
+
+  if (tipo === "carreta") {
+    document.getElementById("compartimentosField").style.display = "block";
+    document.getElementById("compartimentoItem").style.display = "block";
+  }
+
+  if (tipo === "comboio") {
+    document.getElementById("kmField").style.display = "block";
+    document.getElementById("horimetroField").style.display = "block";
+  }
+
+  if (tipo === "cavalo") {
+    document.getElementById("kmField").style.display = "block";
+  }
+});
+
+// ➕ Adicionar item
+window.adicionarItem = function() {
+
+  const descricao = document.getElementById("descricao").value.trim();
+  const eixo = document.getElementById("eixo").value.trim();
+  const lado = document.getElementById("lado").value;
+  const tipo = document.getElementById("tipoItem").value;
+  const compartimento = document.getElementById("compartimentoItemInput").value;
+
+  if (!descricao || !eixo || !lado) {
+    alert("Preencha todos os campos do item");
+    return;
+  }
+
+  naoConformidades.push({
+    descricao,
+    eixo,
+    lado,
+    tipo,
+    compartimento: compartimento ? Number(compartimento) : null,
+    fotos: [],
+    resolvido: false
+  });
+
+  renderLista();
+  limparCampos();
+}
+
+// 🧹 limpar
+function limparCampos() {
+  document.getElementById("descricao").value = "";
+  document.getElementById("eixo").value = "";
+  document.getElementById("lado").value = "";
+  document.getElementById("compartimentoItemInput").value = "";
+}
+
+// 📋 render lista
+function renderLista() {
+  const container = document.getElementById("listaItens");
+  container.innerHTML = "";
+
+  naoConformidades.forEach((item, index) => {
+    const div = document.createElement("div");
+
+    div.innerHTML = `
+      <strong>${item.descricao}</strong><br>
+      ${item.eixo} - ${item.lado}
+      ${item.compartimento ? " | Comp: " + item.compartimento : ""}
+      <br>Tipo: ${item.tipo}
+      <br><button onclick="removerItem(${index})">Remover</button>
+      <hr>
+    `;
+
+    container.appendChild(div);
+  });
+}
+
+// ❌ remover
+window.removerItem = function(index) {
+  naoConformidades.splice(index, 1);
+  renderLista();
+}
+
+// 🚀 Criar inspeção completa
+window.criar = async function() {
+
+  const placa = document.getElementById("placa").value.trim();
+  const tipo = document.getElementById("tipo").value;
+  const tipoManutencao = document.getElementById("tipoManutencao").value;
+  const km = document.getElementById("km").value;
+  const horimetro = document.getElementById("horimetro").value;
+  const compartimentos = document.getElementById("compartimentos").value;
+
+  // 🔒 validações
+  if (!placa || !tipo || !tipoManutencao) {
+    alert("Preencha os campos obrigatórios");
+    return;
+  }
+
+  if (tipo === "carreta" && !compartimentos) {
+    alert("Informe os compartimentos");
+    return;
+  }
+
+  if (tipo === "comboio" && (!km || !horimetro)) {
+    alert("Informe KM e horímetro");
+    return;
+  }
+
+  if (tipo === "cavalo" && !km) {
+    alert("Informe o KM");
+    return;
+  }
+
+  if (naoConformidades.length === 0) {
+    alert("Adicione ao menos uma não conformidade");
+    return;
+  }
+
+  // 🔔 CONFIRMAÇÃO
+  if (!confirm("Deseja finalizar a inspeção? Você poderá revisar depois.")) {
+    return;
+  }
+
+  try {
+
+    // 📦 implemento
+    const implementoRef = await addDoc(collection(db, "implementos"), {
+      placa,
+      tipo,
+      status: "em_inspecao",
+      criadoEm: serverTimestamp()
+    });
+
+    // 📄 inspeção
+    const inspecaoRef = await addDoc(collection(db, "inspecoes"), {
+      implementoId: implementoRef.id,
+      tipoManutencao,
+      km: km ? Number(km) : null,
+      horimetro: horimetro ? Number(horimetro) : null,
+      compartimentos: compartimentos ? Number(compartimentos) : 0,
+      criadoEm: serverTimestamp()
+    });
+
+    // ⚠ salvar não conformidades
+    for (const item of naoConformidades) {
+      await addDoc(collection(db, "naoConformidades"), {
+        ...item,
+        inspecaoId: inspecaoRef.id
+      });
+    }
+
+    alert("Inspeção criada! Revise antes de enviar para manutenção.");
+
+    // 🔁 REDIRECIONAR PARA DETALHE
+    window.location = "detalhe.html?id=" + implementoRef.id;
+
+  } catch (e) {
+    console.error(e);
+    alert("Erro ao salvar");
+  }
+};
+  
+import { carregarNavbar } from "./navbar.js";
+
+carregarNavbar();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Detalhe da Inspeção</title>
+
+<style>
+body {
+  font-family: Arial;
+  padding: 10px;
+  background: #f5f5f5;
+}
+
+.card {
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.item {
+  border-bottom: 1px solid #ddd;
+  padding: 10px 0;
+}
+
+button {
+  padding: 10px;
+  margin-top: 10px;
+  width: 100%;
+}
+
+</style>
+
+</head>
+<body>
+
+<h2>Detalhe da Inspeção</h2>
+
+<div id="info" class="card"></div>
+
+<h3>Não Conformidades</h3>
+<div id="itens"></div>
+
+<button onclick="finalizar()">Enviar para manutenção</button>
+
+<link rel="stylesheet" href="navbar.css">
+
+<script type="module">
+
+import { db } from "./firebase.js";
+import {
+  doc,
+  getDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  updateDoc,
+  deleteDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// 🔑 ID vindo da URL
+const id = new URLSearchParams(window.location.search).get("id");
+
+let implemento = null;
+let inspecao = null;
+
+// 🚀 carregar dados
+async function carregar() {
+
+  // 📦 implemento
+  const docRef = doc(db, "implementos", id);
+  const docSnap = await getDoc(docRef);
+
+  if (!docSnap.exists()) {
+    alert("Implemento não encontrado");
+    return;
+  }
+
+  implemento = docSnap.data();
+
+  document.getElementById("info").innerHTML = `
+    <strong>Placa:</strong> ${implemento.placa}<br>
+    <strong>Tipo:</strong> ${implemento.tipo}<br>
+    <strong>Status:</strong> ${implemento.status}
+  `;
+
+  // 📄 buscar inspeção
+  const q = query(
+    collection(db, "inspecoes"),
+    where("implementoId", "==", id)
+  );
+
+  const snap = await getDocs(q);
+
+  snap.forEach(d => {
+    inspecao = { id: d.id, ...d.data() };
+  });
+
+  // ⚠ não conformidades
+  const qItens = query(
+    collection(db, "naoConformidades"),
+    where("inspecaoId", "==", inspecao.id)
+  );
+
+  const itensSnap = await getDocs(qItens);
+
+  const container = document.getElementById("itens");
+  container.innerHTML = "";
+
+  itensSnap.forEach(doc => {
+    const item = doc.data();
+
+    const div = document.createElement("div");
+    div.className = "item";
+
+    div.innerHTML = `
+  <div id="view-${doc.id}">
+    <strong>${item.descricao}</strong><br>
+    ${item.eixo} - ${item.lado}
+    ${item.compartimento ? " | Comp: " + item.compartimento : ""}
+    <br>Tipo: ${item.tipo}
+    <br>
+
+    ${implemento.status === "em_inspecao" ? `
+      <button onclick="abrirEdicao('${doc.id}', '${item.descricao}', '${item.eixo}', '${item.lado}', '${item.tipo}', '${item.compartimento ?? ""}')">Editar</button>
+      <button onclick="removerItem('${doc.id}')">Excluir</button>
+    ` : ""}
+  </div>
+
+  <div id="edit-${doc.id}" style="display:none;">
+    <input id="desc-${doc.id}" value="${item.descricao}"><br>
+    <input id="eixo-${doc.id}" value="${item.eixo}"><br>
+
+    <select id="lado-${doc.id}">
+      <option value="esquerdo" ${item.lado === "esquerdo" ? "selected" : ""}>Esquerdo</option>
+      <option value="direito" ${item.lado === "direito" ? "selected" : ""}>Direito</option>
+    </select><br>
+
+    <select id="tipo-${doc.id}">
+      <option value="normal" ${item.tipo === "normal" ? "selected" : ""}>Normal</option>
+      <option value="avaria" ${item.tipo === "avaria" ? "selected" : ""}>Avaria</option>
+    </select><br>
+
+    <input id="comp-${doc.id}" value="${item.compartimento ?? ""}" placeholder="Compartimento"><br>
+
+    <button onclick="salvarEdicao('${doc.id}')">Salvar</button>
+    <button onclick="cancelarEdicao('${doc.id}')">Cancelar</button>
+  </div>
+`;
+
+    container.appendChild(div);
+  });
+
+  if (!podeEditar(implemento.status)) {
+  bloquearEdicao();
+}
+
+if (!podeFinalizarInspecao(implemento.status)) {
+  document.querySelector("button").style.display = "none";
+}
+}
+
+carregar();
+
+// 🔄 finalizar inspeção
+window.finalizar = async function() {
+
+  if (!confirm("Deseja finalizar a inspeção?")) return;
+
+  try {
+
+    // 🔁 muda status do implemento
+    const ref = doc(db, "implementos", id);
+
+    await updateDoc(ref, {
+      status: "aguardando_manutencao"
+    });
+
+    alert("Enviado para manutenção!");
+
+    window.location = "inspecao.html";
+
+  } catch (e) {
+    console.error(e);
+    alert("Erro ao finalizar");
+  }
+
+}
+
+function podeEditar(status) {
+  return status === "em_inspecao";
+}
+
+function podeFinalizarInspecao(status) {
+  return status === "em_inspecao";
+}
+
+function bloquearEdicao() {
+
+  document.querySelectorAll("input, select, textarea").forEach(el => {
+    el.disabled = true;
+  });
+
+  document.querySelectorAll("button").forEach(btn => {
+    if (!btn.innerText.includes("Voltar")) {
+      btn.disabled = true;
+    }
+  });
+
+}
+window.removerItem = async function(itemId) {
+
+  try {
+
+    if (implemento.status !== "em_inspecao") {
+      alert("Não é possível excluir neste status");
+      return;
+    }
+
+    if (!confirm("Deseja excluir este item?")) return;
+
+    await deleteDoc(doc(db, "naoConformidades", itemId));
+
+    alert("Item excluído");
+
+    carregar(); // recarrega lista
+
+  } catch (e) {
+    console.error("Erro ao excluir:", e);
+    alert("Erro ao excluir item");
+  }
+};
+window.editarItem = async function(itemId) {
+
+  if (implemento.status !== "em_inspecao") {
+    alert("Não é possível editar");
+    return;
+  }
+
+  const novaDescricao = prompt("Editar descrição:");
+
+  if (!novaDescricao) return;
+
+  await updateDoc(doc(db, "naoConformidades", itemId), {
+    descricao: novaDescricao
+  });
+
+  carregar();
+}
+
+window.abrirEdicao = function(id) {
+  document.getElementById("view-" + id).style.display = "none";
+  document.getElementById("edit-" + id).style.display = "block";
+}
+
+window.cancelarEdicao = function(id) {
+  document.getElementById("edit-" + id).style.display = "none";
+  document.getElementById("view-" + id).style.display = "block";
+}
+
+window.salvarEdicao = async function(id) {
+
+  if (implemento.status !== "em_inspecao") {
+    alert("Não é possível editar");
+    return;
+  }
+
+  const descricao = document.getElementById("desc-" + id).value.trim();
+  const eixo = document.getElementById("eixo-" + id).value.trim();
+  const lado = document.getElementById("lado-" + id).value;
+  const tipo = document.getElementById("tipo-" + id).value;
+  const compartimento = document.getElementById("comp-" + id).value;
+
+  if (!descricao || !eixo || !lado) {
+    alert("Preencha os campos obrigatórios");
+    return;
+  }
+
+  await updateDoc(doc(db, "naoConformidades", id), {
+    descricao,
+    eixo,
+    lado,
+    tipo,
+    compartimento: compartimento ? Number(compartimento) : null
+  });
+
+  carregar(); // recarrega lista
+}
+
+import { carregarNavbar } from "./navbar.js";
+
+carregarNavbar();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Execução da Manutenção</title>
+
+<style>
+body {
+  font-family: Arial;
+  padding: 10px;
+}
+
+.item {
+  border-bottom: 1px solid #ddd;
+  padding: 10px 0;
+}
+
+.resolvido {
+  text-decoration: line-through;
+  color: green;
+}
+
+button {
+  padding: 10px;
+  margin-top: 10px;
+  width: 100%;
+}
+</style>
+
+</head>
+<body>
+
+<h2>Manutenção</h2>
+
+<div id="info"></div>
+
+<h3>Checklist</h3>
+<div id="itens"></div>
+
+<button id="btnIniciar" onclick="iniciar()">Iniciar Manutenção</button>
+<button id="btnFinalizar" onclick="finalizar()">Finalizar Manutenção</button>
+
+
+
+</div>
+
+<link rel="stylesheet" href="navbar.css">
+
+<script type="module">
+
+import { db } from "./firebase.js";
+import {
+  doc,
+  getDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const id = new URLSearchParams(window.location.search).get("id");
+
+let itens = [];
+let implemento = null;
+
+// 🧠 REGRAS DE NEGÓCIO
+function podeIniciar(status) {
+  return status === "aguardando_manutencao";
+}
+
+function podeMexerItens(status) {
+  return status === "em_manutencao";
+}
+
+function podeFinalizar(status) {
+  return status === "em_manutencao";
+}
+
+// 🚀 CARREGAR DADOS
+async function carregar() {
+
+  const ref = doc(db, "implementos", id);
+  const snap = await getDoc(ref);
+
+  implemento = snap.data();
+
+  document.getElementById("info").innerHTML = `
+    <strong>${implemento.placa}</strong><br>
+    ${implemento.tipo}<br>
+    Status: ${implemento.status}
+  `;
+
+  // 🔒 CONTROLE DE BOTÕES
+  if (!podeIniciar(implemento.status)) {
+    document.getElementById("btnIniciar").style.display = "none";
+  }
+
+  if (!podeFinalizar(implemento.status)) {
+    document.getElementById("btnFinalizar").style.display = "none";
+  }
+
+  // 📄 BUSCAR INSPEÇÃO
+  const qInspecao = query(
+    collection(db, "inspecoes"),
+    where("implementoId", "==", id)
+  );
+
+  const inspecaoSnap = await getDocs(qInspecao);
+
+  let inspecaoId = null;
+
+  inspecaoSnap.forEach(d => {
+    inspecaoId = d.id;
+  });
+
+  // ⚠ BUSCAR ITENS
+  const qItens = query(
+    collection(db, "naoConformidades"),
+    where("inspecaoId", "==", inspecaoId)
+  );
+
+  const itensSnap = await getDocs(qItens);
+
+  const container = document.getElementById("itens");
+  container.innerHTML = "";
+
+  itens = [];
+
+  itensSnap.forEach(docSnap => {
+
+    const item = { id: docSnap.id, ...docSnap.data() };
+    itens.push(item);
+
+    const disabled = !podeMexerItens(implemento.status) ? "disabled" : "";
+    const checked = item.resolvido ? "checked" : "";
+    const classe = item.resolvido ? "resolvido" : "";
+
+    const div = document.createElement("div");
+    div.className = "item";
+
+    div.innerHTML = `
+  <input type="checkbox" ${checked} ${disabled}
+    onchange="toggle('${item.id}', this.checked)">
+
+  <span id="txt-${item.id}" class="${classe}">
+    <strong>${item.descricao}</strong><br>
+    ${item.eixo} - ${item.lado}
+    ${item.compartimento ? " | Comp: " + item.compartimento : ""}
+    <br>Tipo: ${item.tipo}
+  </span>
+`;
+
+    container.appendChild(div);
+  });
+
+}
+
+carregar();
+
+// ✔ MARCAR RESOLVIDO
+window.toggle = async function(itemId, checked) {
+
+  if (!podeMexerItens(implemento.status)) {
+    alert("Não é possível alterar itens neste status");
+    return;
+  }
+
+  const ref = doc(db, "naoConformidades", itemId);
+
+  await updateDoc(ref, {
+    resolvido: checked
+  });
+
+  // ✅ ATUALIZA ARRAY LOCAL
+  const item = itens.find(i => i.id === itemId);
+  if (item) {
+    item.resolvido = checked;
+  }
+
+  // 🎨 UI
+  const el = document.getElementById("txt-" + itemId);
+
+  if (checked) {
+    el.classList.add("resolvido");
+  } else {
+    el.classList.remove("resolvido");
+  }
+};
+// ▶ INICIAR MANUTENÇÃO
+window.iniciar = async function() {
+
+  if (!podeIniciar(implemento.status)) {
+    alert("Ação não permitida");
+    return;
+  }
+
+  const ref = doc(db, "implementos", id);
+
+  await updateDoc(ref, {
+    status: "em_manutencao"
+  });
+
+  alert("Manutenção iniciada");
+
+  location.reload();
+}
+
+// ✅ FINALIZAR
+window.finalizar = async function() {
+
+  if (!podeFinalizar(implemento.status)) {
+    alert("Ação não permitida");
+    return;
+  }
+
+  const pendentes = itens.filter(i => !i.resolvido);
+
+  if (pendentes.length > 0) {
+    const motivo = prompt("Existem itens não resolvidos. Informe o motivo:");
+
+    if (!motivo) return;
+  }
+
+  const ref = doc(db, "implementos", id);
+
+  await updateDoc(ref, {
+    status: "liberado"
+  });
+
+  alert("Manutenção finalizada");
+
+  window.location = "manutencao.html";
+}
+import { carregarNavbar } from "./navbar.js";
+
+carregarNavbar();
+</script>
+
+</body>
+</html>

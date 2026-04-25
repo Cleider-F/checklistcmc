@@ -1,0 +1,30 @@
+.navbar {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: white;
+  display: flex;
+  justify-content: space-around;
+  border-top: 1px solid #ddd;
+  padding: 8px 0;
+  z-index: 1000;
+}
+
+.nav-item {
+  text-align: center;
+  font-size: 12px;
+  color: #555;
+}
+
+.nav-item div {
+  font-size: 20px;
+}
+
+.nav-item.ativo {
+  color: #2196f3;
+  font-weight: bold;
+}
+
+body {
+  padding-bottom: 70px;
+}

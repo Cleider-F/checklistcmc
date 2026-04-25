@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Painel Geral</title>
+
+<link rel="stylesheet" href="navbar.css">
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #f1f3f6;
+}
+
+/* TOPO */
+.topbar {
+  background: #1f2937;
+  color: white;
+  padding: 15px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* GRID DE AÇÕES */
+.acoes {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  padding: 20px;
+}
+
+/* BOTÕES */
+.botao {
+  background: white;
+  border-radius: 20px;
+  height: 130px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 16px;
+  font-weight: bold;
+
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  transition: 0.2s;
+}
+
+.botao div {
+  font-size: 28px;
+  margin-bottom: 5px;
+}
+
+.botao:active {
+  transform: scale(0.96);
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="topbar">🏠 Início</div>
+
+<div class="acoes">
+
+  <div class="botao" onclick="ir('nova_inspecao.html')">
+    <div>➕</div>
+    Nova Inspeção
+  </div>
+
+  <div class="botao" onclick="ir('inspecao.html')">
+    <div>🔍</div>
+    Inspeções
+  </div>
+
+  <div class="botao" onclick="ir('manutencao.html')">
+    <div>🔧</div>
+    Manutenção
+  </div>
+
+  <div class="botao" onclick="ir('tecnico.html')">
+    <div>🛠️</div>
+    Técnico
+  </div>
+
+</div>
+
+<script type="module">
+import { carregarNavbar } from "./navbar.js";
+
+carregarNavbar();
+
+window.ir = function(pagina) {
+  window.location = pagina;
+};
+</script>
+
+</body>
+</html>
