@@ -64,7 +64,6 @@ button {
 
 <div class="container">
 
-<!-- IMPLEMENTO -->
 <div class="card">
   <h3>Implemento</h3>
 
@@ -73,6 +72,7 @@ button {
   <select id="tipo">
     <option value="">Tipo</option>
     <option value="carreta">Carreta</option>
+    <option value="prancha">Prancha</option>
     <option value="comboio">Comboio</option>
     <option value="cavalo">Cavalo Mecânico</option>
   </select>
@@ -98,7 +98,6 @@ button {
   </div>
 </div>
 
-<!-- NÃO CONFORMIDADE -->
 <div class="card">
   <h3>Não Conformidade</h3>
 
@@ -120,7 +119,6 @@ button {
     <input id="compartimentoItemInput" type="number" placeholder="Compartimento">
   </div>
 
-  <!-- FOTO -->
   <input type="file" id="foto" accept="image/*" capture="environment">
   <img id="preview" class="preview" style="display:none;">
 
@@ -148,35 +146,43 @@ import {
   getDownloadURL
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
+// 🔥 CARREGAMENTO DO JSON
+let plano = [];
+let planoCarregado = false;
+
+fetch("./plano_manutencao.json")
+  .then(res => res.json())
+  .then(data => {
+    plano = data;
+    planoCarregado = true;
+    console.log("Plano carregado:", plano.length);
+  })
+  .catch(err => console.error("Erro ao carregar plano:", err));
+
 let naoConformidades = [];
 let fotoFile = null;
 
-// 🔄 CONTROLE POR TIPO
+// 🔥 CONFIG
+const configTipo = {
+  carreta: { km: false, horimetro: false, compartimentos: true },
+  prancha: { km: false, horimetro: false, compartimentos: false },
+  comboio: { km: true, horimetro: true, compartimentos: false },
+  cavalo: { km: true, horimetro: false, compartimentos: false }
+};
+
+// 🔄 CONTROLE UI
 document.getElementById("tipo").addEventListener("change", () => {
 
   const tipo = document.getElementById("tipo").value;
+  const cfg = configTipo[tipo] || {};
 
-  document.getElementById("kmField").style.display = "none";
-  document.getElementById("horimetroField").style.display = "none";
-  document.getElementById("compartimentosField").style.display = "none";
-  document.getElementById("compartimentoItem").style.display = "none";
-
-  if (tipo === "carreta") {
-    document.getElementById("compartimentosField").style.display = "block";
-    document.getElementById("compartimentoItem").style.display = "block";
-  }
-
-  if (tipo === "comboio") {
-    document.getElementById("kmField").style.display = "block";
-    document.getElementById("horimetroField").style.display = "block";
-  }
-
-  if (tipo === "cavalo") {
-    document.getElementById("kmField").style.display = "block";
-  }
+  document.getElementById("kmField").style.display = cfg.km ? "block" : "none";
+  document.getElementById("horimetroField").style.display = cfg.horimetro ? "block" : "none";
+  document.getElementById("compartimentosField").style.display = cfg.compartimentos ? "block" : "none";
+  document.getElementById("compartimentoItem").style.display = cfg.compartimentos ? "block" : "none";
 });
 
-// 📸 preview
+// 📸 PREVIEW
 document.getElementById("foto").addEventListener("change", (e) => {
   fotoFile = e.target.files[0];
 
@@ -187,90 +193,122 @@ document.getElementById("foto").addEventListener("change", (e) => {
   preview.style.display = "block";
 });
 
-// ➕ adicionar item
-window.adicionarItem = async function() {
+// 🔥 CHECKLIST AUTOMÁTICO
+function gerarChecklistAutomatico(horimetro) {
 
-  const descricao = document.getElementById("descricao").value.trim();
-  const eixo = document.getElementById("eixo").value.trim();
-  const lado = document.getElementById("lado").value;
-  const tipo = document.getElementById("tipoItem").value;
-  const compartimento = document.getElementById("compartimentoItemInput")?.value;
+  if (!plano.length) return [];
 
-  if (!descricao || !eixo || !lado) {
-    alert("Preencha todos os campos do item");
+  const todasHoras = [...new Set(
+    plano.flatMap(item => item.horas.map(h => h.hora))
+  )].sort((a,b) => a - b);
+
+  const marco = todasHoras.filter(h => h <= horimetro).pop();
+
+  if (!marco) return [];
+
+  return plano.map(item => {
+
+    const acao = item.horas.find(h => h.hora === marco);
+    if (!acao) return null;
+
+    return {
+      grupo: item.grupo, // 🔥 AQUI ESTÁ O PULO DO GATO
+      descricao: item.descricao,
+      eixo: "",
+      lado: "",
+      tipo: acao.tipo === "T" ? "troca" : "vistoria",
+      compartimento: null,
+      fotos: [],
+      resolvido: false
+    };
+
+  }).filter(Boolean);
+}
+
+function agruparPorGrupo(lista) {
+
+  const grupos = {};
+
+  lista.forEach(item => {
+
+    const grupo = item.grupo || "GERAL";
+
+    if (!grupos[grupo]) {
+      grupos[grupo] = [];
+    }
+
+    grupos[grupo].push(item);
+  });
+
+  return grupos;
+}
+
+// 🔥 AUTO PREENCHIMENTO
+document.getElementById("horimetro").addEventListener("input", () => {
+
+  const valor = Number(document.getElementById("horimetro").value);
+
+  if (!valor) return;
+
+  if (!planoCarregado) {
+    console.log("Plano ainda não carregado");
     return;
   }
 
-  let fotos = [];
+  const checklist = gerarChecklistAutomatico(valor);
 
-  try {
-    if (fotoFile) {
-      const nome = `avarias/${Date.now()}.jpg`;
-      const storageRef = ref(storage, nome);
-
-      await uploadBytes(storageRef, fotoFile);
-
-      const url = await getDownloadURL(storageRef);
-      fotos.push(url);
-    }
-  } catch (e) {
-    console.error("Erro upload:", e);
-    alert("Erro ao enviar imagem (verifique CORS do Storage)");
+  if (!checklist.length) {
+    console.log("Nenhum item para esse horímetro");
+    return;
   }
 
-  naoConformidades.push({
-    descricao,
-    eixo,
-    lado,
-    tipo,
-    compartimento: compartimento ? Number(compartimento) : null,
-    fotos,
-    resolvido: false
-  });
+  naoConformidades = [...checklist];
 
   renderLista();
-  limparCampos();
-};
+});
 
-// 🧹 limpar
-function limparCampos() {
-  document.getElementById("descricao").value = "";
-  document.getElementById("eixo").value = "";
-  document.getElementById("lado").value = "";
-  
-  const comp = document.getElementById("compartimentoItemInput");
-  if (comp) comp.value = "";
-
-  document.getElementById("foto").value = "";
-  document.getElementById("preview").style.display = "none";
-  fotoFile = null;
-}
-
-// 📋 lista
+// 📋 LISTA
 function renderLista() {
 
   const container = document.getElementById("listaItens");
   container.innerHTML = "";
 
-  naoConformidades.forEach((item, i) => {
+  const grupos = agruparPorGrupo(naoConformidades);
 
-    const fotosHTML = (item.fotos || []).map(f =>
-      `<img src="${f}" class="preview">`
-    ).join("");
+  Object.entries(grupos).forEach(([grupo, itensGrupo]) => {
 
-    const div = document.createElement("div");
+    // 🔥 HEADER DO GRUPO
+    const header = document.createElement("div");
+    header.style.background = "#1f2937";
+    header.style.color = "white";
+    header.style.padding = "8px";
+    header.style.borderRadius = "6px";
+    header.style.marginTop = "10px";
+    header.innerText = grupo;
 
-    div.innerHTML = `
-      <strong>${item.descricao}</strong><br>
-      ${item.eixo} - ${item.lado}
-      ${item.compartimento ? " | Comp: " + item.compartimento : ""}
-      <br>Tipo: ${item.tipo}
-      ${fotosHTML}
-      <button onclick="remover(${i})">Remover</button>
-      <hr>
-    `;
+    container.appendChild(header);
 
-    container.appendChild(div);
+    itensGrupo.forEach((item, i) => {
+
+      const fotosHTML = (item.fotos || []).map(f =>
+        `<img src="${f}" class="preview">`
+      ).join("");
+
+      const div = document.createElement("div");
+      div.style.padding = "8px";
+
+      div.innerHTML = `
+        <strong>${item.descricao}</strong><br>
+        ${item.eixo || "-"} - ${item.lado || "-"}
+        <br>Tipo: ${item.tipo}
+        ${fotosHTML}
+        <button onclick="remover(${i})">Remover</button>
+        <hr>
+      `;
+
+      container.appendChild(div);
+    });
+
   });
 }
 
@@ -279,7 +317,7 @@ window.remover = function(i) {
   renderLista();
 };
 
-// 🚀 criar inspeção
+// 🚀 CRIAR
 window.criar = async function() {
 
   const placa = document.getElementById("placa").value.trim();
@@ -289,27 +327,18 @@ window.criar = async function() {
   const horimetro = document.getElementById("horimetro").value;
   const compartimentos = document.getElementById("compartimentos").value;
 
+  const cfg = configTipo[tipo];
+
   if (!placa || !tipo || !tipoManutencao) {
     alert("Preencha os dados obrigatórios");
     return;
   }
 
-  if (tipo === "carreta" && !compartimentos) {
-    alert("Informe os compartimentos");
-    return;
-  }
+  if (cfg.compartimentos && !compartimentos) return alert("Informe os compartimentos");
+  if (cfg.km && !km) return alert("Informe o KM");
+  if (cfg.horimetro && !horimetro) return alert("Informe o horímetro");
 
-  if (tipo === "comboio" && (!km || !horimetro)) {
-    alert("Informe KM e horímetro");
-    return;
-  }
-
-  if (tipo === "cavalo" && !km) {
-    alert("Informe o KM");
-    return;
-  }
-
-  if (naoConformidades.length === 0) {
+  if (!naoConformidades.length) {
     alert("Adicione ao menos uma não conformidade");
     return;
   }
@@ -344,6 +373,5 @@ window.criar = async function() {
 };
 
 </script>
-
 </body>
 </html>
