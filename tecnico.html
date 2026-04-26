@@ -160,7 +160,6 @@ input, select {
 <script type="module">
 
 import { protegerPagina } from "./auth.js";
-
 protegerPagina(["tecnico"]);
 
 import { db } from "./firebase.js";
@@ -182,6 +181,42 @@ function getStatusInfo(status) {
     case "aguardando_manutencao": return { nome: "Aguardando", cor: "laranja" };
     case "em_manutencao": return { nome: "Manutenção", cor: "amarelo" };
     case "liberado": return { nome: "Liberado", cor: "verde" };
+  }
+}
+
+// 🧠 PRIORIDADE
+function prioridade(status) {
+  if (status === "em_inspecao") return 1;
+  if (status === "aguardando_manutencao") return 2;
+  if (status === "em_manutencao") return 3;
+  if (status === "liberado") return 4;
+  return 5;
+}
+
+// 📅 DATA
+function formatarData(ts) {
+  if (!ts || !ts.toDate) return "-";
+
+  const d = ts.toDate();
+
+  const dia = String(d.getDate()).padStart(2, "0");
+  const mes = String(d.getMonth() + 1).padStart(2, "0");
+  const ano = d.getFullYear();
+
+  const hora = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+
+  return `${dia}/${mes}/${ano} ${hora}:${min}`;
+}
+
+// 🔧 TIPO MANUTENÇÃO
+function formatarTipoManutencao(tipo) {
+  switch(tipo) {
+    case "preventiva": return "Preventiva";
+    case "revisao": return "Revisão";
+    case "cnpj": return "CNPJ";
+    case "gm": return "GM";
+    default: return tipo || "-";
   }
 }
 
@@ -234,7 +269,7 @@ async function carregar() {
   aplicarFiltros();
 }
 
-// 🔎 FILTRO AUTOMÁTICO
+// 🔎 FILTROS
 function aplicarFiltros() {
 
   const busca = document.getElementById("busca").value.toLowerCase();
@@ -263,6 +298,20 @@ function aplicarFiltros() {
 // 🎯 RENDER
 function render(lista) {
 
+  // 🔥 ORDENAÇÃO
+  lista.sort((a, b) => {
+
+    const p1 = prioridade(a.status);
+    const p2 = prioridade(b.status);
+
+    if (p1 !== p2) return p1 - p2;
+
+    const d1 = a.dataInspecao?.seconds || 0;
+    const d2 = b.dataInspecao?.seconds || 0;
+
+    return d2 - d1;
+  });
+
   atualizarContadores(lista);
 
   const container = document.getElementById("lista");
@@ -282,7 +331,9 @@ function render(lista) {
       </div>
 
       <div class="info">
-        Tipo: ${item.tipo}
+        Tipo: ${item.tipo}<br>
+        Manutenção: <strong>${formatarTipoManutencao(item.tipoManutencao)}</strong><br>
+        Inspeção: ${formatarData(item.dataInspecao)}
       </div>
 
       <button class="excluir" onclick="event.stopPropagation(); excluir('${item.id}')">
@@ -298,12 +349,12 @@ function render(lista) {
   });
 }
 
-// 🔄 EVENTOS AUTOMÁTICOS (UX melhor)
+// 🔄 EVENTOS
 document.getElementById("busca").addEventListener("input", aplicarFiltros);
 document.getElementById("filtroTipo").addEventListener("change", aplicarFiltros);
 document.getElementById("filtroStatus").addEventListener("change", aplicarFiltros);
 
-// 🗑️ EXCLUSÃO COMPLETA
+// 🗑️ EXCLUSÃO
 window.excluir = async function(id) {
 
   if (!confirm("Deseja excluir completamente este registro?")) return;
@@ -347,14 +398,9 @@ window.excluir = async function(id) {
   }
 };
 
-
 carregar();
 
 import { carregarNavbar } from "./navbar.js";
-
 carregarNavbar();
 
 </script>
-
-</body>
-</html>

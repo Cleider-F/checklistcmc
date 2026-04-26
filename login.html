@@ -59,34 +59,46 @@ button {
 
 <div class="card">
 
-  <!-- LOGIN -->
-  <div id="loginBox">
+<div class="topbar">🔐 Acesso ao Sistema</div>
+
+<div class="container">
+
+  <div class="card">
+
     <h3>Login</h3>
 
     <input id="email" placeholder="Email">
     <input id="senha" type="password" placeholder="Senha">
 
-    <button onclick="login()">Entrar</button>
+    <button class="btn-primario" onclick="login()">
+      Entrar
+    </button>
 
-    <div class="link" onclick="mostrarCadastro()">Criar conta</div>
+    <hr>
+
+    <button class="btn-alerta" onclick="mostrarCadastro()">
+      Criar conta
+    </button>
+
   </div>
 
-  <!-- CADASTRO -->
-  <div id="cadastroBox" style="display:none;">
-    <h3>Criar conta</h3>
+  <div class="card" id="cadastroBox" style="display:none">
 
-    <input id="nomeCad" placeholder="Nome">
-    <input id="emailCad" placeholder="Email">
-    <input id="senhaCad" type="password" placeholder="Senha">
+    <h3>Cadastro</h3>
 
-    <select id="tipoCad">
+    <input id="nome" placeholder="Nome">
+    <input id="emailCadastro" placeholder="Email">
+    <input id="senhaCadastro" type="password" placeholder="Senha">
+
+    <select id="tipoUsuario">
       <option value="inspetor">Inspetor</option>
       <option value="tecnico">Técnico</option>
     </select>
 
-    <button onclick="cadastrar()">Cadastrar</button>
+    <button class="btn-sucesso" onclick="cadastrar()">
+      Criar Conta
+    </button>
 
-    <div class="link" onclick="mostrarLogin()">Voltar</div>
   </div>
 
 </div>

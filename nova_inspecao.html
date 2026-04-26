@@ -1,92 +1,159 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <title>Nova Inspeção</title>
-  <style>
+<meta charset="UTF-8">
+<title>Nova Inspeção</title>
 
-  </style>
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #f1f3f6;
+}
+
+.topbar {
+  background: #1f2937;
+  color: white;
+  padding: 15px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.container {
+  padding: 12px;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+input, select {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  font-weight: bold;
+}
+
+.btn-primario { background: #2196f3; color: white; }
+.btn-sucesso { background: #4caf50; color: white; }
+
+.preview {
+  width: 100%;
+  margin-top: 10px;
+  border-radius: 8px;
+}
+</style>
 </head>
+
 <body>
 
-<h2>Nova Inspeção</h2>
+<div class="topbar">➕ Nova Inspeção</div>
 
-<input id="placa" placeholder="Placa"><br><br>
+<div class="container">
 
-<select id="tipo">
-  <option value="">Tipo</option>
-  <option value="carreta">Carreta</option>
-  <option value="prancha">Prancha</option>
-  <option value="comboio">Comboio</option>
-  <option value="cavalo">Cavalo Mecânico</option>
-</select><br><br>
+<!-- IMPLEMENTO -->
+<div class="card">
+  <h3>Implemento</h3>
 
-<select id="tipoManutencao">
-  <option value="">Tipo de manutenção</option>
-  <option value="preventiva">Preventiva</option>
-  <option value="revisao">Revisão</option>
-  <option value="cnpj">CNPJ</option>
-  <option value="gm">GM</option>
-</select><br><br>
+  <input id="placa" placeholder="Placa">
 
-<div id="kmField" style="display:none;">
-  <input id="km" placeholder="KM"><br><br>
+  <select id="tipo">
+    <option value="">Tipo</option>
+    <option value="carreta">Carreta</option>
+    <option value="comboio">Comboio</option>
+    <option value="cavalo">Cavalo Mecânico</option>
+  </select>
+
+  <select id="tipoManutencao">
+    <option value="">Tipo manutenção</option>
+    <option value="preventiva">Preventiva</option>
+    <option value="revisao">Revisão</option>
+    <option value="cnpj">CNPJ</option>
+    <option value="gm">GM</option>
+  </select>
+
+  <div id="kmField" style="display:none;">
+    <input id="km" placeholder="KM">
+  </div>
+
+  <div id="horimetroField" style="display:none;">
+    <input id="horimetro" placeholder="Horímetro">
+  </div>
+
+  <div id="compartimentosField" style="display:none;">
+    <input id="compartimentos" type="number" placeholder="Qtd Compartimentos">
+  </div>
 </div>
 
-<div id="horimetroField" style="display:none;">
-  <input id="horimetro" placeholder="Horímetro"><br><br>
+<!-- NÃO CONFORMIDADE -->
+<div class="card">
+  <h3>Não Conformidade</h3>
+
+  <input id="descricao" placeholder="Descrição">
+  <input id="eixo" placeholder="Ex: 2º eixo">
+
+  <select id="lado">
+    <option value="">Lado</option>
+    <option value="esquerdo">Esquerdo</option>
+    <option value="direito">Direito</option>
+  </select>
+
+  <select id="tipoItem">
+    <option value="normal">Normal</option>
+    <option value="avaria">Avaria</option>
+  </select>
+
+  <div id="compartimentoItem" style="display:none;">
+    <input id="compartimentoItemInput" type="number" placeholder="Compartimento">
+  </div>
+
+  <!-- FOTO -->
+  <input type="file" id="foto" accept="image/*" capture="environment">
+  <img id="preview" class="preview" style="display:none;">
+
+  <button class="btn-primario" onclick="adicionarItem()">Adicionar Item</button>
+
+  <div id="listaItens"></div>
 </div>
 
-<div id="compartimentosField" style="display:none;">
-  <input id="compartimentos" type="number" placeholder="Qtd Compartimentos"><br><br>
-</div>
-
-<hr>
-
-<h3>Não Conformidades</h3>
-
-<input id="descricao" placeholder="Descrição"><br><br>
-<input id="eixo" placeholder="Ex: 2° eixo"><br><br>
-
-<select id="lado">
-  <option value="">Lado</option>
-  <option value="esquerdo">Esquerdo</option>
-  <option value="direito">Direito</option>
-</select><br><br>
-
-<select id="tipoItem">
-  <option value="normal">Normal</option>
-  <option value="avaria">Avaria</option>
-</select><br><br>
-
-<div id="compartimentoItem" style="display:none;">
-  <input id="compartimentoItemInput" type="number" placeholder="Compartimento"><br><br>
-</div>
-
-<button onclick="adicionarItem()">Adicionar Item</button>
-
-<hr>
-
-<div id="listaItens"></div>
-
-<hr>
-
-<button onclick="criar()">Finalizar Inspeção</button>
-
+<button class="btn-sucesso" onclick="criar()">Finalizar Inspeção</button>
 
 </div>
-
-<link rel="stylesheet" href="navbar.css">
 
 <script type="module">
 
-import { db } from "./firebase.js";
-import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { db, storage } from "./firebase.js";
+import {
+  collection,
+  addDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 let naoConformidades = [];
+let fotoFile = null;
 
-// 🔄 Controle de campos por tipo
+// 🔄 CONTROLE POR TIPO
 document.getElementById("tipo").addEventListener("change", () => {
+
   const tipo = document.getElementById("tipo").value;
 
   document.getElementById("kmField").style.display = "none";
@@ -109,18 +176,46 @@ document.getElementById("tipo").addEventListener("change", () => {
   }
 });
 
-// ➕ Adicionar item
-window.adicionarItem = function() {
+// 📸 preview
+document.getElementById("foto").addEventListener("change", (e) => {
+  fotoFile = e.target.files[0];
+
+  if (!fotoFile) return;
+
+  const preview = document.getElementById("preview");
+  preview.src = URL.createObjectURL(fotoFile);
+  preview.style.display = "block";
+});
+
+// ➕ adicionar item
+window.adicionarItem = async function() {
 
   const descricao = document.getElementById("descricao").value.trim();
   const eixo = document.getElementById("eixo").value.trim();
   const lado = document.getElementById("lado").value;
   const tipo = document.getElementById("tipoItem").value;
-  const compartimento = document.getElementById("compartimentoItemInput").value;
+  const compartimento = document.getElementById("compartimentoItemInput")?.value;
 
   if (!descricao || !eixo || !lado) {
     alert("Preencha todos os campos do item");
     return;
+  }
+
+  let fotos = [];
+
+  try {
+    if (fotoFile) {
+      const nome = `avarias/${Date.now()}.jpg`;
+      const storageRef = ref(storage, nome);
+
+      await uploadBytes(storageRef, fotoFile);
+
+      const url = await getDownloadURL(storageRef);
+      fotos.push(url);
+    }
+  } catch (e) {
+    console.error("Erro upload:", e);
+    alert("Erro ao enviar imagem (verifique CORS do Storage)");
   }
 
   naoConformidades.push({
@@ -129,28 +224,40 @@ window.adicionarItem = function() {
     lado,
     tipo,
     compartimento: compartimento ? Number(compartimento) : null,
-    fotos: [],
+    fotos,
     resolvido: false
   });
 
   renderLista();
   limparCampos();
-}
+};
 
 // 🧹 limpar
 function limparCampos() {
   document.getElementById("descricao").value = "";
   document.getElementById("eixo").value = "";
   document.getElementById("lado").value = "";
-  document.getElementById("compartimentoItemInput").value = "";
+  
+  const comp = document.getElementById("compartimentoItemInput");
+  if (comp) comp.value = "";
+
+  document.getElementById("foto").value = "";
+  document.getElementById("preview").style.display = "none";
+  fotoFile = null;
 }
 
-// 📋 render lista
+// 📋 lista
 function renderLista() {
+
   const container = document.getElementById("listaItens");
   container.innerHTML = "";
 
-  naoConformidades.forEach((item, index) => {
+  naoConformidades.forEach((item, i) => {
+
+    const fotosHTML = (item.fotos || []).map(f =>
+      `<img src="${f}" class="preview">`
+    ).join("");
+
     const div = document.createElement("div");
 
     div.innerHTML = `
@@ -158,7 +265,8 @@ function renderLista() {
       ${item.eixo} - ${item.lado}
       ${item.compartimento ? " | Comp: " + item.compartimento : ""}
       <br>Tipo: ${item.tipo}
-      <br><button onclick="removerItem(${index})">Remover</button>
+      ${fotosHTML}
+      <button onclick="remover(${i})">Remover</button>
       <hr>
     `;
 
@@ -166,13 +274,12 @@ function renderLista() {
   });
 }
 
-// ❌ remover
-window.removerItem = function(index) {
-  naoConformidades.splice(index, 1);
+window.remover = function(i) {
+  naoConformidades.splice(i, 1);
   renderLista();
-}
+};
 
-// 🚀 Criar inspeção completa
+// 🚀 criar inspeção
 window.criar = async function() {
 
   const placa = document.getElementById("placa").value.trim();
@@ -182,9 +289,8 @@ window.criar = async function() {
   const horimetro = document.getElementById("horimetro").value;
   const compartimentos = document.getElementById("compartimentos").value;
 
-  // 🔒 validações
   if (!placa || !tipo || !tipoManutencao) {
-    alert("Preencha os campos obrigatórios");
+    alert("Preencha os dados obrigatórios");
     return;
   }
 
@@ -208,53 +314,35 @@ window.criar = async function() {
     return;
   }
 
-  // 🔔 CONFIRMAÇÃO
-  if (!confirm("Deseja finalizar a inspeção? Você poderá revisar depois.")) {
-    return;
+  const agora = serverTimestamp();
+
+  const implementoRef = await addDoc(collection(db, "implementos"), {
+    placa,
+    tipo,
+    status: "em_inspecao",
+    dataInspecao: agora,
+    tipoManutencao
+  });
+
+  const inspecaoRef = await addDoc(collection(db, "inspecoes"), {
+    implementoId: implementoRef.id,
+    km: km ? Number(km) : null,
+    horimetro: horimetro ? Number(horimetro) : null,
+    compartimentos: compartimentos ? Number(compartimentos) : 0,
+    criadoEm: agora
+  });
+
+  for (const item of naoConformidades) {
+    await addDoc(collection(db, "naoConformidades"), {
+      ...item,
+      inspecaoId: inspecaoRef.id
+    });
   }
 
-  try {
-
-    // 📦 implemento
-    const implementoRef = await addDoc(collection(db, "implementos"), {
-      placa,
-      tipo,
-      status: "em_inspecao",
-      criadoEm: serverTimestamp()
-    });
-
-    // 📄 inspeção
-    const inspecaoRef = await addDoc(collection(db, "inspecoes"), {
-      implementoId: implementoRef.id,
-      tipoManutencao,
-      km: km ? Number(km) : null,
-      horimetro: horimetro ? Number(horimetro) : null,
-      compartimentos: compartimentos ? Number(compartimentos) : 0,
-      criadoEm: serverTimestamp()
-    });
-
-    // ⚠ salvar não conformidades
-    for (const item of naoConformidades) {
-      await addDoc(collection(db, "naoConformidades"), {
-        ...item,
-        inspecaoId: inspecaoRef.id
-      });
-    }
-
-    alert("Inspeção criada! Revise antes de enviar para manutenção.");
-
-    // 🔁 REDIRECIONAR PARA DETALHE
-    window.location = "detalhe.html?id=" + implementoRef.id;
-
-  } catch (e) {
-    console.error(e);
-    alert("Erro ao salvar");
-  }
+  alert("Inspeção criada!");
+  window.location = "detalhe.html?id=" + implementoRef.id;
 };
-  
-import { carregarNavbar } from "./navbar.js";
 
-carregarNavbar();
 </script>
 
 </body>

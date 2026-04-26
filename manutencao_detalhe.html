@@ -6,13 +6,42 @@
 
 <style>
 body {
-  font-family: Arial;
-  padding: 10px;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f1f3f6;
 }
 
+.topbar {
+  background: #1f2937;
+  color: white;
+  padding: 15px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.container {
+  padding: 12px;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+/* ITEM */
 .item {
-  border-bottom: 1px solid #ddd;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.item-texto {
+  flex: 1;
 }
 
 .resolvido {
@@ -20,28 +49,76 @@ body {
   color: green;
 }
 
-button {
-  padding: 10px;
-  margin-top: 10px;
-  width: 100%;
+/* BOTÃO */
+.acao {
+  font-size: 22px;
+  cursor: pointer;
+  margin-left: 10px;
+  min-width: 30px;
+  text-align: center;
 }
-</style>
 
+/* FOTOS */
+.fotos {
+  margin-top: 6px;
+}
+
+.fotos img {
+  width: 70px;
+  border-radius: 6px;
+  margin-right: 6px;
+  margin-top: 4px;
+}
+
+/* BOTÕES */
+button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  font-weight: bold;
+}
+
+.btn-alerta { background: #ff9800; color: white; }
+.btn-sucesso { background: #4caf50; color: white; }
+
+</style>
 </head>
+
 <body>
 
-<h2>Manutenção</h2>
+<div class="topbar">🔧 Execução da Manutenção</div>
 
-<div id="info"></div>
+<div class="container">
 
-<h3>Checklist</h3>
-<div id="itens"></div>
+  <div id="info" class="card"></div>
 
-<button id="btnIniciar" onclick="iniciar()">Iniciar Manutenção</button>
-<button id="btnFinalizar" onclick="finalizar()">Finalizar Manutenção</button>
+  <div class="card">
+    <h3>Checklist</h3>
+    <div id="itens"></div>
+  </div>
 
+  <button class="btn-alerta" id="btnIniciar" onclick="iniciar()">
+    Iniciar Manutenção
+  </button>
 
+  <button class="btn-sucesso" id="btnFinalizar" onclick="finalizar()">
+    Finalizar Manutenção
+  </button>
 
+</div>
+
+<div id="modalImg" style="
+  display:none;
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:rgba(0,0,0,0.8);
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+">
+  <img id="imgGrande" style="max-width:90%; max-height:90%; border-radius:10px;">
 </div>
 
 <link rel="stylesheet" href="navbar.css">
@@ -50,106 +127,105 @@ button {
 
 import { db } from "./firebase.js";
 import {
-  doc,
-  getDoc,
-  collection,
-  query,
-  where,
-  getDocs,
-  updateDoc
+  doc, getDoc, collection, query, where, getDocs, updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import { storage } from "./firebase.js";
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 const id = new URLSearchParams(window.location.search).get("id");
 
 let itens = [];
 let implemento = null;
 
-// 🧠 REGRAS DE NEGÓCIO
-function podeIniciar(status) {
-  return status === "aguardando_manutencao";
-}
+// REGRAS
+const podeIniciar = s => s === "aguardando_manutencao";
+const podeMexerItens = s => s === "em_manutencao";
+const podeFinalizar = s => s === "em_manutencao";
 
-function podeMexerItens(status) {
-  return status === "em_manutencao";
-}
-
-function podeFinalizar(status) {
-  return status === "em_manutencao";
-}
-
-// 🚀 CARREGAR DADOS
+// 🚀 CARREGAR
 async function carregar() {
 
-  const ref = doc(db, "implementos", id);
-  const snap = await getDoc(ref);
-
+  const snap = await getDoc(doc(db, "implementos", id));
   implemento = snap.data();
 
   document.getElementById("info").innerHTML = `
-    <strong>${implemento.placa}</strong><br>
-    ${implemento.tipo}<br>
-    Status: ${implemento.status}
+    <strong>${implemento?.placa || "-"}</strong><br>
+    ${implemento?.tipo || "-"}<br>
+    Status: ${implemento?.status || "-"}
   `;
 
-  // 🔒 CONTROLE DE BOTÕES
-  if (!podeIniciar(implemento.status)) {
-    document.getElementById("btnIniciar").style.display = "none";
-  }
+  document.getElementById("btnIniciar").style.display =
+    podeIniciar(implemento.status) ? "block" : "none";
 
-  if (!podeFinalizar(implemento.status)) {
-    document.getElementById("btnFinalizar").style.display = "none";
-  }
+  document.getElementById("btnFinalizar").style.display =
+    podeFinalizar(implemento.status) ? "block" : "none";
 
-  // 📄 BUSCAR INSPEÇÃO
+  // 🔎 pegar inspeção
   const qInspecao = query(
     collection(db, "inspecoes"),
     where("implementoId", "==", id)
   );
 
-  const inspecaoSnap = await getDocs(qInspecao);
+  const snapInspecao = await getDocs(qInspecao);
 
   let inspecaoId = null;
+  snapInspecao.forEach(d => inspecaoId = d.id);
 
-  inspecaoSnap.forEach(d => {
-    inspecaoId = d.id;
-  });
+  if (!inspecaoId) return;
 
-  // ⚠ BUSCAR ITENS
+  // 🔎 pegar itens
   const qItens = query(
     collection(db, "naoConformidades"),
     where("inspecaoId", "==", inspecaoId)
   );
 
-  const itensSnap = await getDocs(qItens);
+  const snapItens = await getDocs(qItens);
 
   const container = document.getElementById("itens");
   container.innerHTML = "";
 
   itens = [];
 
-  itensSnap.forEach(docSnap => {
+  snapItens.forEach(docSnap => {
 
     const item = { id: docSnap.id, ...docSnap.data() };
     itens.push(item);
 
-    const disabled = !podeMexerItens(implemento.status) ? "disabled" : "";
-    const checked = item.resolvido ? "checked" : "";
-    const classe = item.resolvido ? "resolvido" : "";
+    let listaFotos = [];
+
+if (item.fotos && Array.isArray(item.fotos)) {
+  listaFotos = item.fotos;
+} else if (item.foto) {
+  listaFotos = [item.foto];
+}
+
+const fotos = listaFotos.map(url =>
+  `<img src="${url}" onclick="abrirImagem('${url}')" onerror="this.style.display='none'">`
+).join("");
 
     const div = document.createElement("div");
     div.className = "item";
 
     div.innerHTML = `
-  <input type="checkbox" ${checked} ${disabled}
-    onchange="toggle('${item.id}', this.checked)">
+      <div class="item-texto ${item.resolvido ? "resolvido" : ""}" id="txt-${item.id}">
+        <strong>${item.descricao}</strong><br>
+        ${item.eixo} - ${item.lado}
+        ${item.compartimento ? " | Comp: " + item.compartimento : ""}
+        <br>Tipo: ${item.tipo}
+        <div class="fotos">${fotos}</div>
+      </div>
 
-  <span id="txt-${item.id}" class="${classe}">
-    <strong>${item.descricao}</strong><br>
-    ${item.eixo} - ${item.lado}
-    ${item.compartimento ? " | Comp: " + item.compartimento : ""}
-    <br>Tipo: ${item.tipo}
-  </span>
-`;
+      <div class="acao"
+        style="${!podeMexerItens(implemento.status) ? 'opacity:0.4;pointer-events:none;' : ''}"
+        onclick="toggle('${item.id}')">
+        ${item.resolvido ? "❌" : "✔️"}
+      </div>
+    `;
 
     container.appendChild(div);
   });
@@ -158,83 +234,73 @@ async function carregar() {
 
 carregar();
 
-// ✔ MARCAR RESOLVIDO
-window.toggle = async function(itemId, checked) {
+// 🔁 TOGGLE SEM RELOAD
+window.toggle = async function(itemId) {
 
-  if (!podeMexerItens(implemento.status)) {
-    alert("Não é possível alterar itens neste status");
-    return;
-  }
+  if (!podeMexerItens(implemento.status)) return;
 
-  const ref = doc(db, "naoConformidades", itemId);
+  const item = itens.find(i => i.id === itemId);
+  if (!item) return;
 
-  await updateDoc(ref, {
-    resolvido: checked
+  const novo = !item.resolvido;
+
+  await updateDoc(doc(db, "naoConformidades", itemId), {
+    resolvido: novo
   });
 
-  // ✅ ATUALIZA ARRAY LOCAL
-  const item = itens.find(i => i.id === itemId);
-  if (item) {
-    item.resolvido = checked;
-  }
+  // 🔥 atualização imediata (sem recarregar tudo)
+  item.resolvido = novo;
 
-  // 🎨 UI
   const el = document.getElementById("txt-" + itemId);
+  const btn = el.parentElement.querySelector(".acao");
 
-  if (checked) {
-    el.classList.add("resolvido");
-  } else {
-    el.classList.remove("resolvido");
-  }
+  el.classList.toggle("resolvido", novo);
+  btn.innerHTML = novo ? "❌" : "✔️";
 };
-// ▶ INICIAR MANUTENÇÃO
+
+// ▶ INICIAR
 window.iniciar = async function() {
 
-  if (!podeIniciar(implemento.status)) {
-    alert("Ação não permitida");
-    return;
-  }
+  if (!podeIniciar(implemento.status)) return;
 
-  const ref = doc(db, "implementos", id);
-
-  await updateDoc(ref, {
+  await updateDoc(doc(db, "implementos", id), {
     status: "em_manutencao"
   });
 
-  alert("Manutenção iniciada");
-
   location.reload();
-}
+};
+
+window.abrirImagem = function(url) {
+  document.getElementById("modalImg").style.display = "flex";
+  document.getElementById("imgGrande").src = url;
+};
+
+document.getElementById("modalImg").onclick = function() {
+  this.style.display = "none";
+};
 
 // ✅ FINALIZAR
 window.finalizar = async function() {
 
-  if (!podeFinalizar(implemento.status)) {
-    alert("Ação não permitida");
-    return;
-  }
+  if (!podeFinalizar(implemento.status)) return;
 
   const pendentes = itens.filter(i => !i.resolvido);
 
   if (pendentes.length > 0) {
-    const motivo = prompt("Existem itens não resolvidos. Informe o motivo:");
-
+    const motivo = prompt("Itens pendentes. Informe o motivo:");
     if (!motivo) return;
   }
 
-  const ref = doc(db, "implementos", id);
-
-  await updateDoc(ref, {
+  await updateDoc(doc(db, "implementos", id), {
     status: "liberado"
   });
 
-  alert("Manutenção finalizada");
-
   window.location = "manutencao.html";
-}
-import { carregarNavbar } from "./navbar.js";
+};
 
+import { carregarNavbar } from "./navbar.js";
 carregarNavbar();
+
 </script>
 
 </body>

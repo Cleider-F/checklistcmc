@@ -46,14 +46,8 @@ body {
   margin-top: 5px;
 }
 
-/* Barra lateral de cor */
-.contador-card.azul { border-left: 5px solid #2196f3; }
 .contador-card.laranja { border-left: 5px solid #ff9800; }
 .contador-card.amarelo { border-left: 5px solid #ffc107; }
-.contador-card.verde { border-left: 5px solid #4caf50; }
-
-.laranja { color: #ff9800; }
-.amarelo { color: #ffc107; }
 
 .lista {
   padding: 10px;
@@ -94,23 +88,9 @@ body {
 .info {
   margin-top: 5px;
   color: #555;
-
-  /* NAVBAR */
-.navbar {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  background: white;
-  display: flex;
-  justify-content: space-around;
-  border-top: 1px solid #ddd;
-  padding: 8px 0;
-  z-index: 1000;
-}
-
+  font-size: 13px;
 }
 </style>
-
 </head>
 
 <body>
@@ -122,9 +102,6 @@ body {
 <div class="contadores" id="contadores"></div>
 
 <div class="lista" id="lista"></div>
-
-
-</div>
 
 <link rel="stylesheet" href="navbar.css">
 
@@ -144,88 +121,129 @@ function getStatusInfo(status) {
     case "aguardando_manutencao":
       return { nome: "Aguardando", cor: "laranja" };
     case "em_manutencao":
-      return { nome: "Em Manutenção", cor: "amarelo" };
+      return { nome: "Em manutenção", cor: "amarelo" };
   }
+}
+
+// 🧠 PRIORIDADE
+function prioridade(status) {
+  if (status === "aguardando_manutencao") return 1;
+  if (status === "em_manutencao") return 2;
+  return 3;
+}
+
+// 📅 FORMATAR DATA
+function formatarData(ts) {
+  if (!ts) return "-";
+  const d = ts.toDate();
+  return d.toLocaleString("pt-BR");
 }
 
 // 🔢 CONTADORES
 function atualizarContadores(lista) {
 
   const cont = {
-    em_inspecao: 0,
     aguardando_manutencao: 0,
-    em_manutencao: 0,
-    liberado: 0
+    em_manutencao: 0
   };
 
   lista.forEach(i => cont[i.status]++);
 
   document.getElementById("contadores").innerHTML = `
-
-   
     <div class="contador-card laranja">
       <div class="contador-top">Aguardando</div>
       <div class="contador-numero">${cont.aguardando_manutencao}</div>
     </div>
 
-    <div class="contador-card azul">
+    <div class="contador-card amarelo">
       <div class="contador-top">Em manutenção</div>
       <div class="contador-numero">${cont.em_manutencao}</div>
     </div>
-
-   
-
   `;
 }
-// 🚀 LISTA
+
+// 🚀 QUERY
 const q = query(
   collection(db, "implementos"),
   where("status", "in", ["aguardando_manutencao", "em_manutencao"])
 );
 
+// 🚀 TEMPO REAL
 onSnapshot(q, (snapshot) => {
 
   const lista = [];
+
+  snapshot.forEach(doc => {
+    lista.push({
+      id: doc.id,
+      ...doc.data()
+    });
+  });
+
+  // 🔥 ORDENAÇÃO INTELIGENTE
+  lista.sort((a, b) => {
+
+    const p1 = prioridade(a.status);
+    const p2 = prioridade(b.status);
+
+    if (p1 !== p2) return p1 - p2;
+
+    const d1 = a.dataInspecao?.seconds || 0;
+    const d2 = b.dataInspecao?.seconds || 0;
+
+    return d2 - d1; // mais novo primeiro
+  });
+
   const container = document.getElementById("lista");
   container.innerHTML = "";
 
-  snapshot.forEach(doc => {
-
-    const data = doc.data();
-    lista.push(data);
+  lista.forEach(data => {
 
     const status = getStatusInfo(data.status);
 
     const div = document.createElement("div");
     div.className = "card";
 
-    div.innerHTML = `
-      <div class="card-top">
-        <div class="placa">${data.placa}</div>
-        <div class="status ${status.cor}">
-          ${status.nome}
-        </div>
-      </div>
+div.innerHTML = `
+  <div class="card-top">
+    <div class="placa">${data.placa}</div>
+    <div class="status ${status.cor}">
+      ${status.nome}
+    </div>
+  </div>
 
-      <div class="info">
-        Tipo: ${data.tipo}
-      </div>
-    `;
-
+  <div class="info">
+    Tipo: ${data.tipo}<br>
+    Manutenção: <strong>${formatarTipoManutencao(data.tipoManutencao)}</strong><br>
+    Inspeção: ${formatarData(data.dataInspecao)}
+  </div>
+`;
     div.onclick = () => {
-      window.location = "manutencao_detalhe.html?id=" + doc.id;
+      window.location = "manutencao_detalhe.html?id=" + data.id;
     };
 
     container.appendChild(div);
-
   });
 
   atualizarContadores(lista);
 
 });
-import { carregarNavbar } from "./navbar.js";
 
+import { carregarNavbar } from "./navbar.js";
 carregarNavbar();
+
+function formatarTipoManutencao(tipo) {
+
+  switch(tipo) {
+    case "preventiva": return "Preventiva";
+    case "revisao": return "Revisão";
+    case "cnpj": return "CNPJ";
+    case "gm": return "GM";
+    default: return tipo || "-";
+  }
+
+}
+
 </script>
 
 </body>
