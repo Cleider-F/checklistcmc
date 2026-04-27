@@ -196,6 +196,14 @@ document.getElementById("foto").addEventListener("change", (e) => {
 // 🔥 CHECKLIST AUTOMÁTICO
 function gerarChecklistAutomatico(horimetro) {
 
+  const tipoManutencao = document.getElementById("tipoManutencao").value;
+  const tipo = document.getElementById("tipo").value;
+
+  // 🔥 REGRA DE NEGÓCIO
+  if (tipoManutencao !== "revisao" || tipo !== "comboio") {
+    return [];
+  }
+
   if (!plano.length) return [];
 
   const todasHoras = [...new Set(
@@ -212,14 +220,15 @@ function gerarChecklistAutomatico(horimetro) {
     if (!acao) return null;
 
     return {
-      grupo: item.grupo, // 🔥 AQUI ESTÁ O PULO DO GATO
+      grupo: item.grupo,
       descricao: item.descricao,
       eixo: "",
       lado: "",
       tipo: acao.tipo === "T" ? "troca" : "vistoria",
       compartimento: null,
       fotos: [],
-      resolvido: false
+      resolvido: false,
+      origem: "automatico" // 🔥 já prepara pro próximo nível
     };
 
   }).filter(Boolean);
