@@ -68,9 +68,14 @@ body { margin: 0; font-family: Arial; background: #f1f3f6; }
 
 <div class="topbar">
   <span>🏠 Início</span>
+  <button id="btnInstalar" class="auth-btn btn-login" style="display: none; margin: 10px 20px;">
+  📲 Instalar App
+</button>
   <!-- Botão agora tem um ID para o JS encontrar -->
   <button id="authBtn" class="auth-btn">Carregando...</button>
 </div>
+
+
 
 <div class="acoes">
   <div class="botao" onclick="ir('nova_inspecao.html')"><div>➕</div>Nova Inspeção</div>
@@ -78,6 +83,12 @@ body { margin: 0; font-family: Arial; background: #f1f3f6; }
   <div class="botao" onclick="ir('manutencao.html')"><div>🔧</div>Manutenção</div>
   <div class="botao" onclick="ir('tecnico.html')"><div>🛠️</div>Técnico</div>
 </div>
+
+<!-- Link para o Manifesto -->
+<link rel="manifest" href="manifest.json">
+
+<!-- Cor da barra de status no Android -->
+<meta name="theme-color" content="#1f2937">
 
 <script type="module">
 import { auth } from "./firebase.js";
@@ -119,6 +130,49 @@ async function logout() {
     }
   }
 }
+
+  // Registra o Service Worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js')
+      .then(() => console.log("Service Worker Registrado!"));
+  }
+
+  let gatilhoInstalacao; // Variável para guardar o evento
+
+const btnInstalar = document.getElementById('btnInstalar');
+
+// 1. Escuta o evento do navegador
+window.addEventListener('beforeinstallprompt', (e) => {
+  // Impede que o navegador mostre o banner automático padrão
+  e.preventDefault();
+  // Guarda o evento para usar depois
+  gatilhoInstalacao = e;
+  // Mostra o seu botão customizado
+  btnInstalar.style.display = 'block';
+});
+
+// 2. Lógica do clique no botão
+btnInstalar.addEventListener('click', async () => {
+  if (!gatilhoInstalacao) return;
+
+  // Mostra a janelinha de instalação original do sistema
+  gatilhoInstalacao.prompt();
+
+  // Verifica se o usuário aceitou ou recusou
+  const { outcome } = await gatilhoInstalacao.userChoice;
+  console.log(`Usuário escolheu: ${outcome}`);
+
+  // Limpa o gatilho, pois ele só pode ser usado uma vez
+  gatilhoInstalacao = null;
+  // Esconde o botão após a escolha
+  btnInstalar.style.display = 'none';
+});
+
+// 3. (Opcional) Detecta se o app já foi instalado
+window.addEventListener('appinstalled', () => {
+  console.log('App instalado com sucesso!');
+  btnInstalar.style.display = 'none';
+});
 </script>
 
 </body>
