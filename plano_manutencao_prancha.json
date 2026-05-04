@@ -58,11 +58,7 @@
     "tipoPlano": "revisao",
     "grupo": "5ª Roda",
     "itens": [
-      { "descricao": "Medir e avaliar pino rei" },
-      { "descricao": "Medir e avaliar ferradura" },
-      { "descricao": "Medir e avaliar gavião" },
-      { "descricao": "Avaliar barra de travamento" },
-      { "descricao": "Avaliar coxins da 5ª roda" }
+      { "descricao": "Medir e avaliar pino rei" }
     ]
   },
 

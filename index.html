@@ -3,28 +3,40 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Painel Geral</title>
-
 <link rel="stylesheet" href="navbar.css">
 
 <style>
-body {
-  margin: 0;
-  font-family: Arial;
-  background: #f1f3f6;
-}
+body { margin: 0; font-family: Arial; background: #f1f3f6; }
 
-/* TOPO */
 .topbar {
   background: #1f2937;
   color: white;
   padding: 15px;
   font-size: 18px;
   font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-/* GRID DE AÇÕES */
+/* Estilo Base do Botão */
+.auth-btn {
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+/* Cor quando for Logout */
+.btn-logout { background: #ff5252; color: white; }
+
+/* Cor quando for Login */
+.btn-login { background: #2196f3; color: white; }
+
 .acoes {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -32,72 +44,81 @@ body {
   padding: 20px;
 }
 
-/* BOTÕES */
 .botao {
   background: white;
   border-radius: 20px;
   height: 130px;
-
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-
   font-size: 16px;
   font-weight: bold;
-
   box-shadow: 0 4px 10px rgba(0,0,0,0.08);
   transition: 0.2s;
+  cursor: pointer;
 }
 
-.botao div {
-  font-size: 28px;
-  margin-bottom: 5px;
-}
-
-.botao:active {
-  transform: scale(0.96);
-}
+.botao div { font-size: 28px; margin-bottom: 5px; }
+.botao:active { transform: scale(0.96); }
 </style>
-
 </head>
 
 <body>
 
-<div class="topbar">🏠 Início</div>
+<div class="topbar">
+  <span>🏠 Início</span>
+  <!-- Botão agora tem um ID para o JS encontrar -->
+  <button id="authBtn" class="auth-btn">Carregando...</button>
+</div>
 
 <div class="acoes">
-
-  <div class="botao" onclick="ir('nova_inspecao.html')">
-    <div>➕</div>
-    Nova Inspeção
-  </div>
-
-  <div class="botao" onclick="ir('inspecao.html')">
-    <div>🔍</div>
-    Inspeções
-  </div>
-
-  <div class="botao" onclick="ir('manutencao.html')">
-    <div>🔧</div>
-    Manutenção
-  </div>
-
-  <div class="botao" onclick="ir('tecnico.html')">
-    <div>🛠️</div>
-    Técnico
-  </div>
-
+  <div class="botao" onclick="ir('nova_inspecao.html')"><div>➕</div>Nova Inspeção</div>
+  <div class="botao" onclick="ir('inspecao.html')"><div>🔍</div>Inspeção</div>
+  <div class="botao" onclick="ir('manutencao.html')"><div>🔧</div>Manutenção</div>
+  <div class="botao" onclick="ir('tecnico.html')"><div>🛠️</div>Técnico</div>
 </div>
 
 <script type="module">
+import { auth } from "./firebase.js";
+import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { carregarNavbar } from "./navbar.js";
 
 carregarNavbar();
 
+const authBtn = document.getElementById("authBtn");
+
+// --- OBSERVADOR DE USUÁRIO ---
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    // Usuário está LOGADO
+    authBtn.innerText = "Sair 🚪";
+    authBtn.className = "auth-btn btn-logout";
+    authBtn.onclick = logout;
+  } else {
+    // Usuário está DESLOGADO
+    authBtn.innerText = "Login 🔑";
+    authBtn.className = "auth-btn btn-login";
+    authBtn.onclick = () => window.location.href = "login.html"; // Ajuste para o nome da sua página de login
+  }
+});
+
+// Função para Navegação
 window.ir = function(pagina) {
   window.location = pagina;
 };
+
+// Lógica de Logout
+async function logout() {
+  if (confirm("Deseja realmente sair do sistema?")) {
+    try {
+      await signOut(auth);
+      alert("Você saiu!");
+    } catch (error) {
+      console.error("Erro ao sair:", error);
+    }
+  }
+}
 </script>
 
 </body>

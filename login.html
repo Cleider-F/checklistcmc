@@ -12,9 +12,29 @@ body {
   font-family: Arial;
   background: #f1f3f6;
   display: flex;
+  flex-direction: column; /* Ajustado para alinhar o botão home no topo */
   justify-content: center;
   align-items: center;
   height: 100vh;
+}
+
+/* Estilo do Botão Home */
+.btn-home {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: #1f2937;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: auto; /* Para não ocupar a largura toda */
 }
 
 .card {
@@ -26,14 +46,13 @@ body {
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-h3 {
-  margin-top: 0;
-}
+h3 { margin-top: 0; }
 
 input, select {
   width: 100%;
   padding: 10px;
   margin-bottom: 10px;
+  box-sizing: border-box; /* Evita que o padding "estoure" a largura */
 }
 
 button {
@@ -43,13 +62,20 @@ button {
   color: white;
   border: none;
   margin-top: 5px;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
-.link {
-  text-align: center;
-  margin-top: 10px;
-  color: #2196f3;
-  cursor: pointer;
+.btn-alerta { background: #ff9800; }
+.btn-sucesso { background: #4caf50; }
+
+hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
+
+.topbar {
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-align: center;
+    color: #333;
 }
 </style>
 
@@ -57,133 +83,96 @@ button {
 
 <body>
 
+<!-- BOTÃO HOME -->
+<button class="btn-home" onclick="window.location.href='index.html'">
+    🏠 Home
+</button>
+
 <div class="card">
+    <div class="topbar">🔐 Acesso ao Sistema</div>
 
-<div class="topbar">🔐 Acesso ao Sistema</div>
+    <!-- BOX DE LOGIN -->
+    <div id="loginBox">
+        <h3>Login</h3>
+        <input id="email" placeholder="Email">
+        <input id="senha" type="password" placeholder="Senha">
 
-<div class="container">
+        <button onclick="login()">Entrar</button>
+        <hr>
+        <button class="btn-alerta" onclick="mostrarCadastro()">Criar conta</button>
+    </div>
 
-  <div class="card">
+    <!-- BOX DE CADASTRO -->
+    <div id="cadastroBox" style="display:none">
+        <h3>Cadastro</h3>
+        <input id="nome" placeholder="Nome">
+        <input id="emailCadastro" placeholder="Email">
+        <input id="senhaCadastro" type="password" placeholder="Senha">
 
-    <h3>Login</h3>
+        <select id="tipoUsuario">
+            <option value="inspetor">Inspetor</option>
+            <option value="tecnico">Técnico</option>
+        </select>
 
-    <input id="email" placeholder="Email">
-    <input id="senha" type="password" placeholder="Senha">
-
-    <button class="btn-primario" onclick="login()">
-      Entrar
-    </button>
-
-    <hr>
-
-    <button class="btn-alerta" onclick="mostrarCadastro()">
-      Criar conta
-    </button>
-
-  </div>
-
-  <div class="card" id="cadastroBox" style="display:none">
-
-    <h3>Cadastro</h3>
-
-    <input id="nome" placeholder="Nome">
-    <input id="emailCadastro" placeholder="Email">
-    <input id="senhaCadastro" type="password" placeholder="Senha">
-
-    <select id="tipoUsuario">
-      <option value="inspetor">Inspetor</option>
-      <option value="tecnico">Técnico</option>
-    </select>
-
-    <button class="btn-sucesso" onclick="cadastrar()">
-      Criar Conta
-    </button>
-
-  </div>
-
+        <button class="btn-sucesso" onclick="cadastrar()">Criar Conta</button>
+        <button style="background:none; color:#666; font-size:12px;" onclick="mostrarLogin()">Voltar ao login</button>
+    </div>
 </div>
 
 <script type="module">
-
 import { auth, db } from "./firebase.js";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-import {
-  doc,
-  setDoc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-// 🔁 alternar telas
+// Alternar telas
 window.mostrarCadastro = () => {
-  document.getElementById("loginBox").style.display = "none";
-  document.getElementById("cadastroBox").style.display = "block";
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("cadastroBox").style.display = "block";
 };
 
 window.mostrarLogin = () => {
-  document.getElementById("loginBox").style.display = "block";
-  document.getElementById("cadastroBox").style.display = "none";
+    document.getElementById("loginBox").style.display = "block";
+    document.getElementById("cadastroBox").style.display = "none";
 };
 
-// 🔐 LOGIN
+// LOGIN
 window.login = async function() {
+    const email = document.getElementById("email").value;
+    const senha = document.getElementById("senha").value;
 
-  const email = document.getElementById("email").value;
-  const senha = document.getElementById("senha").value;
-
-  try {
-
-    await signInWithEmailAndPassword(auth, email, senha);
-
-    window.location = "index.html";
-
-  } catch (e) {
-    alert("Erro no login");
-    console.error(e);
-  }
+    try {
+        await signInWithEmailAndPassword(auth, email, senha);
+        window.location = "index.html";
+    } catch (e) {
+        alert("Erro no login: Verifique e-mail e senha.");
+    }
 };
 
-// 🧾 CADASTRO
+// CADASTRO
 window.cadastrar = async function() {
+    const nome = document.getElementById("nome").value.trim();
+    const email = document.getElementById("emailCadastro").value.trim();
+    const senha = document.getElementById("senhaCadastro").value;
+    const tipo = document.getElementById("tipoUsuario").value;
 
-  const nome = document.getElementById("nomeCad").value.trim();
-  const email = document.getElementById("emailCad").value.trim();
-  const senha = document.getElementById("senhaCad").value;
-  const tipo = document.getElementById("tipoCad").value;
+    if (!nome || !email || !senha) {
+        alert("Preencha todos os campos");
+        return;
+    }
 
-  if (!nome || !email || !senha) {
-    alert("Preencha todos os campos");
-    return;
-  }
+    try {
+        const userCred = await createUserWithEmailAndPassword(auth, email, senha);
+        const uid = userCred.user.uid;
 
-  try {
+        await setDoc(doc(db, "usuarios", uid), { nome, email, tipo });
 
-    // 🔐 cria no Auth
-    const userCred = await createUserWithEmailAndPassword(auth, email, senha);
-
-    const uid = userCred.user.uid;
-
-    // 📦 salva no Firestore
-    await setDoc(doc(db, "usuarios", uid), {
-      nome,
-      email,
-      tipo
-    });
-
-    alert("Conta criada com sucesso!");
-
-    mostrarLogin();
-
-  } catch (e) {
-    console.error(e);
-    alert("Erro ao cadastrar");
-  }
-
+        alert("Conta criada com sucesso!");
+        mostrarLogin();
+    } catch (e) {
+        console.error(e);
+        alert("Erro ao cadastrar: " + e.message);
+    }
 };
-
 </script>
 
 </body>

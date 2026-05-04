@@ -8,14 +8,14 @@ export function carregarNavbar() {
         <small>Home</small>
       </div>
 
-      <div class="nav-item" data-page="inspecao.html">
-        <div>🔍</div>
-        <small>Inspeção</small>
-      </div>
-
       <div class="nav-item" data-page="manutencao.html">
         <div>🔧</div>
         <small>Manutenção</small>
+      </div>
+
+      <div class="nav-item" data-page="inspecao.html">
+        <div>🔍</div>
+        <small>Inspeção</small>
       </div>
 
       <div class="nav-item" data-page="tecnico.html">

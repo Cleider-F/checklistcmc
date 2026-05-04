@@ -209,15 +209,19 @@
  <link rel="stylesheet" href="navbar.css">
 
 <script type="module">
+
+    import { protegerPagina } from "./auth.js";
+    protegerPagina(["inspetor"]);
+
     import { db, storage, auth } from "./firebase.js";
     import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
     import { carregarNavbar } from "./navbar.js";
-
-    carregarNavbar();
+carregarNavbar();
 
     let planoComboio = [];
     let planoCarreta = [];
+    let planoPrancha = [];
     let planoCarregado = false;
     let naoConformidades = [];
     let fotoFile = null;
@@ -225,10 +229,13 @@
     // --- CARREGAMENTO DOS PLANOS ---
     Promise.all([
         fetch("./plano_manutencao.json").then(res => res.json()).catch(() => []),
-        fetch("./plano_manutencao_carreta.json").then(res => res.json()).catch(() => [])
-    ]).then(([dataComboio, dataCarreta]) => {
+        fetch("./plano_manutencao_carreta.json").then(res => res.json()).catch(() => []),
+        fetch("./plano_manutencao_prancha.json").then(res => res.json()).catch(() => [])
+
+    ]).then(([dataComboio, dataCarreta, dataPrancha]) => {
         planoComboio = dataComboio;
         planoCarreta = dataCarreta;
+        planoPrancha = dataPrancha;
         planoCarregado = true;
     });
 
@@ -261,8 +268,11 @@
 
         let novosItens = [];
 
-        if (tipoImp === "carreta","prancha" && (tipoManut === "revisao" || tipoManut === "preventiva")) {
+        if (tipoImp === "carreta" && (tipoManut === "revisao" || tipoManut === "preventiva")) {
             novosItens = gerarChecklistCarreta(tipoManut);
+        } 
+        if (tipoImp === "prancha" && (tipoManut === "revisao" || tipoManut === "preventiva")) {
+            novosItens = gerarChecklistPrancha(tipoManut);
         } 
         else if (tipoImp === "comboio" && tipoManut === "revisao" && horimetroVal > 0) {
             novosItens = gerarChecklistComboio(horimetroVal);
@@ -275,6 +285,22 @@
 
     function gerarChecklistCarreta(tipo) {
         const itensFiltrados = planoCarreta.filter(p => p.tipoPlano === tipo);
+        let checklist = [];
+        itensFiltrados.forEach(grupo => {
+            grupo.itens.forEach(item => {
+                checklist.push({
+                    grupo: grupo.grupo,
+                    descricao: item.descricao,
+                    eixo: "", lado: "", tipo: "vistoria",
+                    fotos: [], resolvido: false, origem: "automatico"
+                });
+            });
+        });
+        return checklist;
+    }
+
+     function gerarChecklistPrancha(tipo) {
+        const itensFiltrados = planoPrancha.filter(p => p.tipoPlano === tipo);
         let checklist = [];
         itensFiltrados.forEach(grupo => {
             grupo.itens.forEach(item => {
