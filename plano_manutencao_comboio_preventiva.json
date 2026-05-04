@@ -1,0 +1,12 @@
+[
+  {
+    "tipoPlano": "preventiva",
+    "grupo": "Filtros",
+    "itens": [
+      { "descricao": "Trocar filtro 01" },
+      { "descricao": "Trocar filtro 02" },
+      { "descricao": "Trocar filtro 03" },
+      { "descricao": "Trocar filtro 04" }
+    ]
+  }
+]

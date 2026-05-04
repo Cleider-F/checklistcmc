@@ -172,13 +172,14 @@
             <option value="">Selecione</option>
             <option value="esquerdo">Esquerdo</option>
             <option value="direito">Direito</option>
+            <option value="ambos">Ambos</option>
             <option value="N/A">N/A</option>
         </select>
     </div>
 </div>
 
             <div class="form-group">
-                <label>Tipo de Item</label>
+                <label>Tipo de desgaste</label>
                 <select id="tipoItem">
                     <option value="normal">Normal</option>
                     <option value="avaria">Avaria</option>
@@ -198,20 +199,28 @@
 
             <button class="btn-primario" onclick="adicionarItem()">+ Adicionar à Lista</button>
         </div>
-
+            <button class="btn-sucesso" onclick="criar()">Finalizar e Enviar Inspeção</button>
+    </div>
         <!-- LISTAGEM -->
         <div id="listaItens"></div>
-
-        <button class="btn-sucesso" onclick="criar()">Finalizar e Enviar Inspeção</button>
+            <button class="btn-sucesso" onclick="criar()">Finalizar e Enviar Inspeção</button>
     </div>
+        
 
 <!-- Mantenha o mesmo HTML e CSS do código anterior -->
  <link rel="stylesheet" href="navbar.css">
 
 <script type="module">
 
+const kmField = document.getElementById("kmField");
+const horimetroField = document.getElementById("horimetroField");
+const compartimentosField = document.getElementById("compartimentosField");
+const compartimentoItem = document.getElementById("compartimentoItem");
+const foto = document.getElementById("foto");
+const preview = document.getElementById("preview");
+
     import { protegerPagina } from "./auth.js";
-    protegerPagina(["inspetor"]);
+    protegerPagina(["inspetor","tecnico"]);
 
     import { db, storage, auth } from "./firebase.js";
     import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -222,6 +231,7 @@ carregarNavbar();
     let planoComboio = [];
     let planoCarreta = [];
     let planoPrancha = [];
+    let planoComboioPrev = [];
     let planoCarregado = false;
     let naoConformidades = [];
     let fotoFile = null;
@@ -230,12 +240,14 @@ carregarNavbar();
     Promise.all([
         fetch("./plano_manutencao.json").then(res => res.json()).catch(() => []),
         fetch("./plano_manutencao_carreta.json").then(res => res.json()).catch(() => []),
-        fetch("./plano_manutencao_prancha.json").then(res => res.json()).catch(() => [])
+        fetch("./plano_manutencao_prancha.json").then(res => res.json()).catch(() => []),
+        fetch("./plano_manutencao_comboio_preventiva.json").then(res => res.json()).catch(() => [])
 
-    ]).then(([dataComboio, dataCarreta, dataPrancha]) => {
+    ]).then(([dataComboio, dataCarreta, dataPrancha, dataCombPrev]) => {
         planoComboio = dataComboio;
         planoCarreta = dataCarreta;
         planoPrancha = dataPrancha;
+        planoComboioPrev = dataCombPrev;
         planoCarregado = true;
     });
 
@@ -268,15 +280,22 @@ carregarNavbar();
 
         let novosItens = [];
 
-        if (tipoImp === "carreta" && (tipoManut === "revisao" || tipoManut === "preventiva")) {
-            novosItens = gerarChecklistCarreta(tipoManut);
-        } 
-        if (tipoImp === "prancha" && (tipoManut === "revisao" || tipoManut === "preventiva")) {
-            novosItens = gerarChecklistPrancha(tipoManut);
-        } 
-        else if (tipoImp === "comboio" && tipoManut === "revisao" && horimetroVal > 0) {
-            novosItens = gerarChecklistComboio(horimetroVal);
-        }
+       // ... dentro de verificarChecklistAutomatico ...
+
+if (tipoImp === "carreta" && (tipoManut === "revisao" || tipoManut === "preventiva")) {
+    novosItens = gerarChecklistCarreta(tipoManut);
+} 
+else if (tipoImp === "prancha" && (tipoManut === "revisao" || tipoManut === "preventiva")) {
+    novosItens = gerarChecklistPrancha(tipoManut);
+} 
+else if (tipoImp === "comboio") {
+    if (tipoManut === "preventiva") {
+        novosItens = gerarChecklistComboioPrev(tipoManut);
+    } 
+    else if (tipoManut === "revisao" && horimetroVal > 0) {
+        novosItens = gerarChecklistComboio(horimetroVal);
+    }
+}
 
         const manuais = naoConformidades.filter(i => i.origem === "manual");
         naoConformidades = [...manuais, ...novosItens];
@@ -291,7 +310,7 @@ carregarNavbar();
                 checklist.push({
                     grupo: grupo.grupo,
                     descricao: item.descricao,
-                    eixo: "", lado: "", tipo: "vistoria",
+                    eixo: "", lado: "", tipo: "",
                     fotos: [], resolvido: false, origem: "automatico"
                 });
             });
@@ -307,7 +326,22 @@ carregarNavbar();
                 checklist.push({
                     grupo: grupo.grupo,
                     descricao: item.descricao,
-                    eixo: "", lado: "", tipo: "vistoria",
+                    eixo: "", lado: "", tipo: "",
+                    fotos: [], resolvido: false, origem: "automatico"
+                });
+            });
+        });
+        return checklist;
+    }
+     function gerarChecklistComboioPrev(tipo) {
+        const itensFiltrados = planoComboioPrev.filter(p => p.tipoPlano === tipo);
+        let checklist = [];
+        itensFiltrados.forEach(grupo => {
+            grupo.itens.forEach(item => {
+                checklist.push({
+                    grupo: grupo.grupo,
+                    descricao: item.descricao,
+                    eixo: "", lado: "", tipo: "",
                     fotos: [], resolvido: false, origem: "automatico"
                 });
             });
@@ -396,10 +430,15 @@ carregarNavbar();
                 const div = document.createElement("div");
                 div.style.cssText = "background:#fff; padding:10px; border-radius:8px; margin-top:6px; box-shadow:0 2px 4px rgba(0,0,0,0.08); border-left:4px solid " + (item.origem === 'manual' ? '#ff9800' : '#2196f3');
                 div.innerHTML = `
-                    <strong>${item.descricao}</strong><br>
-                    <small>Tipo: ${item.tipo} | Eixo: ${item.eixo || '-'} | Lado: ${item.lado || '-'}</small>
-                    <br><button class="btn-remover" onclick="removerItem(${idx})">Remover</button>
-                `;
+    <strong>${item.descricao}</strong><br>
+    <small>
+        Tipo: ${item.tipo} | 
+        Eixo: ${item.eixo || '-'} | 
+        Lado: ${item.lado || '-'} | 
+        Compartimento: ${item.compartimento !== null ? item.compartimento : '-'}
+    </small>
+    <br><button class="btn-remover" onclick="removerItem(${idx})">Remover</button>
+`;
                 container.appendChild(div);
             });
         });
