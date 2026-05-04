@@ -1,479 +1,366 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<title>Execução da Manutenção</title>
+    <meta charset="UTF-8">
+    <!-- CRUCIAL: Faz o site entender o tamanho da tela do celular -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Execução da Manutenção</title>
 
-<style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f1f3f6;
-}
+    <style>
+        :root {
+            --dark: #1f2937;
+            --primary: #2196f3;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --danger: #f44336;
+            --bg: #f1f3f6;
+        }
 
-.topbar {
-  background: #1f2937;
-  color: white;
-  padding: 15px;
-  font-size: 18px;
-  font-weight: bold;
-}
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: #333;
+            /* Espaço para a navbar inferior não cobrir os botões */
+            padding-bottom: 90px;
+        }
 
-.container {
-  padding: 12px;
-}
+        .topbar {
+            background: var(--dark);
+            color: white;
+            padding: 18px 15px;
+            font-size: 20px;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
 
-.card {
-  background: white;
-  border-radius: 12px;
-  padding: 15px;
-  margin-bottom: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-}
+        .container { padding: 15px; }
 
-/* ITEM */
-.item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px solid #eee;
-}
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
 
-.item-texto {
-  flex: 1;
-}
+        .card h3 {
+            margin: 0 0 12px 0;
+            font-size: 16px;
+            text-transform: uppercase;
+            color: var(--dark);
+            border-bottom: 2px solid var(--bg);
+            padding-bottom: 8px;
+        }
 
-.resolvido {
-  text-decoration: line-through;
-  color: green;
-}
+        /* ESTILO DOS ITENS DO CHECKLIST */
+        .item-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 5px solid var(--warning);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
 
-/* BOTÃO */
-.acao {
-  font-size: 22px;
-  cursor: pointer;
-  margin-left: 10px;
-  min-width: 30px;
-  text-align: center;
-}
+        .item-container.automatico { border-left-color: var(--primary); }
 
-/* FOTOS */
-.fotos {
-  margin-top: 6px;
-}
+        .item-info { flex: 1; padding-right: 10px; }
+        .item-info strong { font-size: 15px; display: block; margin-bottom: 4px; }
+        .item-info small { color: #666; line-height: 1.4; }
 
-.fotos img {
-  width: 70px;
-  border-radius: 6px;
-  margin-right: 6px;
-  margin-top: 4px;
-}
+        .resolvido {
+            text-decoration: line-through;
+            opacity: 0.6;
+            color: var(--success);
+        }
 
-/* BOTÕES */
-button {
-  width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  border: none;
-  font-weight: bold;
-}
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+            margin-top: 5px;
+        }
 
-.btn-alerta { background: #ff9800; color: white; }
-.btn-sucesso { background: #4caf50; color: white; }
+        /* BOTÃO DE AÇÃO (Check) */
+        .acao {
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background: var(--bg);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
 
-#btnIniciar, #btnFinalizar {
-  margin-bottom: 10px;
-}
+        /* HEADER DE GRUPOS */
+        .grupo-header {
+            background: var(--dark);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 20px 0 10px 0;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-</style>
+        /* IMAGENS */
+        .fotos { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
+        .fotos img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        /* BOTÕES GERAIS */
+        button {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            border: none;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .btn-alerta { background: var(--warning); color: white; }
+        .btn-sucesso { background: var(--success); color: white; }
+
+        /* MODAL IMAGEM */
+        #modalImg {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        input[type="checkbox"] {
+            transform: scale(1.5);
+        }
+    </style>
 </head>
 
 <body>
 
-<div class="topbar">🔧 Execução da Manutenção</div>
+<div class="topbar">🔧 Manutenção</div>
 
 <div class="container">
+    <div id="info" class="card">Carregando dados...</div>
+    
+    <button class="btn-alerta" id="btnIniciar" style="display:none;" onclick="iniciar()">
+        ▶ Iniciar Manutenção
+    </button>
 
-  <div id="info" class="card"></div>
- 
-  <button class="btn-alerta" id="btnIniciar" onclick="iniciar()">
-    Iniciar Manutenção
-  </button>
+    <div class="card">
+        <h3>Lista de Verificação</h3>
+        <div id="itens"></div>
+    </div>
 
-  <button class="btn-sucesso" id="btnFinalizar" onclick="finalizar()">
-    Finalizar Manutenção
-  </button>
-
-  <div class="card">
-    <h3>Checklist</h3>
-    <div id="itens"></div>
-  </div>
-
-
-
+    <button class="btn-sucesso" id="btnFinalizar" style="display:none;" onclick="finalizar()">
+        🏁 Finalizar Manutenção
+    </button>
 </div>
 
-<div id="modalImg" style="
-  display:none;
-  position:fixed;
-  top:0;left:0;
-  width:100%;height:100%;
-  background:rgba(0,0,0,0.8);
-  justify-content:center;
-  align-items:center;
-  z-index:999;
-">
-  <img id="imgGrande" style="max-width:90%; max-height:90%; border-radius:10px;">
+<!-- Modal para ver foto grande -->
+<div id="modalImg" onclick="this.style.display='none'">
+    <img id="imgGrande" style="max-width:95%; max-height:90%; border-radius:10px;">
 </div>
 
 <link rel="stylesheet" href="navbar.css">
 
 <script type="module">
-
-import { db } from "./firebase.js";
-import {
-  doc, getDoc, collection, query, where, getDocs, updateDoc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-import { storage } from "./firebase.js";
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
-
-const id = new URLSearchParams(window.location.search).get("id");
-
-
-
-let itens = [];
-let implemento = null;
-
-// REGRAS
-const podeIniciar = s => s === "aguardando_manutencao";
-const podeMexerItens = s => s === "em_manutencao";
-const podeFinalizar = s => s === "em_manutencao";
-
-function agruparPorGrupo(lista) {
-  const grupos = {};
-  lista.forEach(item => {
-    const g = item.grupo || "GERAL";
-    if (!grupos[g]) grupos[g] = [];
-    grupos[g].push(item);
-  });
-  return grupos;
-}
-
-// 🚀 CARREGAR
-async function carregar() {
-
-  const snap = await getDoc(doc(db, "implementos", id));
-  implemento = snap.data();
-
-  document.getElementById("info").innerHTML = `
-  <strong>${implemento?.placa || "-"}</strong><br>
-  ${implemento?.tipo || "-"}<br>
-  Status: ${implemento?.status || "-"}<br><br>
-
-  🧑 ${implemento?.inspecionadoPor || "-"}<br>
-  📅 ${implemento?.dataFormatada || "-"} às ${implemento?.horaFormatada || "-"}
-`;
-  document.getElementById("btnIniciar").style.display =
-    podeIniciar(implemento.status) ? "block" : "none";
-
-  document.getElementById("btnFinalizar").style.display =
-    podeFinalizar(implemento.status) ? "block" : "none";
-
-  // 🔎 pegar inspeção
-  const qInspecao = query(
-    collection(db, "inspecoes"),
-    where("implementoId", "==", id)
-  );
-
-  const snapInspecao = await getDocs(qInspecao);
-
-  let inspecaoId = null;
-  snapInspecao.forEach(d => inspecaoId = d.id);
-
-  if (!inspecaoId) return;
-
-  // 🔎 pegar itens
-  const qItens = query(
-    collection(db, "naoConformidades"),
-    where("inspecaoId", "==", inspecaoId)
-  );
-
-  const snapItens = await getDocs(qItens);
-
-const container = document.getElementById("itens");
-container.innerHTML = "";
-
-itens = [];
-
-snapItens.forEach(docSnap => {
-  const item = { id: docSnap.id, ...docSnap.data() };
-  itens.push(item);
-});
-
-// 🔥 SEPARAÇÃO
-const manuais = itens.filter(i => i.origem === "manual");
-const automaticos = itens.filter(i => i.origem !== "manual");
-
-// =====================
-// 🔵 MANUAL (TOPO)
-// =====================
-if (manuais.length) {
-
-  const header = document.createElement("div");
-  header.style.cssText = `
-    background:#0f172a;
-    color:white;
-    padding:10px;
-    border-radius:8px;
-    margin-bottom:10px;
-    font-weight:bold;
-  `;
-  header.innerHTML = `
-  <div style="display:flex;justify-content:space-between;align-items:center;">
-    <span>INSPEÇÃO MANUAL</span>
-    <input type="checkbox"
-      onchange="toggleGrupo('MANUAL', this.checked)">
-  </div>
-`;
-
-  container.appendChild(header);
-
-  manuais.forEach(item => {
-
-    let fotosHTML = (item.fotos || []).map(url =>
-      `<img src="${url}" onclick="abrirImagem('${url}')">`
-    ).join("");
-
-    const div = document.createElement("div");
-
-    div.style.cssText = `
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-
-  background:#fff;
-  border-left:4px solid #ff9800;
-  padding:10px;
-  border-radius:8px;
-  margin-bottom:8px;
-  box-shadow:0 2px 4px rgba(0,0,0,0.08);
-`;
-
-    div.innerHTML = `
-      <div id="txt-${item.id}" class="${item.resolvido ? "resolvido" : ""}" style="flex:1;">        <strong>${item.descricao}</strong><br>
-
-        Tipo de não conformidade: ${item.tipo}<br>
-        Eixo: ${item.eixo || "-"}<br>
-        Lado: ${item.lado || "-"}
-        ${item.compartimento ? `<br>Compartimento: ${item.compartimento}` : ""}
-
-        <div class="fotos">${fotosHTML}</div>
-      </div>
-
-<div class="acao"
-  style="
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:26px;
-    width:40px;
-    height:40px;
-    ${!podeMexerItens(implemento.status) ? 'opacity:0.4;pointer-events:none;' : ''}
-  "        onclick="toggle('${item.id}')">
-        ${item.resolvido ? "❌" : "✔️"}
-      </div>
-    `;
-
-    container.appendChild(div);
-  });
-}
-
-// =====================
-// ⚙️ AUTOMÁTICO (AGRUPADO)
-// =====================
-const grupos = agruparPorGrupo(automaticos);
-
-Object.entries(grupos).forEach(([grupo, lista]) => {
-
-  const header = document.createElement("div");
-  header.style.cssText = `
-    background:#1f2937;
-    color:white;
-    padding:8px;
-    border-radius:6px;
-    margin-top:10px;
-    font-weight:bold;
-  `;
-  header.innerHTML = `
-  <div style="display:flex;justify-content:space-between;align-items:center;">
-    <span>${grupo}</span>
-    <input type="checkbox"
-      onchange="toggleGrupo('${grupo}', this.checked)">
-  </div>
-`;
-
-  container.appendChild(header);
-
-  lista.forEach(item => {
-
-    let fotosHTML = (item.fotos || []).map(url =>
-      `<img src="${url}" onclick="abrirImagem('${url}')">`
-    ).join("");
-
-    const cor = item.tipo === "troca" ? "#f44336" : "#2196f3";
-
-    const div = document.createElement("div");
-
-    div.style.cssText = `
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-
-  background:#fff;
-  border-left:4px solid #ff9800;
-  padding:10px;
-  border-radius:8px;
-  margin-bottom:8px;
-  box-shadow:0 2px 4px rgba(0,0,0,0.08);
-`;
-
-    div.innerHTML = `
-<div id="txt-${item.id}" class="${item.resolvido ? "resolvido" : ""}" style="flex:1;">        <strong>${item.descricao}</strong><br>
-
-        <span style="
-          background:${cor};
-          color:white;
-          padding:2px 6px;
-          border-radius:4px;
-          font-size:12px;
-        ">
-          ${item.tipo}
-        </span>
-
-        <div class="fotos">${fotosHTML}</div>
-      </div>
-
-<div class="acao"
-  style="
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:26px;
-    width:40px;
-    height:40px;
-    ${!podeMexerItens(implemento.status) ? 'opacity:0.4;pointer-events:none;' : ''}"
-      onclick="toggle('${item.id}')">
-    ${item.resolvido ? "❌" : "✔️"}
-      </div>
-    `;
-
-    container.appendChild(div);
-  });
-
-});
-
-}
-
-carregar();
-
-// 🔁 TOGGLE SEM RELOAD
-window.toggle = async function(itemId) {
-
-  if (!podeMexerItens(implemento.status)) return;
-
-  const item = itens.find(i => i.id === itemId);
-  if (!item) return;
-
-  const novo = !item.resolvido;
-
-  await updateDoc(doc(db, "naoConformidades", itemId), {
-    resolvido: novo
-  });
-
-  // 🔥 atualização imediata (sem recarregar tudo)
-  item.resolvido = novo;
-
-  const el = document.getElementById("txt-" + itemId);
-  const btn = el.parentElement.querySelector(".acao");
-
-  el.classList.toggle("resolvido", novo);
-  btn.innerHTML = novo ? "❌" : "✔️";
-};
-
-// ▶ INICIAR
-window.iniciar = async function() {
-
-  if (!podeIniciar(implemento.status)) return;
-
-  await updateDoc(doc(db, "implementos", id), {
-    status: "em_manutencao"
-  });
-
-  location.reload();
-};
-
-window.abrirImagem = function(url) {
-  document.getElementById("modalImg").style.display = "flex";
-  document.getElementById("imgGrande").src = url;
-};
-
-document.getElementById("modalImg").onclick = function() {
-  this.style.display = "none";
-};
-
-// ✅ FINALIZAR
-window.finalizar = async function() {
-
-  if (!podeFinalizar(implemento.status)) return;
-
-  const pendentes = itens.filter(i => !i.resolvido);
-
-  if (pendentes.length > 0) {
-    const motivo = prompt("Itens pendentes. Informe o motivo:");
-    if (!motivo) return;
-  }
-
-  await updateDoc(doc(db, "implementos", id), {
-    status: "liberado"
-  });
-
-  window.location = "manutencao.html";
-};
-
-import { carregarNavbar } from "./navbar.js";
-carregarNavbar();
-
-window.toggleGrupo = async function(grupo, marcado) {
-
-  const itensDoGrupo = itens.filter(i =>
-    grupo === "MANUAL"
-      ? i.origem === "manual"
-      : i.grupo === grupo
-  );
-
-  for (const item of itensDoGrupo) {
-
-    await updateDoc(doc(db, "naoConformidades", item.id), {
-      resolvido: marcado
-    });
-
-    // atualização local
-    item.resolvido = marcado;
-
-    const el = document.getElementById("txt-" + item.id);
-    const btn = el?.parentElement?.querySelector(".acao");
-
-    if (el) el.classList.toggle("resolvido", marcado);
-    if (btn) btn.innerHTML = marcado ? "❌" : "✔️";
-  }
-};
-
+    import { db } from "./firebase.js";
+    import { doc, getDoc, collection, query, where, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { carregarNavbar } from "./navbar.js";
+
+    carregarNavbar();
+
+    const id = new URLSearchParams(window.location.search).get("id");
+    let itens = [];
+    let implemento = null;
+
+    const podeIniciar = s => s === "aguardando_manutencao";
+    const podeMexerItens = s => s === "em_manutencao";
+    const podeFinalizar = s => s === "em_manutencao";
+
+    async function carregar() {
+        const snap = await getDoc(doc(db, "implementos", id));
+        implemento = snap.data();
+
+        // UI do Info Card
+        document.getElementById("info").innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:start;">
+                <div>
+                    <span style="font-size:22px; font-weight:bold;">${implemento?.placa || "-"}</span><br>
+                    <small>${implemento?.tipo?.toUpperCase() || "-"}</small>
+                </div>
+                <span class="badge" style="background:var(--dark)">${implemento?.status || "-"}</span>
+            </div>
+            <hr style="border:0; border-top:1px solid #eee; margin:12px 0;">
+            <div style="font-size:14px;">
+                🧑 <b>Inspetor:</b> ${implemento?.nome || "Não identificado"}<br>
+                📅 <b>Data:</b> ${implemento?.dataFormatada || "-"} às ${implemento?.horaFormatada || "-"}
+            </div>
+        `;
+
+        document.getElementById("btnIniciar").style.display = podeIniciar(implemento.status) ? "block" : "none";
+        document.getElementById("btnFinalizar").style.display = podeFinalizar(implemento.status) ? "block" : "none";
+
+        const qInspecao = query(collection(db, "inspecoes"), where("implementoId", "==", id));
+        const snapInspecao = await getDocs(qInspecao);
+        let inspecaoId = null;
+        snapInspecao.forEach(d => inspecaoId = d.id);
+
+        if (!inspecaoId) return;
+
+        const qItens = query(collection(db, "naoConformidades"), where("inspecaoId", "==", inspecaoId));
+        const snapItens = await getDocs(qItens);
+        
+        const container = document.getElementById("itens");
+        container.innerHTML = "";
+        itens = [];
+
+        snapItens.forEach(docSnap => {
+            itens.push({ id: docSnap.id, ...docSnap.data() });
+        });
+
+        renderizarChecklist(container);
+    }
+
+    function renderizarChecklist(container) {
+        const manuais = itens.filter(i => i.origem === "manual");
+        const automaticos = itens.filter(i => i.origem !== "manual");
+
+        // Renderizar Manuais
+        if (manuais.length) {
+            container.appendChild(criarHeaderGrupo("MANUAL", "manual"));
+            manuais.forEach(item => container.appendChild(criarCardItem(item)));
+        }
+
+        // Renderizar Automáticos agrupados
+        const grupos = {};
+        automaticos.forEach(item => {
+            const g = item.grupo || "GERAL";
+            if (!grupos[g]) grupos[g] = [];
+            grupos[g].push(item);
+        });
+
+        Object.entries(grupos).forEach(([nome, lista]) => {
+            container.appendChild(criarHeaderGrupo(nome, nome));
+            lista.forEach(item => container.appendChild(criarCardItem(item)));
+        });
+    }
+
+    function criarHeaderGrupo(titulo, grupoId) {
+        const div = document.createElement("div");
+        div.className = "grupo-header";
+        div.innerHTML = `
+            <span>${titulo}</span>
+            <input type="checkbox" onchange="toggleGrupo('${grupoId}', this.checked)">
+        `;
+        return div;
+    }
+
+    function criarCardItem(item) {
+        const div = document.createElement("div");
+        div.className = `item-container ${item.origem === 'manual' ? '' : 'automatico'}`;
+        
+        const fotosHTML = (item.fotos || []).map(url => 
+            `<img src="${url}" onclick="abrirImagem('${url}')">`
+        ).join("");
+
+        const corBadge = item.tipo === "troca" ? "var(--danger)" : "var(--primary)";
+
+        div.innerHTML = `
+            <div class="item-info ${item.resolvido ? 'resolvido' : ''}" id="txt-${item.id}">
+                <strong>${item.descricao}</strong>
+                <small>
+                    ${item.eixo ? `Eixo: ${item.eixo} | ` : ''} 
+                    ${item.lado ? `Lado: ${item.lado}` : ''}
+                    ${item.compartimento ? `<br>Comp: ${item.compartimento}` : ''}
+                </small>
+                <div><span class="badge" style="background:${corBadge}">${item.tipo}</span></div>
+                <div class="fotos">${fotosHTML}</div>
+            </div>
+            <div class="acao" onclick="toggle('${item.id}')" 
+                 style="${!podeMexerItens(implemento.status) ? 'opacity:0.3; pointer-events:none;' : ''}">
+                ${item.resolvido ? "✅" : "⬜"}
+            </div>
+        `;
+        return div;
+    }
+
+    // FUNÇÕES DE AÇÃO
+    window.toggle = async function(itemId) {
+        if (!podeMexerItens(implemento.status)) return;
+        const item = itens.find(i => i.id === itemId);
+        const novoStatus = !item.resolvido;
+
+        await updateDoc(doc(db, "naoConformidades", itemId), { resolvido: novoStatus });
+        item.resolvido = novoStatus;
+        
+        const infoEl = document.getElementById("txt-" + itemId);
+        const acaoEl = infoEl.nextElementSibling;
+        
+        infoEl.classList.toggle("resolvido", novoStatus);
+        acaoEl.innerHTML = novoStatus ? "✅" : "⬜";
+    };
+
+    window.toggleGrupo = async function(nomeGrupo, marcado) {
+        const alvos = itens.filter(i => nomeGrupo === "manual" ? i.origem === "manual" : i.grupo === nomeGrupo);
+        for (const item of alvos) {
+            if (item.resolvido !== marcado) {
+                await window.toggle(item.id);
+            }
+        }
+    };
+
+    window.iniciar = async function() {
+        if (!podeIniciar(implemento.status)) return;
+        await updateDoc(doc(db, "implementos", id), { status: "em_manutencao" });
+        location.reload();
+    };
+
+    window.finalizar = async function() {
+        if (!podeFinalizar(implemento.status)) return;
+        const pendentes = itens.filter(i => !i.resolvido);
+        if (pendentes.length > 0) {
+            const motivo = prompt("Existem itens pendentes. Informe o motivo:");
+            if (!motivo) return;
+            await updateDoc(doc(db, "implementos", id), { motivo_pendencia: motivo });
+        }
+        await updateDoc(doc(db, "implementos", id), { status: "liberado", dataLiberacao: new Date() });
+        window.location = "manutencao.html";
+    };
+
+    window.abrirImagem = (url) => {
+        document.getElementById("imgGrande").src = url;
+        document.getElementById("modalImg").style.display = "flex";
+    };
+
+    carregar();
 </script>
 
 </body>
