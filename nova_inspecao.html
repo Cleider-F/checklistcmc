@@ -131,11 +131,15 @@
     </div>
 
 <!-- Mantenha o mesmo HTML e CSS do código anterior -->
+ <link rel="stylesheet" href="navbar.css">
 
 <script type="module">
     import { db, storage, auth } from "./firebase.js";
     import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+    import { carregarNavbar } from "./navbar.js";
+
+    carregarNavbar();
 
     let planoComboio = [];
     let planoCarreta = [];

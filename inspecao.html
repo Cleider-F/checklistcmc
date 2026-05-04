@@ -82,7 +82,7 @@ body {
 
 .fab {
   position: fixed;
-  bottom: 20px;
+  bottom: 80px;
   right: 20px;
   background: #2196f3;
   color: white;
@@ -93,6 +93,38 @@ body {
   font-size: 30px;
 }
 
+/* Estilos para Celulares (telas até 768px) */
+@media (max-width: 768px) {
+  .contadores {
+    display: grid;
+    grid-template-columns: 1-fr 1-fr; /* Divide em 2 colunas em vez de uma linha só */
+    gap: 10px;
+  }
+
+  .topbar {
+    text-align: center;
+    font-size: 16px;
+  }
+
+  .card {
+    margin: 8px; /* Reduz margens para ganhar espaço */
+    padding: 12px;
+  }
+
+  /* Ajuste do botão para não atrapalhar o toque no rodapé */
+  .fab {
+    width: 55px;
+    height: 55px;
+    bottom: 85px; 
+    right: 15px;
+  }
+  
+  /* Adiciona um espaçamento no fim da lista para o conteúdo não ficar 
+     escondido atrás da navbar ao rolar até o fim */
+  body {
+    padding-bottom: 70px; 
+  }
+}
 </style>
 
 </head>
