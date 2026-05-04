@@ -1,0 +1,88 @@
+[
+  {
+    "tipoPlano": "revisao",
+    "grupo": "Cubo",
+    "itens": [
+      { "descricao": "Trocar graxa" },
+      { "descricao": "Trocar retentores" },
+      { "descricao": "Avaliar rolamentos" },
+      { "descricao": "Trocar trava aranha" }
+    ]
+  },
+  {
+    "tipoPlano": "revisao",
+    "grupo": "Freio",
+    "itens": [
+      { "descricao": "Avaliar e medir tambor de freio" },
+      { "descricao": "Avaliar roletes" },
+      { "descricao": "Trocar patins de freio" },
+      { "descricao": "Trocar trava roletes" },
+      { "descricao": "Trocar molas do patim" },
+      { "descricao": "Avaliar catracas de freio" },
+      { "descricao": "Regular freio" }
+    ]
+  },
+  {
+    "tipoPlano": "revisao",
+    "grupo": "Eixo S",
+    "itens": [
+      { "descricao": "Trocar embuchamento do eixo S" },
+      { "descricao": "Trocar trava meia lua do eixo S" },
+      { "descricao": "Trocar embuchamento do mancal" },
+      { "descricao": "Trocar Oring do mancal" },
+      { "descricao": "Avaliar capa do mancal" }
+    ]
+  },
+  {
+    "tipoPlano": "revisao",
+    "grupo": "Catracas de amarração",
+    "itens": [
+      { "descricao": "Avaliar e lubrificar catracas de amarração" }
+    ]
+  },
+  {
+    "tipoPlano": "revisao",
+    "grupo": "Balão de ar",
+    "itens": [
+      { "descricao": "Drenar balões de ar" }
+    ]
+  },
+  {
+    "tipoPlano": "revisao",
+    "grupo": "Elétrica",
+    "itens": [
+      { "descricao": "Corrigir elétrica em geral" }
+    ]
+  },
+
+  {
+    "tipoPlano": "preventiva",
+    "grupo": "Freio",
+    "itens": [
+      { "descricao": "Avaliar funcionamento das catracas de freio" },
+      { "descricao": "Regular freio" },
+      { "descricao": "Avaliar mangotes e vazamentos" }
+    ]
+  },
+  {
+    "tipoPlano": "preventiva",
+    "grupo": "Catracas de amarração",
+    "itens": [
+      { "descricao": "Avaliar e lubrificar catracas de amarração" }
+    ]
+  },
+  {
+    "tipoPlano": "preventiva",
+    "grupo": "Balão de ar",
+    "itens": [
+      { "descricao": "Drenar balões de ar" }
+    ]
+  },
+  {
+    "tipoPlano": "preventiva",
+    "grupo": "Elétrica",
+    "itens": [
+      { "descricao": "Corrigir elétrica em geral" }
+    ]
+  }
+]

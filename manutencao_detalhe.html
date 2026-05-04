@@ -82,6 +82,10 @@ button {
 .btn-alerta { background: #ff9800; color: white; }
 .btn-sucesso { background: #4caf50; color: white; }
 
+#btnIniciar, #btnFinalizar {
+  margin-bottom: 10px;
+}
+
 </style>
 </head>
 
@@ -92,12 +96,7 @@ button {
 <div class="container">
 
   <div id="info" class="card"></div>
-
-  <div class="card">
-    <h3>Checklist</h3>
-    <div id="itens"></div>
-  </div>
-
+ 
   <button class="btn-alerta" id="btnIniciar" onclick="iniciar()">
     Iniciar Manutenção
   </button>
@@ -105,6 +104,13 @@ button {
   <button class="btn-sucesso" id="btnFinalizar" onclick="finalizar()">
     Finalizar Manutenção
   </button>
+
+  <div class="card">
+    <h3>Checklist</h3>
+    <div id="itens"></div>
+  </div>
+
+
 
 </div>
 
@@ -139,6 +145,8 @@ import {
 
 const id = new URLSearchParams(window.location.search).get("id");
 
+
+
 let itens = [];
 let implemento = null;
 
@@ -147,6 +155,16 @@ const podeIniciar = s => s === "aguardando_manutencao";
 const podeMexerItens = s => s === "em_manutencao";
 const podeFinalizar = s => s === "em_manutencao";
 
+function agruparPorGrupo(lista) {
+  const grupos = {};
+  lista.forEach(item => {
+    const g = item.grupo || "GERAL";
+    if (!grupos[g]) grupos[g] = [];
+    grupos[g].push(item);
+  });
+  return grupos;
+}
+
 // 🚀 CARREGAR
 async function carregar() {
 
@@ -154,11 +172,13 @@ async function carregar() {
   implemento = snap.data();
 
   document.getElementById("info").innerHTML = `
-    <strong>${implemento?.placa || "-"}</strong><br>
-    ${implemento?.tipo || "-"}<br>
-    Status: ${implemento?.status || "-"}
-  `;
+  <strong>${implemento?.placa || "-"}</strong><br>
+  ${implemento?.tipo || "-"}<br>
+  Status: ${implemento?.status || "-"}<br><br>
 
+  🧑 ${implemento?.inspecionadoPor || "-"}<br>
+  📅 ${implemento?.dataFormatada || "-"} às ${implemento?.horaFormatada || "-"}
+`;
   document.getElementById("btnIniciar").style.display =
     podeIniciar(implemento.status) ? "block" : "none";
 
@@ -186,49 +206,177 @@ async function carregar() {
 
   const snapItens = await getDocs(qItens);
 
-  const container = document.getElementById("itens");
-  container.innerHTML = "";
+const container = document.getElementById("itens");
+container.innerHTML = "";
 
-  itens = [];
+itens = [];
 
-  snapItens.forEach(docSnap => {
+snapItens.forEach(docSnap => {
+  const item = { id: docSnap.id, ...docSnap.data() };
+  itens.push(item);
+});
 
-    const item = { id: docSnap.id, ...docSnap.data() };
-    itens.push(item);
+// 🔥 SEPARAÇÃO
+const manuais = itens.filter(i => i.origem === "manual");
+const automaticos = itens.filter(i => i.origem !== "manual");
 
-    let listaFotos = [];
+// =====================
+// 🔵 MANUAL (TOPO)
+// =====================
+if (manuais.length) {
 
-if (item.fotos && Array.isArray(item.fotos)) {
-  listaFotos = item.fotos;
-} else if (item.foto) {
-  listaFotos = [item.foto];
-}
+  const header = document.createElement("div");
+  header.style.cssText = `
+    background:#0f172a;
+    color:white;
+    padding:10px;
+    border-radius:8px;
+    margin-bottom:10px;
+    font-weight:bold;
+  `;
+  header.innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <span>INSPEÇÃO MANUAL</span>
+    <input type="checkbox"
+      onchange="toggleGrupo('MANUAL', this.checked)">
+  </div>
+`;
 
-const fotos = listaFotos.map(url =>
-  `<img src="${url}" onclick="abrirImagem('${url}')" onerror="this.style.display='none'">`
-).join("");
+  container.appendChild(header);
+
+  manuais.forEach(item => {
+
+    let fotosHTML = (item.fotos || []).map(url =>
+      `<img src="${url}" onclick="abrirImagem('${url}')">`
+    ).join("");
 
     const div = document.createElement("div");
-    div.className = "item";
+
+    div.style.cssText = `
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  background:#fff;
+  border-left:4px solid #ff9800;
+  padding:10px;
+  border-radius:8px;
+  margin-bottom:8px;
+  box-shadow:0 2px 4px rgba(0,0,0,0.08);
+`;
 
     div.innerHTML = `
-      <div class="item-texto ${item.resolvido ? "resolvido" : ""}" id="txt-${item.id}">
-        <strong>${item.descricao}</strong><br>
-        ${item.eixo} - ${item.lado}
-        ${item.compartimento ? " | Comp: " + item.compartimento : ""}
-        <br>Tipo: ${item.tipo}
-        <div class="fotos">${fotos}</div>
+      <div id="txt-${item.id}" class="${item.resolvido ? "resolvido" : ""}" style="flex:1;">        <strong>${item.descricao}</strong><br>
+
+        Tipo de não conformidade: ${item.tipo}<br>
+        Eixo: ${item.eixo || "-"}<br>
+        Lado: ${item.lado || "-"}
+        ${item.compartimento ? `<br>Compartimento: ${item.compartimento}` : ""}
+
+        <div class="fotos">${fotosHTML}</div>
       </div>
 
-      <div class="acao"
-        style="${!podeMexerItens(implemento.status) ? 'opacity:0.4;pointer-events:none;' : ''}"
-        onclick="toggle('${item.id}')">
+<div class="acao"
+  style="
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:26px;
+    width:40px;
+    height:40px;
+    ${!podeMexerItens(implemento.status) ? 'opacity:0.4;pointer-events:none;' : ''}
+  "        onclick="toggle('${item.id}')">
         ${item.resolvido ? "❌" : "✔️"}
       </div>
     `;
 
     container.appendChild(div);
   });
+}
+
+// =====================
+// ⚙️ AUTOMÁTICO (AGRUPADO)
+// =====================
+const grupos = agruparPorGrupo(automaticos);
+
+Object.entries(grupos).forEach(([grupo, lista]) => {
+
+  const header = document.createElement("div");
+  header.style.cssText = `
+    background:#1f2937;
+    color:white;
+    padding:8px;
+    border-radius:6px;
+    margin-top:10px;
+    font-weight:bold;
+  `;
+  header.innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <span>${grupo}</span>
+    <input type="checkbox"
+      onchange="toggleGrupo('${grupo}', this.checked)">
+  </div>
+`;
+
+  container.appendChild(header);
+
+  lista.forEach(item => {
+
+    let fotosHTML = (item.fotos || []).map(url =>
+      `<img src="${url}" onclick="abrirImagem('${url}')">`
+    ).join("");
+
+    const cor = item.tipo === "troca" ? "#f44336" : "#2196f3";
+
+    const div = document.createElement("div");
+
+    div.style.cssText = `
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  background:#fff;
+  border-left:4px solid #ff9800;
+  padding:10px;
+  border-radius:8px;
+  margin-bottom:8px;
+  box-shadow:0 2px 4px rgba(0,0,0,0.08);
+`;
+
+    div.innerHTML = `
+<div id="txt-${item.id}" class="${item.resolvido ? "resolvido" : ""}" style="flex:1;">        <strong>${item.descricao}</strong><br>
+
+        <span style="
+          background:${cor};
+          color:white;
+          padding:2px 6px;
+          border-radius:4px;
+          font-size:12px;
+        ">
+          ${item.tipo}
+        </span>
+
+        <div class="fotos">${fotosHTML}</div>
+      </div>
+
+<div class="acao"
+  style="
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:26px;
+    width:40px;
+    height:40px;
+    ${!podeMexerItens(implemento.status) ? 'opacity:0.4;pointer-events:none;' : ''}"
+      onclick="toggle('${item.id}')">
+    ${item.resolvido ? "❌" : "✔️"}
+      </div>
+    `;
+
+    container.appendChild(div);
+  });
+
+});
 
 }
 
@@ -300,6 +448,31 @@ window.finalizar = async function() {
 
 import { carregarNavbar } from "./navbar.js";
 carregarNavbar();
+
+window.toggleGrupo = async function(grupo, marcado) {
+
+  const itensDoGrupo = itens.filter(i =>
+    grupo === "MANUAL"
+      ? i.origem === "manual"
+      : i.grupo === grupo
+  );
+
+  for (const item of itensDoGrupo) {
+
+    await updateDoc(doc(db, "naoConformidades", item.id), {
+      resolvido: marcado
+    });
+
+    // atualização local
+    item.resolvido = marcado;
+
+    const el = document.getElementById("txt-" + item.id);
+    const btn = el?.parentElement?.querySelector(".acao");
+
+    if (el) el.classList.toggle("resolvido", marcado);
+    if (btn) btn.innerHTML = marcado ? "❌" : "✔️";
+  }
+};
 
 </script>
 

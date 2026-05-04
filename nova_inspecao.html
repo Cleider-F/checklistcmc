@@ -1,386 +1,383 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
-<meta charset="UTF-8">
-<title>Nova Inspeção</title>
-
-<style>
-body {
-  margin: 0;
-  font-family: Arial;
-  background: #f1f3f6;
-}
-
-.topbar {
-  background: #1f2937;
-  color: white;
-  padding: 15px;
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.container {
-  padding: 12px;
-}
-
-.card {
-  background: white;
-  border-radius: 12px;
-  padding: 15px;
-  margin-bottom: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-}
-
-input, select {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 10px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-}
-
-button {
-  width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  border: none;
-  font-weight: bold;
-}
-
-.btn-primario { background: #2196f3; color: white; }
-.btn-sucesso { background: #4caf50; color: white; }
-
-.preview {
-  width: 100%;
-  margin-top: 10px;
-  border-radius: 8px;
-}
-</style>
+    <meta charset="UTF-8">
+    <title>Nova Inspeção - Sistema Integrado</title>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; background: #f1f3f6; }
+        .topbar { background: #1f2937; color: white; padding: 15px; font-size: 18px; font-weight: bold; }
+        .container { padding: 12px; }
+        .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 10px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08); }
+        .form-group { margin-bottom: 10px; }
+        .form-group label { font-size: 13px; font-weight: bold; display: block; margin-bottom: 4px; }
+        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; margin-top: 5px; }
+        .btn-primario { background: #2196f3; color: white; }
+        .btn-sucesso { background: #4caf50; color: white; margin-top: 15px; }
+        .btn-remover { background: #ff5252; color: white; padding: 5px; width: auto; font-size: 11px; }
+        .preview { width: 100%; margin-top: 10px; border-radius: 8px; }
+        .badge { padding: 2px 6px; border-radius: 4px; font-size: 12px; color: white; }
+    </style>
 </head>
 
 <body>
 
-<div class="topbar">➕ Nova Inspeção</div>
+    <div class="topbar">➕ Nova Inspeção</div>
 
-<div class="container">
+    <div class="container">
+        <!-- CARD 1: DADOS DO IMPLEMENTO -->
+        <div class="card">
+            <h3>Implemento</h3>
+            <div class="form-group">
+                <label>GO ou Placa</label>
+                <input id="placa" placeholder="Ex: ABC-1234">
+            </div>
 
-<div class="card">
-  <h3>Implemento</h3>
+            <div class="form-group">
+                <label>Tipo de Implemento</label>
+                <select id="tipo">
+                    <option value="">Selecione</option>
+                    <option value="carreta">Carreta</option>
+                    <option value="prancha">Prancha</option>
+                    <option value="comboio">Comboio</option>
+                    <option value="cavalo">Cavalo Mecânico</option>
+                </select>
+            </div>
 
-  <input id="placa" placeholder="Placa">
+            <div class="form-group">
+                <label>Tipo de manutenção</label>
+                <select id="tipoManutencao">
+                    <option value="">Selecione</option>
+                    <option value="preventiva">Preventiva</option>
+                    <option value="revisao">Revisão</option>
+                    <option value="cnp">CNP</option>
+                    <option value="gm">GM</option>
+                </select>
+            </div>
 
-  <select id="tipo">
-    <option value="">Tipo</option>
-    <option value="carreta">Carreta</option>
-    <option value="prancha">Prancha</option>
-    <option value="comboio">Comboio</option>
-    <option value="cavalo">Cavalo Mecânico</option>
-  </select>
+            <div id="kmField" style="display:none;">
+                <div class="form-group">
+                    <label>KM</label>
+                    <input id="km" type="number">
+                </div>
+            </div>
 
-  <select id="tipoManutencao">
-    <option value="">Tipo manutenção</option>
-    <option value="preventiva">Preventiva</option>
-    <option value="revisao">Revisão</option>
-    <option value="cnpj">CNPJ</option>
-    <option value="gm">GM</option>
-  </select>
+            <div id="horimetroField" style="display:none;">
+                <div class="form-group">
+                    <label>Horímetro</label>
+                    <input id="horimetro" type="number">
+                </div>
+            </div>
 
-  <div id="kmField" style="display:none;">
-    <input id="km" placeholder="KM">
-  </div>
+            <div id="compartimentosField" style="display:none;">
+                <div class="form-group">
+                    <label>Qtd Compartimentos (Implemento)</label>
+                    <input id="compartimentos" type="number">
+                </div>
+            </div>
+        </div>
 
-  <div id="horimetroField" style="display:none;">
-    <input id="horimetro" placeholder="Horímetro">
-  </div>
+        <!-- CARD 2: ADICIONAR NÃO CONFORMIDADE MANUAL -->
+        <div class="card">
+            <h3>Itens de Inspeção</h3>
+            <div class="form-group">
+                <label>Descrição da Avaria/Item</label>
+                <input id="descricao" placeholder="Ex: Lâmpada queimada">
+            </div>
 
-  <div id="compartimentosField" style="display:none;">
-    <input id="compartimentos" type="number" placeholder="Qtd Compartimentos">
-  </div>
-</div>
+            <div style="display: flex; gap: 10px;">
+                <div class="form-group" style="flex: 1;">
+                    <label>Eixo</label>
+                    <input id="eixo" placeholder="Ex: 1º Eixo">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Lado</label>
+                    <select id="lado">
+                        <option value="">Selecione</option>
+                        <option value="esquerdo">Esquerdo</option>
+                        <option value="direito">Direito</option>
+                        <option value="N/A">N/A</option>
+                    </select>
+                </div>
+            </div>
 
-<div class="card">
-  <h3>Não Conformidade</h3>
+            <div class="form-group">
+                <label>Tipo de Item</label>
+                <select id="tipoItem">
+                    <option value="normal">Normal</option>
+                    <option value="avaria">Avaria</option>
+                </select>
+            </div>
 
-  <input id="descricao" placeholder="Descrição">
-  <input id="eixo" placeholder="Ex: 2º eixo">
+            <div id="compartimentoItem" style="display:none;">
+                <div class="form-group">
+                    <label>Nº do Compartimento</label>
+                    <input id="compartimentoItemInput" type="number">
+                </div>
+            </div>
 
-  <select id="lado">
-    <option value="">Lado</option>
-    <option value="esquerdo">Esquerdo</option>
-    <option value="direito">Direito</option>
-  </select>
+            <label>Foto da Evidência</label>
+            <input type="file" id="foto" accept="image/*">
+            <img id="preview" class="preview" style="display:none;">
 
-  <select id="tipoItem">
-    <option value="normal">Normal</option>
-    <option value="avaria">Avaria</option>
-  </select>
+            <button class="btn-primario" onclick="adicionarItem()">+ Adicionar à Lista</button>
+        </div>
 
-  <div id="compartimentoItem" style="display:none;">
-    <input id="compartimentoItemInput" type="number" placeholder="Compartimento">
-  </div>
+        <!-- LISTAGEM -->
+        <div id="listaItens"></div>
 
-  <input type="file" id="foto" accept="image/*" capture="environment">
-  <img id="preview" class="preview" style="display:none;">
+        <button class="btn-sucesso" onclick="criar()">Finalizar e Enviar Inspeção</button>
+    </div>
 
-  <button class="btn-primario" onclick="adicionarItem()">Adicionar Item</button>
-
-  <div id="listaItens"></div>
-</div>
-
-<button class="btn-sucesso" onclick="criar()">Finalizar Inspeção</button>
-
-</div>
+<!-- Mantenha o mesmo HTML e CSS do código anterior -->
 
 <script type="module">
+    import { db, storage, auth } from "./firebase.js";
+    import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
-import { db, storage } from "./firebase.js";
-import {
-  collection,
-  addDoc,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    let planoComboio = [];
+    let planoCarreta = [];
+    let planoCarregado = false;
+    let naoConformidades = [];
+    let fotoFile = null;
 
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+    // --- CARREGAMENTO DOS PLANOS ---
+    Promise.all([
+        fetch("./plano_manutencao.json").then(res => res.json()).catch(() => []),
+        fetch("./plano_manutencao_carreta.json").then(res => res.json()).catch(() => [])
+    ]).then(([dataComboio, dataCarreta]) => {
+        planoComboio = dataComboio;
+        planoCarreta = dataCarreta;
+        planoCarregado = true;
+    });
 
-// 🔥 CARREGAMENTO DO JSON
-let plano = [];
-let planoCarregado = false;
-
-fetch("./plano_manutencao.json")
-  .then(res => res.json())
-  .then(data => {
-    plano = data;
-    planoCarregado = true;
-    console.log("Plano carregado:", plano.length);
-  })
-  .catch(err => console.error("Erro ao carregar plano:", err));
-
-let naoConformidades = [];
-let fotoFile = null;
-
-// 🔥 CONFIG
-const configTipo = {
-  carreta: { km: false, horimetro: false, compartimentos: true },
-  prancha: { km: false, horimetro: false, compartimentos: false },
-  comboio: { km: true, horimetro: true, compartimentos: false },
-  cavalo: { km: true, horimetro: false, compartimentos: false }
-};
-
-// 🔄 CONTROLE UI
-document.getElementById("tipo").addEventListener("change", () => {
-
-  const tipo = document.getElementById("tipo").value;
-  const cfg = configTipo[tipo] || {};
-
-  document.getElementById("kmField").style.display = cfg.km ? "block" : "none";
-  document.getElementById("horimetroField").style.display = cfg.horimetro ? "block" : "none";
-  document.getElementById("compartimentosField").style.display = cfg.compartimentos ? "block" : "none";
-  document.getElementById("compartimentoItem").style.display = cfg.compartimentos ? "block" : "none";
-});
-
-// 📸 PREVIEW
-document.getElementById("foto").addEventListener("change", (e) => {
-  fotoFile = e.target.files[0];
-
-  if (!fotoFile) return;
-
-  const preview = document.getElementById("preview");
-  preview.src = URL.createObjectURL(fotoFile);
-  preview.style.display = "block";
-});
-
-// 🔥 CHECKLIST AUTOMÁTICO
-function gerarChecklistAutomatico(horimetro) {
-
-  const tipoManutencao = document.getElementById("tipoManutencao").value;
-  const tipo = document.getElementById("tipo").value;
-
-  // 🔥 REGRA DE NEGÓCIO
-  if (tipoManutencao !== "revisao" || tipo !== "comboio") {
-    return [];
-  }
-
-  if (!plano.length) return [];
-
-  const todasHoras = [...new Set(
-    plano.flatMap(item => item.horas.map(h => h.hora))
-  )].sort((a,b) => a - b);
-
-  const marco = todasHoras.filter(h => h <= horimetro).pop();
-
-  if (!marco) return [];
-
-  return plano.map(item => {
-
-    const acao = item.horas.find(h => h.hora === marco);
-    if (!acao) return null;
-
-    return {
-      grupo: item.grupo,
-      descricao: item.descricao,
-      eixo: "",
-      lado: "",
-      tipo: acao.tipo === "T" ? "troca" : "vistoria",
-      compartimento: null,
-      fotos: [],
-      resolvido: false,
-      origem: "automatico" // 🔥 já prepara pro próximo nível
+    const configTipo = {
+        carreta: { km: false, horimetro: false, compartimentos: true },
+        prancha: { km: false, horimetro: false, compartimentos: false },
+        comboio: { km: true, horimetro: true, compartimentos: false },
+        cavalo: { km: true, horimetro: false, compartimentos: false }
     };
 
-  }).filter(Boolean);
-}
+    // --- LÓGICA DE INTERFACE ---
+    document.getElementById("tipo").addEventListener("change", (e) => {
+        const tipo = e.target.value;
+        const cfg = configTipo[tipo] || {};
+        kmField.style.display = cfg.km ? "block" : "none";
+        horimetroField.style.display = cfg.horimetro ? "block" : "none";
+        compartimentosField.style.display = cfg.compartimentos ? "block" : "none";
+        compartimentoItem.style.display = cfg.compartimentos ? "block" : "none";
+        verificarChecklistAutomatico();
+    });
 
-function agruparPorGrupo(lista) {
+    document.getElementById("tipoManutencao").addEventListener("change", verificarChecklistAutomatico);
+    document.getElementById("horimetro").addEventListener("input", verificarChecklistAutomatico);
 
-  const grupos = {};
+    function verificarChecklistAutomatico() {
+        if (!planoCarregado) return;
+        const tipoImp = document.getElementById("tipo").value;
+        const tipoManut = document.getElementById("tipoManutencao").value;
+        const horimetroVal = Number(document.getElementById("horimetro").value);
 
-  lista.forEach(item => {
+        let novosItens = [];
 
-    const grupo = item.grupo || "GERAL";
+        if (tipoImp === "carreta" && (tipoManut === "revisao" || tipoManut === "preventiva")) {
+            novosItens = gerarChecklistCarreta(tipoManut);
+        } 
+        else if (tipoImp === "comboio" && tipoManut === "revisao" && horimetroVal > 0) {
+            novosItens = gerarChecklistComboio(horimetroVal);
+        }
 
-    if (!grupos[grupo]) {
-      grupos[grupo] = [];
+        const manuais = naoConformidades.filter(i => i.origem === "manual");
+        naoConformidades = [...manuais, ...novosItens];
+        renderLista();
     }
 
-    grupos[grupo].push(item);
-  });
+    function gerarChecklistCarreta(tipo) {
+        const itensFiltrados = planoCarreta.filter(p => p.tipoPlano === tipo);
+        let checklist = [];
+        itensFiltrados.forEach(grupo => {
+            grupo.itens.forEach(item => {
+                checklist.push({
+                    grupo: grupo.grupo,
+                    descricao: item.descricao,
+                    eixo: "", lado: "", tipo: "vistoria",
+                    fotos: [], resolvido: false, origem: "automatico"
+                });
+            });
+        });
+        return checklist;
+    }
 
-  return grupos;
-}
+    function gerarChecklistComboio(horimetro) {
+        const todasHoras = [...new Set(planoComboio.flatMap(i => i.horas.map(h => h.hora)))].sort((a, b) => a - b);
+        const marco = todasHoras.filter(h => h <= horimetro).pop();
+        if (!marco) return [];
 
-// 🔥 AUTO PREENCHIMENTO
-document.getElementById("horimetro").addEventListener("input", () => {
+        return planoComboio.map(item => {
+            const acao = item.horas.find(h => h.hora === marco);
+            if (!acao) return null;
+            return {
+                grupo: item.grupo,
+                descricao: item.descricao,
+                eixo: "", lado: "", tipo: acao.tipo === "T" ? "troca" : "vistoria",
+                fotos: [], resolvido: false, origem: "automatico"
+            };
+        }).filter(Boolean);
+    }
 
-  const valor = Number(document.getElementById("horimetro").value);
-
-  if (!valor) return;
-
-  if (!planoCarregado) {
-    console.log("Plano ainda não carregado");
-    return;
-  }
-
-  const checklist = gerarChecklistAutomatico(valor);
-
-  if (!checklist.length) {
-    console.log("Nenhum item para esse horímetro");
-    return;
-  }
-
-  naoConformidades = [...checklist];
-
-  renderLista();
-});
-
-// 📋 LISTA
-function renderLista() {
-
-  const container = document.getElementById("listaItens");
-  container.innerHTML = "";
-
-  const grupos = agruparPorGrupo(naoConformidades);
-
-  Object.entries(grupos).forEach(([grupo, itensGrupo]) => {
-
-    // 🔥 HEADER DO GRUPO
-    const header = document.createElement("div");
-    header.style.background = "#1f2937";
-    header.style.color = "white";
-    header.style.padding = "8px";
-    header.style.borderRadius = "6px";
-    header.style.marginTop = "10px";
-    header.innerText = grupo;
-
-    container.appendChild(header);
-
-    itensGrupo.forEach((item, i) => {
-
-      const fotosHTML = (item.fotos || []).map(f =>
-        `<img src="${f}" class="preview">`
-      ).join("");
-
-      const div = document.createElement("div");
-      div.style.padding = "8px";
-
-      div.innerHTML = `
-        <strong>${item.descricao}</strong><br>
-        ${item.eixo || "-"} - ${item.lado || "-"}
-        <br>Tipo: ${item.tipo}
-        ${fotosHTML}
-        <button onclick="remover(${i})">Remover</button>
-        <hr>
-      `;
-
-      container.appendChild(div);
+    // --- GERENCIAMENTO DE FOTOS E ITENS ---
+    foto.addEventListener("change", (e) => {
+        fotoFile = e.target.files[0];
+        if (!fotoFile) return;
+        preview.src = URL.createObjectURL(fotoFile);
+        preview.style.display = "block";
     });
 
-  });
-}
+    window.adicionarItem = async function() {
+        const desc = document.getElementById("descricao").value.trim();
+        const eixo = document.getElementById("eixo").value.trim();
+        const lado = document.getElementById("lado").value;
+        const tipo = document.getElementById("tipoItem").value;
+        const comp = document.getElementById("compartimentoItemInput")?.value;
 
-window.remover = function(i) {
-  naoConformidades.splice(i, 1);
-  renderLista();
-};
+        if (!desc || !eixo || !lado) return alert("Preencha Descrição, Eixo e Lado");
 
-// 🚀 CRIAR
-window.criar = async function() {
+        let fotos = [];
+        if (fotoFile) {
+            const storageRef = ref(storage, "avarias/" + Date.now() + ".jpg");
+            await uploadBytes(storageRef, fotoFile);
+            const url = await getDownloadURL(storageRef);
+            fotos.push(url);
+        }
 
-  const placa = document.getElementById("placa").value.trim();
-  const tipo = document.getElementById("tipo").value;
-  const tipoManutencao = document.getElementById("tipoManutencao").value;
-  const km = document.getElementById("km").value;
-  const horimetro = document.getElementById("horimetro").value;
-  const compartimentos = document.getElementById("compartimentos").value;
+        naoConformidades.push({
+            grupo: "MANUAL",
+            descricao: desc,
+            eixo: eixo,
+            lado: lado,
+            tipo: tipo,
+            compartimento: comp ? Number(comp) : null,
+            fotos: fotos,
+            resolvido: false,
+            origem: "manual"
+        });
 
-  const cfg = configTipo[tipo];
+        limparCamposItem();
+        renderLista();
+    };
 
-  if (!placa || !tipo || !tipoManutencao) {
-    alert("Preencha os dados obrigatórios");
-    return;
-  }
+    function renderLista() {
+        const container = document.getElementById("listaItens");
+        container.innerHTML = "";
 
-  if (cfg.compartimentos && !compartimentos) return alert("Informe os compartimentos");
-  if (cfg.km && !km) return alert("Informe o KM");
-  if (cfg.horimetro && !horimetro) return alert("Informe o horímetro");
+        // Mesma lógica visual de separação por grupos
+        const grupos = {};
+        naoConformidades.forEach(item => {
+            const g = item.grupo || "GERAL";
+            if (!grupos[g]) grupos[g] = [];
+            grupos[g].push(item);
+        });
 
-  if (!naoConformidades.length) {
-    alert("Adicione ao menos uma não conformidade");
-    return;
-  }
+        Object.entries(grupos).forEach(([nomeGrupo, itens]) => {
+            const header = document.createElement("div");
+            header.style.cssText = "background:#1f2937; color:white; padding:8px; border-radius:6px; margin-top:10px; font-weight:bold;";
+            header.innerText = nomeGrupo;
+            container.appendChild(header);
 
-  const agora = serverTimestamp();
+            itens.forEach(item => {
+                const idx = naoConformidades.indexOf(item);
+                const div = document.createElement("div");
+                div.style.cssText = "background:#fff; padding:10px; border-radius:8px; margin-top:6px; box-shadow:0 2px 4px rgba(0,0,0,0.08); border-left:4px solid " + (item.origem === 'manual' ? '#ff9800' : '#2196f3');
+                div.innerHTML = `
+                    <strong>${item.descricao}</strong><br>
+                    <small>Tipo: ${item.tipo} | Eixo: ${item.eixo || '-'} | Lado: ${item.lado || '-'}</small>
+                    <br><button class="btn-remover" onclick="removerItem(${idx})">Remover</button>
+                `;
+                container.appendChild(div);
+            });
+        });
+    }
 
-  const implementoRef = await addDoc(collection(db, "implementos"), {
-    placa,
-    tipo,
-    status: "em_inspecao",
-    dataInspecao: agora,
-    tipoManutencao
-  });
+    window.removerItem = (i) => {
+        naoConformidades.splice(i, 1);
+        renderLista();
+    };
 
-  const inspecaoRef = await addDoc(collection(db, "inspecoes"), {
-    implementoId: implementoRef.id,
-    km: km ? Number(km) : null,
-    horimetro: horimetro ? Number(horimetro) : null,
-    compartimentos: compartimentos ? Number(compartimentos) : 0,
-    criadoEm: agora
-  });
+    // --- FINALIZAÇÃO (PONTO CRÍTICO PARA O DASHBOARD) ---
+    window.criar = async function() {
+        const placaVal = document.getElementById("placa").value.trim();
+        const tipoVal = document.getElementById("tipo").value;
+        const tipoManutencaoVal = document.getElementById("tipoManutencao").value;
 
-  for (const item of naoConformidades) {
-    await addDoc(collection(db, "naoConformidades"), {
-      ...item,
-      inspecaoId: inspecaoRef.id
-    });
-  }
+        if (!placaVal || !tipoVal || !tipoManutencaoVal) return alert("Preencha os dados obrigatórios");
 
-  alert("Inspeção criada!");
-  window.location = "detalhe.html?id=" + implementoRef.id;
-};
+        const usuario = getUsuarioLogado();
+        const dataInfo = formatarDataHora();
 
+        try {
+            // 1. Grava em 'implementos' (como no seu original)
+            const implementoRef = await addDoc(collection(db, "implementos"), {
+                placa: placaVal,
+                tipo: tipoVal,
+                status: "em_inspecao",
+                dataInspecao: dataInfo.timestamp,
+                dataFormatada: dataInfo.data,
+                horaFormatada: dataInfo.hora,
+                inspecionadoPor: usuario.nome,
+                inspecionadorEmail: usuario.email,
+                tipoManutencao: tipoManutencaoVal
+            });
+
+            // 2. Grava em 'inspecoes'
+            const inspecaoRef = await addDoc(collection(db, "inspecoes"), {
+                implementoId: implementoRef.id,
+                km: Number(document.getElementById("km").value) || null,
+                horimetro: Number(document.getElementById("horimetro").value) || null,
+                compartimentos: Number(document.getElementById("compartimentos").value) || 0,
+                criadoEm: dataInfo.timestamp,
+                data: dataInfo.data,
+                hora: dataInfo.hora,
+                inspecionadoPor: usuario.nome
+            });
+
+            // 3. Grava em 'naoConformidades' (Coleção que o Dashboard provavelmente lê)
+            for (const item of naoConformidades) {
+                await addDoc(collection(db, "naoConformidades"), {
+                    ...item,
+                    inspecaoId: inspecaoRef.id
+                });
+            }
+
+            alert("Inspeção Criada!");
+            location.href = "detalhe.html?id=" + implementoRef.id;
+        } catch (e) {
+            console.error(e);
+            alert("Erro ao salvar.");
+        }
+    };
+
+    function getUsuarioLogado() {
+        const user = auth.currentUser;
+        return { nome: user?.displayName || "Desconhecido", email: user?.email || null };
+    }
+
+    function formatarDataHora() {
+        const agora = new Date();
+        return {
+            data: agora.toLocaleDateString("pt-BR"),
+            hora: agora.toLocaleTimeString("pt-BR"),
+            timestamp: serverTimestamp()
+        };
+    }
+
+    function limparCamposItem() {
+        document.getElementById("descricao").value = "";
+        document.getElementById("eixo").value = "";
+        document.getElementById("lado").value = "";
+        document.getElementById("foto").value = "";
+        document.getElementById("preview").style.display = "none";
+        fotoFile = null;
+    }
 </script>
-</body>
-</html>
