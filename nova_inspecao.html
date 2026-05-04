@@ -4,22 +4,97 @@
 <head>
     <meta charset="UTF-8">
     <title>Nova Inspeção - Sistema Integrado</title>
-    <style>
-        body { margin: 0; font-family: Arial, sans-serif; background: #f1f3f6; }
-        .topbar { background: #1f2937; color: white; padding: 15px; font-size: 18px; font-weight: bold; }
-        .container { padding: 12px; }
-        .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 10px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08); }
-        .form-group { margin-bottom: 10px; }
-        .form-group label { font-size: 13px; font-weight: bold; display: block; margin-bottom: 4px; }
-        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; margin-top: 5px; }
-        .btn-primario { background: #2196f3; color: white; }
-        .btn-sucesso { background: #4caf50; color: white; margin-top: 15px; }
-        .btn-remover { background: #ff5252; color: white; padding: 5px; width: auto; font-size: 11px; }
-        .preview { width: 100%; margin-top: 10px; border-radius: 8px; }
-        .badge { padding: 2px 6px; border-radius: 4px; font-size: 12px; color: white; }
-    </style>
-</head>
+<style>
+    body { 
+        margin: 0; 
+        font-family: Arial, sans-serif; 
+        background: #f1f3f6; 
+        /* Espaço para não cobrir o conteúdo com a navbar no final */
+        padding-bottom: 80px; 
+    }
+    
+    .topbar { 
+        background: #1f2937; 
+        color: white; 
+        padding: 15px; 
+        font-size: 18px; 
+        font-weight: bold; 
+        text-align: left; /* Centralizado fica melhor no mobile */
+    }
+
+    .container { padding: 12px; }
+
+    .card { 
+        background: white; 
+        border-radius: 12px; 
+        padding: 15px; 
+        margin-bottom: 12px; 
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08); 
+    }
+
+    .card h3 { 
+        margin-top: 0; 
+        font-size: 16px; 
+        color: #333; 
+        border-bottom: 1px solid #eee; 
+        padding-bottom: 8px; 
+    }
+
+    .form-group { margin-bottom: 12px; }
+    .form-group label { font-size: 13px; font-weight: bold; display: block; margin-bottom: 6px; color: #444; }
+
+    /* Ajuste para inputs não darem zoom automático no iOS e serem fáceis de clicar */
+    input, select { 
+        width: 100%; 
+        padding: 14px; 
+        border-radius: 8px; 
+        border: 1px solid #ccc; 
+        box-sizing: border-box; 
+        font-size: 16px; 
+        background-color: #fff;
+    }
+
+    button { 
+        width: 100%; 
+        padding: 15px; 
+        border-radius: 10px; 
+        border: none; 
+        font-weight: bold; 
+        cursor: pointer; 
+        font-size: 16px;
+        transition: opacity 0.2s;
+    }
+
+    button:active { opacity: 0.8; }
+
+    .btn-primario { background: #2196f3; color: white; }
+    .btn-sucesso { background: #4caf50; color: white; margin-top: 20px; box-shadow: 0 4px 6px rgba(76, 175, 80, 0.3); }
+    
+    /* Botão de remover mais fácil de clicar no mobile */
+    .btn-remover { 
+        background: #ff5252; 
+        color: white; 
+        padding: 8px 12px; 
+        width: auto; 
+        font-size: 13px; 
+        margin-top: 8px;
+        display: inline-block;
+    }
+
+    .preview { width: 100%; margin-top: 10px; border-radius: 8px; border: 1px solid #ddd; }
+
+    /* Media Query para telas muito pequenas */
+    @media (max-width: 400px) {
+        .card { padding: 10px; }
+        .topbar { font-size: 16px; }
+        
+        /* Se o espaço for muito curto, coloca Eixo e Lado um embaixo do outro */
+        .flex-mobile {
+            flex-direction: column;
+            gap: 0 !important;
+        }
+    }
+</style></head>
 
 <body>
 
@@ -86,21 +161,21 @@
                 <input id="descricao" placeholder="Ex: Lâmpada queimada">
             </div>
 
-            <div style="display: flex; gap: 10px;">
-                <div class="form-group" style="flex: 1;">
-                    <label>Eixo</label>
-                    <input id="eixo" placeholder="Ex: 1º Eixo">
-                </div>
-                <div class="form-group" style="flex: 1;">
-                    <label>Lado</label>
-                    <select id="lado">
-                        <option value="">Selecione</option>
-                        <option value="esquerdo">Esquerdo</option>
-                        <option value="direito">Direito</option>
-                        <option value="N/A">N/A</option>
-                    </select>
-                </div>
-            </div>
+            <div style="display: flex; gap: 10px;" class="flex-mobile">
+    <div class="form-group" style="flex: 1;">
+        <label>Eixo</label>
+        <input id="eixo" placeholder="Ex: 1º Eixo">
+    </div>
+    <div class="form-group" style="flex: 1;">
+        <label>Lado</label>
+        <select id="lado">
+            <option value="">Selecione</option>
+            <option value="esquerdo">Esquerdo</option>
+            <option value="direito">Direito</option>
+            <option value="N/A">N/A</option>
+        </select>
+    </div>
+</div>
 
             <div class="form-group">
                 <label>Tipo de Item</label>
