@@ -261,7 +261,7 @@
 
         let novosItens = [];
 
-        if (tipoImp === "carreta","comboio" && (tipoManut === "revisao" || tipoManut === "preventiva")) {
+        if (tipoImp === "carreta","prancha" && (tipoManut === "revisao" || tipoManut === "preventiva")) {
             novosItens = gerarChecklistCarreta(tipoManut);
         } 
         else if (tipoImp === "comboio" && tipoManut === "revisao" && horimetroVal > 0) {
