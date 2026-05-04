@@ -90,6 +90,20 @@ body {
   color: #555;
   font-size: 13px;
 }
+
+/* FILTROS */
+.filtros {
+  background: white;
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+input, select {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
 </style>
 </head>
 
@@ -99,6 +113,18 @@ body {
   🔧 Manutenção
 </div>
 
+<div class="filtros">
+  <input id="busca" placeholder="Buscar por placa">
+
+  <select id="filtroTipo">
+    <option value="">Todos os tipos</option>
+    <option value="carreta">Carreta</option>
+    <option value="prancha">Prancha</option>
+    <option value="comboio">Comboio</option>
+    <option value="cavalo">Cavalo</option>
+  </select>
+</div>
+
 <div class="contadores" id="contadores"></div>
 
 <div class="lista" id="lista"></div>
@@ -106,7 +132,6 @@ body {
 <link rel="stylesheet" href="navbar.css">
 
 <script type="module">
-
 import { db } from "./firebase.js";
 import {
   collection,
@@ -114,126 +139,43 @@ import {
   query,
   where
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { carregarNavbar } from "./navbar.js";
 
-// 🎨 STATUS
+carregarNavbar();
+
+// 1. DECLARAÇÕES GLOBAIS (Sempre no topo)
+let dados = [];
+
+// 2. DEFINIÇÃO DA QUERY
+const q = query(
+  collection(db, "implementos"),
+  where("status", "in", ["aguardando_manutencao", "em_manutencao"])
+);
+
+// 3. FUNÇÕES AUXILIARES
 function getStatusInfo(status) {
   switch(status) {
-    case "aguardando_manutencao":
-      return { nome: "Aguardando", cor: "laranja" };
-    case "em_manutencao":
-      return { nome: "Em manutenção", cor: "amarelo" };
+    case "aguardando_manutencao": return { nome: "Aguardando", cor: "laranja" };
+    case "em_manutencao": return { nome: "Em manutenção", cor: "amarelo" };
+    default: return { nome: "-", cor: "" };
   }
 }
 
-// 🧠 PRIORIDADE
 function prioridade(status) {
   if (status === "aguardando_manutencao") return 1;
   if (status === "em_manutencao") return 2;
   return 3;
 }
 
-// 📅 FORMATAR DATA
 function formatarData(ts) {
   if (!ts) return "-";
-  const d = ts.toDate();
-  return d.toLocaleString("pt-BR");
+  try {
+    const d = ts.toDate();
+    return d.toLocaleString("pt-BR");
+  } catch(e) { return "-"; }
 }
-
-// 🔢 CONTADORES
-function atualizarContadores(lista) {
-
-  const cont = {
-    aguardando_manutencao: 0,
-    em_manutencao: 0
-  };
-
-  lista.forEach(i => cont[i.status]++);
-
-  document.getElementById("contadores").innerHTML = `
-    <div class="contador-card laranja">
-      <div class="contador-top">Aguardando</div>
-      <div class="contador-numero">${cont.aguardando_manutencao}</div>
-    </div>
-
-    <div class="contador-card amarelo">
-      <div class="contador-top">Em manutenção</div>
-      <div class="contador-numero">${cont.em_manutencao}</div>
-    </div>
-  `;
-}
-
-// 🚀 QUERY
-const q = query(
-  collection(db, "implementos"),
-  where("status", "in", ["aguardando_manutencao", "em_manutencao"])
-);
-
-// 🚀 TEMPO REAL
-onSnapshot(q, (snapshot) => {
-
-  const lista = [];
-
-  snapshot.forEach(doc => {
-    lista.push({
-      id: doc.id,
-      ...doc.data()
-    });
-  });
-
-  // 🔥 ORDENAÇÃO INTELIGENTE
-  lista.sort((a, b) => {
-
-    const p1 = prioridade(a.status);
-    const p2 = prioridade(b.status);
-
-    if (p1 !== p2) return p1 - p2;
-
-    const d1 = a.dataInspecao?.seconds || 0;
-    const d2 = b.dataInspecao?.seconds || 0;
-
-    return d2 - d1; // mais novo primeiro
-  });
-
-  const container = document.getElementById("lista");
-  container.innerHTML = "";
-
-  lista.forEach(data => {
-
-    const status = getStatusInfo(data.status);
-
-    const div = document.createElement("div");
-    div.className = "card";
-
-div.innerHTML = `
-  <div class="card-top">
-    <div class="placa">${data.placa}</div>
-    <div class="status ${status.cor}">
-      ${status.nome}
-    </div>
-  </div>
-
-  <div class="info">
-    Tipo: ${data.tipo}<br>
-    Manutenção: <strong>${formatarTipoManutencao(data.tipoManutencao)}</strong><br>
-    Inspeção: ${formatarData(data.dataInspecao)}
-  </div>
-`;
-    div.onclick = () => {
-      window.location = "manutencao_detalhe.html?id=" + data.id;
-    };
-
-    container.appendChild(div);
-  });
-
-  atualizarContadores(lista);
-
-});
-
-import { carregarNavbar } from "./navbar.js";
-carregarNavbar();
 
 function formatarTipoManutencao(tipo) {
-
   switch(tipo) {
     case "preventiva": return "Preventiva";
     case "revisao": return "Revisão";
@@ -241,10 +183,88 @@ function formatarTipoManutencao(tipo) {
     case "gm": return "GM";
     default: return tipo || "-";
   }
-
 }
 
-</script>
+// 4. LÓGICA DE RENDERIZAÇÃO E FILTRO
+function render(lista) {
+  // Ordenação
+  lista.sort((a, b) => {
+    const p1 = prioridade(a.status);
+    const p2 = prioridade(b.status);
+    if (p1 !== p2) return p1 - p2;
+    const d1 = a.dataInspecao?.seconds || 0;
+    const d2 = b.dataInspecao?.seconds || 0;
+    return d2 - d1;
+  });
 
+  const container = document.getElementById("lista");
+  container.innerHTML = "";
+
+  lista.forEach(data => {
+    const status = getStatusInfo(data.status);
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `
+      <div class="card-top">
+        <div class="placa">${data.placa}</div>
+        <div class="status ${status.cor}">${status.nome}</div>
+      </div>
+      <div class="info">
+        Tipo: ${data.tipo}<br>
+        Manutenção: <strong>${formatarTipoManutencao(data.tipoManutencao)}</strong><br>
+        Inspeção: ${formatarData(data.dataInspecao)}
+      </div>
+    `;
+    div.onclick = () => { window.location = "manutencao_detalhe.html?id=" + data.id; };
+    container.appendChild(div);
+  });
+
+  atualizarContadores(lista);
+}
+
+function aplicarFiltros() {
+  const busca = document.getElementById("busca").value.toLowerCase();
+  const tipo = document.getElementById("filtroTipo").value;
+
+  let resultado = dados;
+
+  if (busca) {
+    resultado = resultado.filter(i => i.placa.toLowerCase().includes(busca));
+  }
+  if (tipo) {
+    resultado = resultado.filter(i => i.tipo === tipo);
+  }
+
+  render(resultado);
+}
+
+function atualizarContadores(lista) {
+  const cont = { aguardando_manutencao: 0, em_manutencao: 0 };
+  lista.forEach(i => { if(cont[i.status] !== undefined) cont[i.status]++; });
+
+  document.getElementById("contadores").innerHTML = `
+    <div class="contador-card laranja">
+      <div class="contador-top">Aguardando</div>
+      <div class="contador-numero">${cont.aguardando_manutencao}</div>
+    </div>
+    <div class="contador-card amarelo">
+      <div class="contador-top">Em manutenção</div>
+      <div class="contador-numero">${cont.em_manutencao}</div>
+    </div>
+  `;
+}
+
+// 5. EVENTOS E ATIVAÇÃO DO TEMPO REAL
+document.getElementById("busca").addEventListener("input", aplicarFiltros);
+document.getElementById("filtroTipo").addEventListener("change", aplicarFiltros);
+
+onSnapshot(q, (snapshot) => {
+  dados = [];
+  snapshot.forEach(doc => {
+    dados.push({ id: doc.id, ...doc.data() });
+  });
+  aplicarFiltros(); 
+});
+</script>
 </body>
 </html>
