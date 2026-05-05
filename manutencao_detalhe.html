@@ -2,7 +2,6 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <!-- CRUCIAL: Faz o site entender o tamanho da tela do celular -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Execução da Manutenção</title>
 
@@ -21,7 +20,6 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background: var(--bg);
             color: #333;
-            /* Espaço para a navbar inferior não cobrir os botões */
             padding-bottom: 90px;
         }
 
@@ -59,8 +57,7 @@
         /* ESTILO DOS ITENS DO CHECKLIST */
         .item-container {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
             background: #fff;
             padding: 12px;
             border-radius: 10px;
@@ -69,16 +66,31 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
         .item-container.automatico { border-left-color: var(--primary); }
+        .item-container.concluido { border-left-color: var(--success); }
+        .item-container.nao-realizado { border-left-color: var(--danger); }
 
         .item-info { flex: 1; padding-right: 10px; }
         .item-info strong { font-size: 15px; display: block; margin-bottom: 4px; }
         .item-info small { color: #666; line-height: 1.4; }
 
-        .resolvido {
-            text-decoration: line-through;
-            opacity: 0.6;
-            color: var(--success);
+        .resolvido { color: var(--success); font-weight: bold; }
+        .cancelado { color: var(--danger); font-weight: bold; }
+
+        .justificativa-box {
+            margin-top: 10px;
+            padding: 8px;
+            background: #fff5f5;
+            border: 1px dashed var(--danger);
+            border-radius: 6px;
+            font-size: 13px;
+            color: #b91c1c;
         }
 
         .badge {
@@ -91,21 +103,29 @@
             margin-top: 5px;
         }
 
-        /* BOTÃO DE AÇÃO (Check) */
-        .acao {
+        /* CONTAINER DE BOTÕES DE AÇÃO */
+        .acoes-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-acao-item {
             width: 45px;
             height: 45px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 20px;
             background: var(--bg);
-            border-radius: 50%;
+            border-radius: 10px;
             cursor: pointer;
             transition: all 0.2s;
+            border: none;
         }
 
-        /* HEADER DE GRUPOS */
+        .btn-check.ativo { background: var(--success); color: white; }
+        .btn-x.ativo { background: var(--danger); color: white; }
+
         .grupo-header {
             background: var(--dark);
             color: white;
@@ -118,7 +138,6 @@
             align-items: center;
         }
 
-        /* IMAGENS */
         .fotos { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
         .fotos img {
             width: 60px;
@@ -128,7 +147,6 @@
             border: 1px solid #ddd;
         }
 
-        /* BOTÕES GERAIS */
         button {
             width: 100%;
             padding: 16px;
@@ -144,7 +162,6 @@
         .btn-alerta { background: var(--warning); color: white; }
         .btn-sucesso { background: var(--success); color: white; }
 
-        /* MODAL IMAGEM */
         #modalImg {
             display: none;
             position: fixed;
@@ -155,16 +172,12 @@
             align-items: center;
             z-index: 1000;
         }
-
-        input[type="checkbox"] {
-            transform: scale(1.5);
-        }
     </style>
 </head>
 
 <body>
 
-<div class="topbar">🔧 Manutenção</div>
+<div class="topbar">☰ Manutenção</div>
 
 <div class="container">
     <div id="info" class="card">Carregando dados...</div>
@@ -183,7 +196,6 @@
     </button>
 </div>
 
-<!-- Modal para ver foto grande -->
 <div id="modalImg" onclick="this.style.display='none'">
     <img id="imgGrande" style="max-width:95%; max-height:90%; border-radius:10px;">
 </div>
@@ -192,7 +204,7 @@
 
 <script type="module">
     import { db } from "./firebase.js";
-    import { doc, getDoc, collection, query, where, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { doc, getDoc, collection, query, where, getDocs, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { carregarNavbar } from "./navbar.js";
 
     carregarNavbar();
@@ -209,19 +221,13 @@
         const snap = await getDoc(doc(db, "implementos", id));
         implemento = snap.data();
 
-        // UI do Info Card
         document.getElementById("info").innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:start;">
                 <div>
                     <span style="font-size:22px; font-weight:bold;">${implemento?.placa || "-"}</span><br>
                     <small>${implemento?.tipo?.toUpperCase() || "-"}</small>
                 </div>
-                <span class="badge" style="background:var(--dark)">${implemento?.status || "-"}</span>
-            </div>
-            <hr style="border:0; border-top:1px solid #eee; margin:12px 0;">
-            <div style="font-size:14px;">
-                🧑 <b>Inspetor:</b> ${implemento?.nome || "Não identificado"}<br>
-                📅 <b>Data:</b> ${implemento?.dataFormatada || "-"} às ${implemento?.horaFormatada || "-"}
+                <span class="badge" style="background:var(--dark)">${implemento?.status?.replace('_', ' ')}</span>
             </div>
         `;
 
@@ -250,109 +256,106 @@
     }
 
     function renderizarChecklist(container) {
-        const manuais = itens.filter(i => i.origem === "manual");
-        const automaticos = itens.filter(i => i.origem !== "manual");
-
-        // Renderizar Manuais
-        if (manuais.length) {
-            container.appendChild(criarHeaderGrupo("MANUAL", "manual"));
-            manuais.forEach(item => container.appendChild(criarCardItem(item)));
-        }
-
-        // Renderizar Automáticos agrupados
         const grupos = {};
-        automaticos.forEach(item => {
-            const g = item.grupo || "GERAL";
+        itens.forEach(item => {
+            const g = item.grupo || (item.origem === "manual" ? "MANUAL" : "GERAL");
             if (!grupos[g]) grupos[g] = [];
             grupos[g].push(item);
         });
 
         Object.entries(grupos).forEach(([nome, lista]) => {
-            container.appendChild(criarHeaderGrupo(nome, nome));
+            container.appendChild(criarHeaderGrupo(nome));
             lista.forEach(item => container.appendChild(criarCardItem(item)));
         });
     }
 
-    function criarHeaderGrupo(titulo, grupoId) {
+    function criarHeaderGrupo(titulo) {
         const div = document.createElement("div");
         div.className = "grupo-header";
-        div.innerHTML = `
-            <span>${titulo}</span>
-            <input type="checkbox" onchange="toggleGrupo('${grupoId}', this.checked)">
-        `;
+        div.innerHTML = `<span>${titulo}</span>`;
         return div;
     }
 
     function criarCardItem(item) {
         const div = document.createElement("div");
-        div.className = `item-container ${item.origem === 'manual' ? '' : 'automatico'}`;
+        const statusClasse = item.status_manutencao === 'concluido' ? 'concluido' : (item.status_manutencao === 'nao_realizado' ? 'nao-realizado' : '');
+        div.className = `item-container ${item.origem === 'manual' ? '' : 'automatico'} ${statusClasse}`;
         
-        const fotosHTML = (item.fotos || []).map(url => 
-            `<img src="${url}" onclick="abrirImagem('${url}')">`
-        ).join("");
-
-        const corBadge = item.tipo === "troca" ? "var(--danger)" : "var(--primary)";
+        const fotosHTML = (item.fotos || []).map(url => `<img src="${url}" onclick="abrirImagem('${url}')">`).join("");
+        const desabilitado = !podeMexerItens(implemento.status);
 
         div.innerHTML = `
-            <div class="item-info ${item.resolvido ? 'resolvido' : ''}" id="txt-${item.id}">
-                <strong>${item.descricao}</strong>
-                <small>
-                    ${item.eixo ? `Eixo: ${item.eixo} | ` : ''} 
-                    ${item.lado ? `Lado: ${item.lado}` : ''}
-                    ${item.compartimento ? `<br>Comp: ${item.compartimento}` : ''}
-                </small>
-                <div><span class="badge" style="background:${corBadge}">${item.tipo}</span></div>
-                <div class="fotos">${fotosHTML}</div>
+            <div class="item-row">
+                <div class="item-info">
+                    <strong class="${item.status_manutencao === 'concluido' ? 'resolvido' : ''}">${item.descricao}</strong>
+                    <small>${item.eixo ? `Eixo: ${item.eixo} | ` : ''} ${item.lado ? `Lado: ${item.lado}` : ''}</small>
+                    <div class="fotos">${fotosHTML}</div>
+                </div>
+                <div class="acoes-container">
+                    <button class="btn-acao-item btn-check ${item.status_manutencao === 'concluido' ? 'ativo' : ''}" 
+                            onclick="marcarFeito('${item.id}')" ${desabilitado ? 'disabled' : ''}>✅</button>
+                    <button class="btn-acao-item btn-x ${item.status_manutencao === 'nao_realizado' ? 'ativo' : ''}" 
+                            onclick="marcarNaoFeito('${item.id}')" ${desabilitado ? 'disabled' : ''}>❌</button>
+                </div>
             </div>
-            <div class="acao" onclick="toggle('${item.id}')" 
-                 style="${!podeMexerItens(implemento.status) ? 'opacity:0.3; pointer-events:none;' : ''}">
-                ${item.resolvido ? "✅" : "⬜"}
-            </div>
+            ${item.justificativa ? `<div class="justificativa-box">⚠️ <b>Justificativa:</b> ${item.justificativa}</div>` : ''}
         `;
         return div;
     }
 
-    // FUNÇÕES DE AÇÃO
-    window.toggle = async function(itemId) {
-        if (!podeMexerItens(implemento.status)) return;
-        const item = itens.find(i => i.id === itemId);
-        const novoStatus = !item.resolvido;
-
-        await updateDoc(doc(db, "naoConformidades", itemId), { resolvido: novoStatus });
-        item.resolvido = novoStatus;
-        
-        const infoEl = document.getElementById("txt-" + itemId);
-        const acaoEl = infoEl.nextElementSibling;
-        
-        infoEl.classList.toggle("resolvido", novoStatus);
-        acaoEl.innerHTML = novoStatus ? "✅" : "⬜";
+    // ✅ MARCAR COMO FEITO
+    window.marcarFeito = async function(itemId) {
+        try {
+            await updateDoc(doc(db, "naoConformidades", itemId), {
+                resolvido: true,
+                status_manutencao: "concluido",
+                justificativa: null,
+                executadoEm: serverTimestamp()
+            });
+            carregar();
+        } catch (e) { console.error(e); }
     };
 
-    window.toggleGrupo = async function(nomeGrupo, marcado) {
-        const alvos = itens.filter(i => nomeGrupo === "manual" ? i.origem === "manual" : i.grupo === nomeGrupo);
-        for (const item of alvos) {
-            if (item.resolvido !== marcado) {
-                await window.toggle(item.id);
-            }
+    // ❌ MARCAR COMO NÃO REALIZADO (COM JUSTIFICATIVA)
+    window.marcarNaoFeito = async function(itemId) {
+        const motivo = prompt("Por que este item não foi realizado?");
+        if (!motivo || motivo.trim() === "") {
+            alert("A justificativa é obrigatória para itens não realizados.");
+            return;
         }
+
+        try {
+            await updateDoc(doc(db, "naoConformidades", itemId), {
+                resolvido: false,
+                status_manutencao: "nao_realizado",
+                justificativa: motivo,
+                executadoEm: serverTimestamp()
+            });
+            carregar();
+        } catch (e) { console.error(e); }
     };
 
     window.iniciar = async function() {
-        if (!podeIniciar(implemento.status)) return;
         await updateDoc(doc(db, "implementos", id), { status: "em_manutencao" });
         location.reload();
     };
 
     window.finalizar = async function() {
-        if (!podeFinalizar(implemento.status)) return;
-        const pendentes = itens.filter(i => !i.resolvido);
-        if (pendentes.length > 0) {
-            const motivo = prompt("Existem itens pendentes. Informe o motivo:");
-            if (!motivo) return;
-            await updateDoc(doc(db, "implementos", id), { motivo_pendencia: motivo });
+        const total = itens.length;
+        const processados = itens.filter(i => i.status_manutencao).length;
+
+        if (processados < total) {
+            alert(`Faltam ${total - processados} itens para serem avaliados (Check ou X).`);
+            return;
         }
-        await updateDoc(doc(db, "implementos", id), { status: "liberado", dataLiberacao: new Date() });
-        window.location = "manutencao.html";
+
+        if (confirm("Deseja finalizar a manutenção e liberar o veículo?")) {
+            await updateDoc(doc(db, "implementos", id), { 
+                status: "liberado", 
+                dataLiberacao: serverTimestamp() 
+            });
+            window.location = "manutencao.html";
+        }
     };
 
     window.abrirImagem = (url) => {
