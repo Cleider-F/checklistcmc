@@ -475,12 +475,12 @@ function render(lista) {
       
       <button onclick="event.stopPropagation(); gerarRelatorio('${item.id}')" 
         style="background:#444; color:white; border:none; padding:8px 12px; border-radius:6px; flex: 1; font-size: 12px;">
-        Relatório de Avarias
+        Rel. Avarias
       </button>
 
       <button onclick="event.stopPropagation(); gerarRelatorioManutencao('${item.id}')" 
         style="background:#111; color:white; border:none; padding:8px 12px; border-radius:6px; flex: 1; font-size: 12px;">
-        Relatório de Manutenção
+        Rel. Manutenção
       </button>
 
     </div>
@@ -801,9 +801,7 @@ window.toggleFiltros = function() {
 // No aplicarFiltros, você pode fechar a sidebar automaticamente após filtrar se desejar
 // mas o ideal é deixar aberta para o usuário ajustar vários filtros.
 
-// ==========================================
-// 🛠️ NOVO: RELATÓRIO DE EXECUÇÃO DE MANUTENÇÃO
-// ==========================================
+
 // ==========================================
 // 🛠️ RELATÓRIO DE EXECUÇÃO COM LADO E COMPARTIMENTO
 // ==========================================
@@ -833,18 +831,47 @@ window.gerarRelatorioManutencao = async function(implementoId) {
         else if (item.status_manutencao === "nao_realizado") naoRealizados.push(item);
     });
 
-    let y = 20;
-    pdf.setFont("helvetica", "bold");
-    pdf.text("RELATÓRIO DE EXECUÇÃO DE MANUTENÇÃO", 105, y, { align: "center" });
-    
-    y += 10;
-    pdf.setFontSize(10);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(`Placa: ${implemento.placa || "-"} | Tipo: ${implemento.tipo || "-"}`, 10, y);
-    
-    y += 10;
-    pdf.line(10, y, 200, y);
-    y += 10;
+    // =====================
+// 📄 CABEÇALHO PROFISSIONAL
+// =====================
+let y = 0;
+
+// 1. Faixa de Título (Estilo Topbar)
+pdf.setFillColor(31, 41, 55); // Cor var(--dark)
+pdf.rect(0, 0, 210, 35, 'F');
+
+pdf.setTextColor(255, 255, 255);
+pdf.setFont("helvetica", "bold");
+pdf.setFontSize(16);
+pdf.text("RELATÓRIO DE EXECUÇÃO DE MANUTENÇÃO", 105, 18, { align: "center" });
+
+pdf.setFontSize(10);
+pdf.setFont("helvetica", "normal");
+pdf.text(`Identificação: ${implemento.placa || "-"} | ${implemento.tipo || "-"}`, 105, 28, { align: "center" });
+
+// 2. Bloco de Informações de Tempo (Organizado em Colunas)
+y = 48;
+pdf.setTextColor(0, 0, 0);
+
+// Linha de Início
+pdf.setFont("helvetica", "bold");
+pdf.text("INÍCIO (INSPEÇÃO):", 15, y);
+pdf.setFont("helvetica", "normal");
+pdf.text(formatarData(implemento.dataInspecao), 55, y);
+
+// Linha de Finalização (Aumentei o espaçamento para não sobrepor)
+pdf.setFont("helvetica", "bold");
+pdf.text("||   FINALIZAÇÃO (MANUTENÇÃO):", 97, y);
+pdf.setFont("helvetica", "normal");
+pdf.text(formatarData(implemento.dataLiberacao), 160, y);
+
+y += 8;
+
+// 3. Linha divisória fina
+pdf.setDrawColor(220, 220, 220);
+pdf.line(10, y, 200, y);
+
+y += 12; // Espaço para começar a lista de itens
 
     // --- SEÇÃO: REALIZADOS ---
     pdf.setFont("helvetica", "bold");
