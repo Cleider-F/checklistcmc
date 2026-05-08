@@ -77,6 +77,40 @@ hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
     text-align: center;
     color: #333;
 }
+.topbar {
+  background: #1f2937;
+  color: white;
+
+  padding: 15px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  position: relative;
+}
+
+/* Logo centralizada REAL */
+.logo-topbar {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+
+  height: 32px;
+  object-fit: contain;
+}
+
+/* Grupo de botões da direita */
+.topbar-acoes {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Evita texto esmagando a logo */
+.titulo-topbar {
+  min-width: 90px;
+}
 </style>
 
 </head>
@@ -90,10 +124,12 @@ hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
 
 <div class="card">
     <div class="topbar">🔐 Acesso ao Sistema</div>
-
+<!-- Logo central -->
+  <img src="suzano-logo.png" class="logo-topbar">
     <!-- BOX DE LOGIN -->
     <div id="loginBox">
         <h3>Login</h3>
+        
         <input id="email" placeholder="Email">
         <input id="senha" type="password" placeholder="Senha">
 

@@ -103,6 +103,39 @@ input, select {
   padding: 10px;
   border-radius: 8px;
   border: 1px solid #ccc;
+}.topbar {
+  background: #1f2937;
+  color: white;
+
+  padding: 15px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  position: relative;
+}
+
+/* Logo centralizada REAL */
+.logo-topbar {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+
+  height: 32px;
+  object-fit: contain;
+}
+
+/* Grupo de botões da direita */
+.topbar-acoes {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Evita texto esmagando a logo */
+.titulo-topbar {
+  min-width: 90px;
 }
 </style>
 </head>
@@ -111,6 +144,8 @@ input, select {
 
 <div class="topbar">
   🔧 Manutenção
+  <!-- Logo central -->
+  <img src="suzano-logo.png" class="logo-topbar">
 </div>
 
 <div class="filtros">
@@ -179,7 +214,7 @@ function formatarTipoManutencao(tipo) {
   switch(tipo) {
     case "preventiva": return "Preventiva";
     case "revisao": return "Revisão";
-    case "cnpj": return "CNPJ";
+    case "cnp": return "CNP";
     case "gm": return "GM";
     default: return tipo || "-";
   }
@@ -194,7 +229,7 @@ function render(lista) {
     if (p1 !== p2) return p1 - p2;
     const d1 = a.dataInspecao?.seconds || 0;
     const d2 = b.dataInspecao?.seconds || 0;
-    return d2 - d1;
+    return d1 - d2;
   });
 
   const container = document.getElementById("lista");

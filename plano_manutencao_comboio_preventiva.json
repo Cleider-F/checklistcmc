@@ -3,10 +3,10 @@
     "tipoPlano": "preventiva",
     "grupo": "Filtros",
     "itens": [
-      { "descricao": "Trocar filtro 01" },
-      { "descricao": "Trocar filtro 02" },
-      { "descricao": "Trocar filtro 03" },
-      { "descricao": "Trocar filtro 04" }
+      { "descricao": "Trocar filtro 01" , "tipo": "T" },
+      { "descricao": "Trocar filtro 02" , "tipo": "T" },
+      { "descricao": "Trocar filtro 03" , "tipo": "T" },
+      { "descricao": "Trocar filtro 04" , "tipo": "T" }
     ]
   }
 ]

@@ -166,7 +166,7 @@
         
         <!-- CARD 1: DADOS DO IMPLEMENTO -->
         <div class="card">
-            <h3>Implemento</h3>
+            <h3>EQUIPAMENTO</h3>
             <div class="form-group">
                 <label>GO ou Placa</label>
                 <input id="placa" placeholder="Ex: ABC-1234">
@@ -218,24 +218,31 @@
         <div class="card">
             <h3>Novo Item / Avaria</h3>
             <div class="form-group">
-                <label>Descrição da Avaria/Item</label>
+                <label>Descrição do Item / Avaria</label>
                 <input id="descricao" placeholder="Ex: Lâmpada queimada">
             </div>
 
             <div class="grid-2">
                 <div class="form-group">
                     <label>Eixo</label>
-                    <input id="eixo" placeholder="Ex: 1º Eixo">
+                    <select id="eixo">
+                        <option value="">Selecione</option>
+                        <option value="N/A">N/A</option>
+                        <option value="1º Eixo">1º Eixo</option>
+                        <option value="2º Eixo">2º Eixo</option>
+                        <option value="3º Eixo">3º Eixo</option>
+                        <option value="4º Eixo">4º Eixo</option>
+                        </select>
                 </div>
                 <div class="form-group">
                     <label>Lado</label>
                     <select id="lado">
                         <option value="">Selecione</option>
+                        <option value="N/A">N/A</option>
                         <option value="esquerdo">Esquerdo</option>
                         <option value="direito">Direito</option>
                         <option value="ambos">Ambos</option>
-                        <option value="N/A">N/A</option>
-                    </select>
+                        </select>
                 </div>
             </div>
 
@@ -358,48 +365,90 @@
         renderLista();
     }
 
-    function gerarChecklistCarreta(tipo) {
-        const itensFiltrados = planoCarreta.filter(p => p.tipoPlano === tipo);
-        let checklist = [];
-        itensFiltrados.forEach(grupo => {
-            grupo.itens.forEach(item => {
-                checklist.push({
-                    grupo: grupo.grupo, descricao: item.descricao, eixo: "", lado: "", tipo: "",
-                    fotos: [], resolvido: false, origem: "automatico"
-                });
-            });
-        });
-        return checklist;
-    }
+function gerarChecklistCarreta(tipo) {
+    const itensFiltrados = planoCarreta.filter(p => p.tipoPlano === tipo);
 
-    function gerarChecklistPrancha(tipo) {
-        const itensFiltrados = planoPrancha.filter(p => p.tipoPlano === tipo);
-        let checklist = [];
-        itensFiltrados.forEach(grupo => {
-            grupo.itens.forEach(item => {
-                checklist.push({
-                    grupo: grupo.grupo, descricao: item.descricao, eixo: "", lado: "", tipo: "",
-                    fotos: [], resolvido: false, origem: "automatico"
-                });
-            });
-        });
-        return checklist;
-    }
+    let checklist = [];
 
-    function gerarChecklistComboioPrev(tipo) {
-        const itensFiltrados = planoComboioPrev.filter(p => p.tipoPlano === tipo);
-        let checklist = [];
-        itensFiltrados.forEach(grupo => {
-            grupo.itens.forEach(item => {
-                checklist.push({
-                    grupo: grupo.grupo, descricao: item.descricao, eixo: "", lado: "", tipo: "",
-                    fotos: [], resolvido: false, origem: "automatico"
-                });
-            });
-        });
-        return checklist;
-    }
+    itensFiltrados.forEach(grupo => {
+        grupo.itens.forEach(item => {
 
+            checklist.push({
+                grupo: grupo.grupo,
+                descricao: item.descricao,
+                eixo: "",
+                lado: "",
+
+                tipo: item.tipo === "T"
+                    ? "troca"
+                    : "vistoria",
+
+                fotos: [],
+                resolvido: false,
+                origem: "automatico"
+            });
+
+        });
+    });
+
+    return checklist;
+}
+function gerarChecklistPrancha(tipo) {
+    const itensFiltrados = planoPrancha.filter(p => p.tipoPlano === tipo);
+
+    let checklist = [];
+
+    itensFiltrados.forEach(grupo => {
+        grupo.itens.forEach(item => {
+
+            checklist.push({
+                grupo: grupo.grupo,
+                descricao: item.descricao,
+                eixo: "",
+                lado: "",
+
+                tipo: item.tipo === "T"
+                    ? "troca"
+                    : "vistoria",
+
+                fotos: [],
+                resolvido: false,
+                origem: "automatico"
+            });
+
+        });
+    });
+
+    return checklist;
+}
+function gerarChecklistComboioPrev(tipo) {
+    const itensFiltrados = planoComboioPrev.filter(p => p.tipoPlano === tipo);
+
+    let checklist = [];
+
+    itensFiltrados.forEach(grupo => {
+        grupo.itens.forEach(item => {
+
+            checklist.push({
+                grupo: grupo.grupo,
+                descricao: item.descricao,
+                eixo: "",
+                lado: "",
+
+                tipo: item.tipo === "T"
+                    ? "troca"
+                    : "vistoria",
+
+                fotos: [],
+                resolvido: false,
+                origem: "automatico"
+            });
+
+        });
+    });
+
+    return checklist;
+}
     function gerarChecklistComboio(horimetro) {
         const todasHoras = [...new Set(planoComboio.flatMap(i => i.horas.map(h => h.hora)))].sort((a, b) => a - b);
         const marco = todasHoras.filter(h => h <= horimetro).pop();
@@ -426,7 +475,7 @@
 
     window.adicionarItem = async function() {
         const desc = document.getElementById("descricao").value.trim();
-        const eixo = document.getElementById("eixo").value.trim();
+        const eixo = document.getElementById("eixo").value;
         const lado = document.getElementById("lado").value;
         const tipo = document.getElementById("tipoItem").value;
         const comp = document.getElementById("compartimentoItemInput")?.value;

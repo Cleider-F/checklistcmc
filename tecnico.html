@@ -170,6 +170,40 @@ input, select {
     margin-bottom: 5px;
     color: #666;
 }
+.topbar {
+  background: #1f2937;
+  color: white;
+
+  padding: 15px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  position: relative;
+}
+
+/* Logo centralizada REAL */
+.logo-topbar {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+
+  height: 32px;
+  object-fit: contain;
+}
+
+/* Grupo de botões da direita */
+.topbar-acoes {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Evita texto esmagando a logo */
+.titulo-topbar {
+  min-width: 90px;
+}
 
 </style>
 
@@ -181,6 +215,8 @@ input, select {
 <!-- Ajuste na Topbar -->
 <div class="topbar">
     <span>🛠️ Técnico</span>
+    <!-- Logo central -->
+  <img src="suzano-logo.png" class="logo-topbar">
     <!-- Trocado de 🔍 para as três listrinhas -->
     <button onclick="toggleFiltros()" style="background:none; border:none; color:white; font-size:24px; cursor:pointer; line-height: 1;">
         &#9776;
@@ -224,7 +260,7 @@ input, select {
             <option value="">Todas</option>
             <option value="revisao">Revisão</option>
             <option value="preventiva">Preventiva</option>
-            <option value="cnpj">CNP</option>
+            <option value="cnp">CNP</option>
             <option value="gm">GM</option>
         </select>
     </div>
@@ -308,10 +344,15 @@ function getStatusInfo(status) {
 
 // 🧠 PRIORIDADE
 function prioridade(status) {
-  if (status === "em_inspecao") return 1;
-  if (status === "aguardando_manutencao") return 2;
-  if (status === "em_manutencao") return 3;
-  if (status === "liberado") return 4;
+
+  if (status === "aguardando_manutencao") return 1;
+
+  if (status === "em_manutencao") return 2;
+
+  if (status === "liberado") return 3;
+
+  if (status === "em_inspecao") return 4;
+
   return 5;
 }
 
@@ -336,7 +377,7 @@ function formatarTipoManutencao(tipo) {
   switch(tipo) {
     case "preventiva": return "Preventiva";
     case "revisao": return "Revisão";
-    case "cnpj": return "CNPJ";
+    case "cnp": return "CNP";
     case "gm": return "GM";
     default: return tipo || "-";
   }
@@ -431,7 +472,7 @@ function render(lista) {
     const d1 = a.dataInspecao?.seconds || 0;
     const d2 = b.dataInspecao?.seconds || 0;
 
-    return d2 - d1;
+    return d1 - d2;
   });
 
   atualizarContadores(lista);

@@ -58,7 +58,40 @@
     transition: 0.2s;
     cursor: pointer;
   }
+.topbar {
+  background: #1f2937;
+  color: white;
 
+  padding: 15px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  position: relative;
+}
+
+/* Logo centralizada REAL */
+.logo-topbar {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+
+  height: 32px;
+  object-fit: contain;
+}
+
+/* Grupo de botões da direita */
+.topbar-acoes {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Evita texto esmagando a logo */
+.titulo-topbar {
+  min-width: 90px;
+}
   .botao div { font-size: 28px; margin-bottom: 5px; }
   .botao:active { transform: scale(0.96); }
   </style>
@@ -66,16 +99,32 @@
 
   <body>
 
+  <body>
+
   <div class="topbar">
-    <span>🏠 Início</span>
-    <button id="btnInstalar" class="auth-btn btn-login" style="display: none; margin: 10px 20px;">
-    📲 Instalar App
-  </button>
-    <!-- Botão agora tem um ID para o JS encontrar -->
-    <button id="authBtn" class="auth-btn">Carregando...</button>
+
+  <!-- Lado esquerdo -->
+  <span class="titulo-topbar">🏠 Início</span>
+
+  <!-- Logo central -->
+  <img src="suzano-logo.png" class="logo-topbar">
+
+  <!-- Lado direito -->
+  <div class="topbar-acoes">
+
+    <button id="btnInstalar"
+      class="auth-btn btn-login"
+      style="display: none;">
+      📲 Instalar App
+    </button>
+
+    <button id="authBtn" class="auth-btn">
+      Carregando...
+    </button>
+
   </div>
 
-
+</div>
 
   <div class="acoes">
     <div class="botao" onclick="ir('nova_inspecao.html')"><div>➕</div>Nova Inspeção</div>
@@ -85,7 +134,8 @@
   </div>
 
   <!-- Link para o Manifesto -->
-  <link rel="manifest" href="manifest.json">
+<link rel="manifest" href="/manifest.json">
+
 
   <!-- Cor da barra de status no Android -->
   <meta name="theme-color" content="#1f2937">
@@ -132,11 +182,18 @@
   }
 
     // Registra o Service Worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js')
-        .then(() => console.log("Service Worker Registrado!"));
-    }
+if ('serviceWorker' in navigator) {
 
+  navigator.serviceWorker.register('/sw.js', {
+    scope: '/'
+  })
+  .then(() => {
+    console.log("Service Worker Registrado!");
+  })
+  .catch(err => {
+    console.error(err);
+  });
+}
     let gatilhoInstalacao; // Variável para guardar o evento
 
   const btnInstalar = document.getElementById('btnInstalar');
