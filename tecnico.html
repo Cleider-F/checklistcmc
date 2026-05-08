@@ -327,7 +327,8 @@ import {
   query,
   where,
   deleteDoc,
-  doc
+  doc,
+  updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 let dados = [];
@@ -494,10 +495,55 @@ function render(lista) {
   </div>
 
   <div class="info">
-    Tipo: ${item.tipo}<br>
-    Manutenção: <strong>${formatarTipoManutencao(item.tipoManutencao)}</strong><br>
-    Inspeção: ${formatarData(item.dataInspecao)}
-  </div>
+  Tipo: ${item.tipo}<br>
+  Manutenção: <strong>${formatarTipoManutencao(item.tipoManutencao)}</strong><br>
+  Inspeção: ${formatarData(item.dataInspecao)}
+  
+  ${
+    item.status === "aguardando_manutencao" ||
+    item.status === "em_manutencao"
+      ? `
+      <br><br>
+
+      <label style="font-size:12px; font-weight:bold;">
+        📍 Box:
+      </label>
+
+      <select
+        onclick="event.stopPropagation()"
+        onchange="alterarBox('${item.id}', this.value)"
+        style="
+          width:100%;
+          margin-top:5px;
+          padding:8px;
+          border-radius:8px;
+          border:1px solid #ccc;
+        "
+      >
+        <option value="">Sem box</option>
+
+        <option value="Box 1" ${item.box === "Box 1" ? "selected" : ""}>Box 1</option>
+        <option value="Box 2" ${item.box === "Box 2" ? "selected" : ""}>Box 2</option>
+        <option value="Box 3" ${item.box === "Box 3" ? "selected" : ""}>Box 3</option>
+        <option value="Box 4" ${item.box === "Box 4" ? "selected" : ""}>Box 4</option>
+        <option value="Box 5" ${item.box === "Box 5" ? "selected" : ""}>Box 5</option>
+        <option value="Box 6" ${item.box === "Box 6" ? "selected" : ""}>Box 6</option>
+        <option value="Box 7" ${item.box === "Box 7" ? "selected" : ""}>Box 7</option>
+        <option value="Box 8" ${item.box === "Box 8" ? "selected" : ""}>Box 8</option>
+        <option value="Box 9" ${item.box === "Box 9" ? "selected" : ""}>Box 9</option>
+        <option value="Box 10" ${item.box === "Box 10" ? "selected" : ""}>Box 10</option>
+        <option value="Box 11" ${item.box === "Box 11" ? "selected" : ""}>Box 11</option>
+        <option value="Box 12" ${item.box === "Box 12" ? "selected" : ""}>Box 12</option>
+
+        <option value="Hexa 1" ${item.box === "Box Hexa 1" ? "selected" : ""}>Box Hexa 1</option>
+        <option value="Hexa 2" ${item.box === "Box Hexa 2" ? "selected" : ""}>Box Hexa 2</option>
+        <option value="Hexa 3" ${item.box === "Box Hexa 3" ? "selected" : ""}>Box Hexa 3</option>
+        <option value="Hexa 4" ${item.box === "Box Hexa 4" ? "selected" : ""}>Box Hexa 4</option>
+      </select>
+    `
+      : ""
+  }
+</div>
 
   <div style="
     display:flex;
@@ -540,6 +586,29 @@ function render(lista) {
 document.getElementById("busca").addEventListener("input", aplicarFiltros);
 document.getElementById("filtroTipo").addEventListener("change", aplicarFiltros);
 document.getElementById("filtroStatus").addEventListener("change", aplicarFiltros);
+
+// FUNÇÃO ALTERAR BOX //
+
+window.alterarBox = async function(id, box) {
+
+  try {
+
+    await updateDoc(doc(db, "implementos", id), {
+      box: box || ""
+    });
+
+    const item = dados.find(i => i.id === id);
+
+    if (item) {
+      item.box = box;
+    }
+
+  } catch (e) {
+    console.error(e);
+    alert("Erro ao atualizar box");
+  }
+};
+
 
 // 🗑️ EXCLUSÃO
 window.excluir = async function(id) {
