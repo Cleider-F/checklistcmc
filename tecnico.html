@@ -223,10 +223,12 @@ input, select {
     </button>
 </div>
 
+
+
 <!-- Menu Lateral de Filtros -->
 <div id="sidebarFiltros" class="sidebar">
     <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:15px;">
-        <h3 style="margin:0;">Relatório de frotas</h3>
+        <h3 style="margin:0;">Painel Técnico</h3>
         <button onclick="toggleFiltros()" style="background:none; border:none; font-size:20px;">✖</button>
     </div>
 
@@ -279,38 +281,65 @@ input, select {
     <button onclick="gerarRelatorioGeral()" class="btn-sucesso" style="background:#2e7d32; margin-top:10px;">
         📊 Gerar PDF por Período
     </button>
+    <hr style="margin:20px 0; border:none; border-top:1px solid #ddd;">
+
+<button
+  onclick="togglePlanoSemanal()"
+  style="
+    width:100%;
+    background:#2563eb;
+    color:white;
+    border:none;
+    padding:12px;
+    border-radius:8px;
+    font-weight:bold;
+    margin-top:10px;
+  ">
+  📅 Plano de Manutenção
+</button>
 </div>
 
+<!-- SIDEBAR PLANO SEMANAL -->
+<div id="sidebarPlano" class="sidebar">
+
+  <div style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:15px;
+  ">
+    <h3 style="margin:0;">📅 Plano Semanal</h3>
+
+    <button
+      onclick="togglePlanoSemanal()"
+      style="
+        background:none;
+        border:none;
+        font-size:20px;
+      ">
+      ✖
+    </button>
+  </div>
+
+  <!-- Cards do plano -->
+  <div id="listaPlano"></div>
+
+</div>
 <!-- Fundo escuro quando o menu abre -->
-<div id="overlay" onclick="toggleFiltros()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:998;"></div>
+<div
+  id="overlay"
+  onclick="
+    toggleFiltros();
+    togglePlanoSemanal();
+  " style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:998;"></div>
 
-
-<div class="filtros">
-  <input id="busca" placeholder="Buscar por placa">
-
-  <select id="filtroTipo">
-    <option value="">Todos os tipos</option>
-    <option value="carreta">Carreta</option>
-    <option value="prancha">Prancha</option>
-    <option value="comboio">Comboio</option>
-    <option value="cavalo">Cavalo</option>
-  </select>
-
-  <select id="filtroStatus">
-    <option value="">Todos status</option>
-    <option value="em_inspecao">Em inspeção</option>
-    <option value="aguardando_manutencao">Aguardando</option>
-    <option value="em_manutencao">Manutenção</option>
-    <option value="liberado">Liberado</option>
-  </select>
-</div>
 
 <div class="contadores" id="contadores"></div>
 
 <div class="lista" id="lista"></div>
 
 <link rel="stylesheet" href="navbar.css">
-</div>
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -535,11 +564,11 @@ function render(lista) {
         <option value="Box 11" ${item.box === "Box 11" ? "selected" : ""}>Box 11</option>
         <option value="Box 12" ${item.box === "Box 12" ? "selected" : ""}>Box 12</option>
 
-        <option value="Hexa 1" ${item.box === "Box Hexa 1" ? "selected" : ""}>Box Hexa 1</option>
-        <option value="Hexa 2" ${item.box === "Box Hexa 2" ? "selected" : ""}>Box Hexa 2</option>
-        <option value="Hexa 3" ${item.box === "Box Hexa 3" ? "selected" : ""}>Box Hexa 3</option>
-        <option value="Hexa 4" ${item.box === "Box Hexa 4" ? "selected" : ""}>Box Hexa 4</option>
-      </select>
+        <option value="Box Hexa 1" ${item.box === "Box Hexa 1" ? "selected" : ""}>Box Hexa 1</option>
+        <option value="Box Hexa 2" ${item.box === "Box Hexa 2" ? "selected" : ""}>Box Hexa 2</option>
+        <option value="Box Hexa 3" ${item.box === "Box Hexa 3" ? "selected" : ""}>Box Hexa 3</option>
+        <option value="Box Hexa 4" ${item.box === "Box Hexa 4" ? "selected" : ""}>Box Hexa 4</option>
+              </select>
     `
       : ""
   }
@@ -1032,4 +1061,139 @@ y += 12; // Espaço para começar a lista de itens
 
     pdf.save(`Manutencao_${implemento.placa || "Frota"}.pdf`);
 };
+
+window.togglePlanoSemanal = function() {
+
+  const sidebarPlano =
+    document.getElementById("sidebarPlano");
+
+  const sidebarFiltros =
+    document.getElementById("sidebarFiltros");
+
+  const overlay =
+    document.getElementById("overlay");
+
+  // fecha filtros
+  sidebarFiltros.classList.remove("active");
+
+  if (sidebarPlano.classList.contains("active")) {
+
+    sidebarPlano.classList.remove("active");
+    overlay.style.display = "none";
+
+  } else {
+
+    sidebarPlano.classList.add("active");
+    overlay.style.display = "block";
+
+    carregarPlanoSemanal();
+  }
+};
+
+async function carregarPlanoSemanal() {
+
+  const container =
+    document.getElementById("listaPlano");
+
+  container.innerHTML = "";
+
+  // filtra implementos em manutenção
+  const emManutencao = dados.filter(item =>
+    item.status === "aguardando_manutencao" ||
+    item.status === "em_manutencao"
+  );
+
+  if (emManutencao.length === 0) {
+
+    container.innerHTML = `
+      <div style="
+        padding:15px;
+        background:#f3f4f6;
+        border-radius:10px;
+        font-size:14px;
+        color:#666;
+      ">
+        Nenhum equipamento em manutenção.
+      </div>
+    `;
+
+    return;
+  }
+
+  emManutencao.forEach(item => {
+
+    const status = getStatusInfo(item.status);
+
+    const card = document.createElement("div");
+
+    card.style = `
+      background:white;
+      border-radius:12px;
+      padding:12px;
+      margin-bottom:10px;
+      border-left:5px solid ${
+        status.cor === "laranja"
+          ? "#ff9800"
+          : "#ffc107"
+      };
+      box-shadow:0 2px 6px rgba(0,0,0,0.08);
+    `;
+
+    card.innerHTML = `
+
+      <div style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+      ">
+
+        <strong style="font-size:16px;">
+          ${item.placa}
+        </strong>
+
+        <span style="
+          font-size:11px;
+          background:${
+            status.cor === "laranja"
+              ? "#ff9800"
+              : "#ffc107"
+          };
+          color:${
+            status.cor === "amarelo"
+              ? "black"
+              : "white"
+          };
+          padding:4px 8px;
+          border-radius:20px;
+        ">
+          ${status.nome}
+        </span>
+
+      </div>
+
+      <div style="
+        margin-top:8px;
+        font-size:13px;
+        color:#555;
+        line-height:1.5;
+      ">
+
+        <div>
+          🔧 ${formatarTipoManutencao(item.tipoManutencao)}
+        </div>
+
+        <div>
+          🚛 ${item.tipo}
+        </div>
+
+        <div>
+          📍 ${item.box || "Sem box"}
+        </div>
+
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+}
 </script>
