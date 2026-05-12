@@ -283,7 +283,7 @@ input, select {
     </button>
     <hr style="margin:20px 0; border:none; border-top:1px solid #ddd;">
 
-<button
+ <button
   onclick="togglePlanoSemanal()"
   style="
     width:100%;
@@ -310,7 +310,7 @@ input, select {
   ">
     <h3 style="margin:0;">📅 Plano Semanal</h3>
 
-    <button
+   <button
       onclick="togglePlanoSemanal()"
       style="
         background:none;
@@ -528,13 +528,12 @@ function render(lista) {
   Manutenção: <strong>${formatarTipoManutencao(item.tipoManutencao)}</strong><br>
   Inspeção: ${formatarData(item.dataInspecao)}
   
-  ${
-    item.status === "aguardando_manutencao" ||
-    item.status === "em_manutencao"
-      ? `
-      <br><br>
-
-      <label style="font-size:12px; font-weight:bold;">
+${
+  item.status === "aguardando_manutencao" ||
+  item.status === "em_manutencao"
+    ? `
+    <div style="display: flex; align-items: center; gap: 8px; margin-top: 10px;">
+      <label style="font-size: 12px; font-weight: bold; white-space: nowrap;">
         📍 Box:
       </label>
 
@@ -542,15 +541,16 @@ function render(lista) {
         onclick="event.stopPropagation()"
         onchange="alterarBox('${item.id}', this.value)"
         style="
-          width:100%;
-          margin-top:5px;
-          padding:8px;
-          border-radius:8px;
-          border:1px solid #ccc;
+          width: auto;
+          min-width: 120px;
+          padding: 4px 8px;
+          border-radius: 6px;
+          border: 1px solid #ccc;
+          font-size: 12px;
+          background: #f9f9f9;
         "
       >
         <option value="">Sem box</option>
-
         <option value="Box 1" ${item.box === "Box 1" ? "selected" : ""}>Box 1</option>
         <option value="Box 2" ${item.box === "Box 2" ? "selected" : ""}>Box 2</option>
         <option value="Box 3" ${item.box === "Box 3" ? "selected" : ""}>Box 3</option>
@@ -563,16 +563,16 @@ function render(lista) {
         <option value="Box 10" ${item.box === "Box 10" ? "selected" : ""}>Box 10</option>
         <option value="Box 11" ${item.box === "Box 11" ? "selected" : ""}>Box 11</option>
         <option value="Box 12" ${item.box === "Box 12" ? "selected" : ""}>Box 12</option>
-
         <option value="Box Hexa 1" ${item.box === "Box Hexa 1" ? "selected" : ""}>Box Hexa 1</option>
         <option value="Box Hexa 2" ${item.box === "Box Hexa 2" ? "selected" : ""}>Box Hexa 2</option>
         <option value="Box Hexa 3" ${item.box === "Box Hexa 3" ? "selected" : ""}>Box Hexa 3</option>
         <option value="Box Hexa 4" ${item.box === "Box Hexa 4" ? "selected" : ""}>Box Hexa 4</option>
-              </select>
+      </select>
+    </div>
     `
-      : ""
-  }
-</div>
+    : ""
+}
+    </div>
 
   <div style="
     display:flex;
