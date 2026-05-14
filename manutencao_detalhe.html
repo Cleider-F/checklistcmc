@@ -182,7 +182,7 @@
 <div class="container">
     <div id="info" class="card">Carregando dados...</div>
     
-    <button class="btn-alerta" id="btnIniciar" style="display:none;" onclick="iniciar()">
+    <button class="btn-alerta" id="btnIniciar" style="display:none;" onclick="abrirModalEquipe()">
         ▶ Iniciar Manutenção
     </button>
 
@@ -199,21 +199,115 @@
 <div id="modalImg" onclick="this.style.display='none'">
     <img id="imgGrande" style="max-width:95%; max-height:90%; border-radius:10px;">
 </div>
+<!-- MODAL EQUIPE -->
+<div id="modalEquipe" style="
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.6);
+    z-index:9999;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+">
+
+    <div style="
+        background:white;
+        width:100%;
+        max-width:500px;
+        border-radius:16px;
+        padding:20px;
+    ">
+
+        <h3 style="margin-top:0;">
+            👥 Equipe Responsável
+        </h3>
+
+        <input
+            id="inputMembro"
+            list="listaMembros"
+            placeholder="Digite o nome..."
+            style="
+                width:100%;
+                box-sizing:border-box;
+                padding:12px;
+                border-radius:10px;
+                border:1px solid #ccc;
+                margin-bottom:10px;
+            "
+        >
+
+        <datalist id="listaMembros"></datalist>
+
+        <button
+            onclick="adicionarMembro()"
+            style="
+                background:#2196f3;
+                color:white;
+            "
+        >
+            + Adicionar
+        </button>
+
+        <div
+            id="listaEquipe"
+            style="
+                margin-top:15px;
+                display:flex;
+                flex-wrap:wrap;
+                gap:8px;
+            "
+        ></div>
+
+        <div style="
+            display:flex;
+            gap:10px;
+            margin-top:20px;
+        ">
+            <button
+                onclick="fecharModalEquipe()"
+                style="background:#777;color:white;"
+            >
+                Cancelar
+            </button>
+
+            <button
+                onclick="confirmarInicioManutencao()"
+                style="background:#4caf50;color:white;"
+            >
+                Confirmar
+            </button>
+        </div>
+
+    </div>
+</div>
 
 <link rel="stylesheet" href="navbar.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="lista_solicitantes.js"></script>
+
 <script type="module">
     import { db } from "./firebase.js";
     import { doc, getDoc, addDoc, collection, query, where, getDocs, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { carregarNavbar } from "./navbar.js";
 
-
     
     carregarNavbar();
+    const dataList = document.getElementById("listaMembros");
+
+window.LISTA_SOLICITANTES.forEach(nome => {
+    
+    const option = document.createElement("option");
+    option.value = nome;
+
+    dataList.appendChild(option);
+
+});
 
     const id = new URLSearchParams(window.location.search).get("id");
     let itens = [];
     let implemento = null;
+    let equipeSelecionada = [];
 
     const podeIniciar = s => s === "aguardando_manutencao";
     const podeMexerItens = s => s === "em_manutencao";
@@ -230,6 +324,16 @@
                     <small>${implemento?.tipo?.toUpperCase() || "-"}</small>
                 </div>
                 <span class="badge" style="background:var(--dark)">${implemento?.status?.replace('_', ' ')}</span>
+                ${
+    implemento?.equipeManutencao?.length
+    ? `
+    <div style="margin-top:10px;">
+        <b>Equipe:</b><br>
+        ${implemento.equipeManutencao.join(", ")}
+    </div>
+    `
+    : ""
+}
             </div>
         `;
 
@@ -350,10 +454,114 @@
         } catch (e) { console.error(e); }
     };
 
-    window.iniciar = async function() {
-        await updateDoc(doc(db, "implementos", id), { status: "em_manutencao" });
+    window.abrirModalEquipe = function() {
+
+    equipeSelecionada = [];
+
+    document.getElementById("listaEquipe").innerHTML = "";
+
+    document.getElementById("modalEquipe").style.display = "flex";
+};
+
+window.fecharModalEquipe = function() {
+
+    document.getElementById("modalEquipe").style.display = "none";
+};
+
+window.adicionarMembro = function() {
+
+    const input = document.getElementById("inputMembro");
+
+    const nome = input.value.trim();
+
+    if (!nome) return;
+
+    if (equipeSelecionada.includes(nome)) {
+        alert("Este membro já foi adicionado.");
+        return;
+    }
+
+    equipeSelecionada.push(nome);
+
+    renderEquipe();
+
+    input.value = "";
+};
+
+function renderEquipe() {
+
+    const container = document.getElementById("listaEquipe");
+
+    container.innerHTML = "";
+
+    equipeSelecionada.forEach((nome, index) => {
+
+        const tag = document.createElement("div");
+
+        tag.style = `
+            background:#1f2937;
+            color:white;
+            padding:8px 12px;
+            border-radius:999px;
+            font-size:13px;
+            display:flex;
+            align-items:center;
+            gap:8px;
+        `;
+
+        tag.innerHTML = `
+            ${nome}
+            <span
+                style="cursor:pointer;font-weight:bold;"
+                onclick="removerMembro(${index})"
+            >
+                ✖
+            </span>
+        `;
+
+        container.appendChild(tag);
+
+    });
+}
+
+window.removerMembro = function(index) {
+
+    equipeSelecionada.splice(index, 1);
+
+    renderEquipe();
+};
+
+window.confirmarInicioManutencao = async function() {
+
+    if (equipeSelecionada.length === 0) {
+        alert("Adicione pelo menos um membro.");
+        return;
+    }
+
+    try {
+
+        await updateDoc(doc(db, "implementos", id), {
+
+            status: "em_manutencao",
+
+            equipeManutencao: equipeSelecionada,
+
+            inicioManutencao: serverTimestamp()
+
+        });
+
+        fecharModalEquipe();
+
         location.reload();
-    };
+
+    } catch (e) {
+
+        console.error(e);
+
+        alert("Erro ao iniciar manutenção.");
+    }
+        };
+
 
 window.finalizar = async function() {
     const total = itens.length;
@@ -422,6 +630,17 @@ window.finalizar = async function() {
             pdf.text("||   FINALIZAÇÃO (MANUTENÇÃO):", 97, y);
             pdf.setFont("helvetica", "normal");
             pdf.text(new Date().toLocaleString('pt-BR'), 160, y);
+            y += 8;
+
+            pdf.setFont("helvetica", "bold");
+            pdf.text("EQUIPE RESPONSÁVEL:", 15, y);
+
+            pdf.setFont("helvetica", "normal");
+            pdf.text(
+                (implemento.equipeManutencao || []).join(", "),
+                65,
+                y
+            );
 
             y += 8;
             pdf.setDrawColor(220, 220, 220);
