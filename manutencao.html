@@ -103,7 +103,9 @@ input, select {
   padding: 10px;
   border-radius: 8px;
   border: 1px solid #ccc;
-}.topbar {
+}
+
+.topbar {
   background: #1f2937;
   color: white;
 
@@ -166,6 +168,16 @@ input, select {
 
 <link rel="stylesheet" href="navbar.css">
 
+<link rel="manifest" href="/manifest.json">
+
+<meta name="theme-color" content="#1f2937">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<link rel="apple-touch-icon" href="/icone-192.png">
+
 <script type="module">
 import { db } from "./firebase.js";
 import {
@@ -177,6 +189,14 @@ import {
 import { carregarNavbar } from "./navbar.js";
 
 carregarNavbar();
+
+if ("serviceWorker" in navigator) {
+
+  navigator.serviceWorker.register("/sw.js")
+    .then(() => console.log("PWA ativo"))
+    .catch(err => console.log(err));
+
+}
 
 // 1. DECLARAÇÕES GLOBAIS (Sempre no topo)
 let dados = [];

@@ -136,6 +136,14 @@
   <!-- Link para o Manifesto -->
 <link rel="manifest" href="/manifest.json">
 
+<meta name="theme-color" content="#1f2937">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<link rel="apple-touch-icon" href="/icone-192.png">
+
 
   <!-- Cor da barra de status no Android -->
   <meta name="theme-color" content="#1f2937">
@@ -148,6 +156,14 @@ import { carregarNavbar } from "./navbar.js";
 import "./lista_solicitantes.js";
 
 const LISTA_SOLICITANTES = window.LISTA_SOLICITANTES || [];
+
+if ("serviceWorker" in navigator) {
+
+  navigator.serviceWorker.register("/sw.js")
+    .then(() => console.log("PWA ativo"))
+    .catch(err => console.log(err));
+
+}
 
 carregarNavbar(); 
 

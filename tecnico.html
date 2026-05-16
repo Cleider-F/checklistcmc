@@ -324,8 +324,18 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-  <script type="module">
+<link rel="manifest" href="/manifest.json">
 
+<meta name="theme-color" content="#1f2937">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<link rel="apple-touch-icon" href="/icone-192.png">
+
+  <script type="module">
+    
   import { protegerPagina } from "./auth.js";
   protegerPagina(["tecnico"]);
 
@@ -343,8 +353,17 @@
     Timestamp
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+if ("serviceWorker" in navigator) {
+
+  navigator.serviceWorker.register("/sw.js")
+    .then(() => console.log("PWA ativo"))
+    .catch(err => console.log(err));
+
+}
+
   let dados = [];
 
+ 
   // 🎨 STATUS
   function getStatusInfo(status) {
     switch(status) {

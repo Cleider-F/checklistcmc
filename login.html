@@ -134,6 +134,19 @@ hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
         <input id="senha" type="password" placeholder="Senha">
 
         <button onclick="login()">Entrar</button>
+        <button
+  onclick="recuperarSenha()"
+  style="
+    background:none;
+    color:#2196f3;
+    border:none;
+    font-size:13px;
+    margin-top:8px;
+    cursor:pointer;
+  "
+>
+  Esqueci minha senha
+</button>
         <hr>
         <button class="btn-alerta" onclick="mostrarCadastro()">Criar conta</button>
     </div>
@@ -155,10 +168,28 @@ hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
     </div>
 </div>
 
+<link rel="manifest" href="/manifest.json">
+
+<meta name="theme-color" content="#1f2937">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<link rel="apple-touch-icon" href="/icone-192.png">
+
 <script type="module">
 import { auth, db } from "./firebase.js";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+if ("serviceWorker" in navigator) {
+
+  navigator.serviceWorker.register("/sw.js")
+    .then(() => console.log("PWA ativo"))
+    .catch(err => console.log(err));
+
+}
 
 // Alternar telas
 window.mostrarCadastro = () => {
@@ -207,6 +238,29 @@ window.cadastrar = async function() {
     } catch (e) {
         console.error(e);
         alert("Erro ao cadastrar: " + e.message);
+    }
+};
+
+window.recuperarSenha = async function() {
+
+    const email = document.getElementById("email").value.trim();
+
+    if (!email) {
+        alert("Digite seu e-mail para recuperar a senha.");
+        return;
+    }
+
+    try {
+
+        await sendPasswordResetEmail(auth, email);
+
+        alert("Link de recuperação enviado para o e-mail.");
+
+    } catch (e) {
+
+        console.error(e);
+
+        alert("Erro ao enviar recuperação de senha.");
     }
 };
 </script>

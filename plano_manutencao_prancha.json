@@ -87,6 +87,13 @@
   },
   {
     "tipoPlano": "preventiva",
+    "grupo": "5ª Roda",
+    "itens": [
+      { "descricao": "Medir pino rei" , "tipo": "V" }
+    ]
+  },
+  {
+    "tipoPlano": "preventiva",
     "grupo": "Elétrica",
     "itens": [
       { "descricao": "Corrigir elétrica em geral" , "tipo": "V" }
