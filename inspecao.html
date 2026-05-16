@@ -175,12 +175,75 @@ body {
 
 <div class="lista" id="lista"></div>
 
+<!-- MODAL INSPECIONADOR -->
+<div id="modalInspetor" style="
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.5);
+  z-index:2000;
+  align-items:center;
+  justify-content:center;
+">
+
+  <div style="
+    background:white;
+    width:90%;
+    max-width:400px;
+    border-radius:14px;
+    padding:20px;
+    box-sizing:border-box;
+  ">
+
+    <h3 style="margin-top:0;">
+      Selecionar Inspecionador
+    </h3>
+
+    <select id="selectInspetor" style="
+      width:100%;
+      padding:12px;
+      border-radius:10px;
+      border:1px solid #ccc;
+      margin-top:10px;
+    ">
+      <option value="">Selecione...</option>
+    </select>
+
+    <div style="
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      margin-top:20px;
+    ">
+
+      <button onclick="fecharModalInspetor()" style="
+        padding:10px 16px;
+        border:none;
+        border-radius:8px;
+      ">
+        Cancelar
+      </button>
+
+      <button onclick="confirmarInspetor()" style="
+        background:#1f2937;
+        color:white;
+        padding:10px 16px;
+        border:none;
+        border-radius:8px;
+      ">
+        Continuar
+      </button>
+
+    </div>
+
+  </div>
+</div>
+
 <button class="fab" onclick="nova()">+</button>
 
 <link rel="stylesheet" href="navbar.css">
-
+<script src="lista_solicitantes.js"></script>
 <script type="module">
-
 import { protegerPagina } from "./auth.js";
 
 protegerPagina(["inspetor", "tecnico"]);
@@ -192,6 +255,7 @@ import {
   query,
   where
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
 
 // 🎨 STATUS
 function getStatusInfo(status) {
@@ -271,9 +335,146 @@ onSnapshot(q, (snapshot) => {
 });
 
 // ➕ nova inspeção
-window.nova = function() {
-  window.location = "nova_inspecao.html";
+window.nova = async function() {
+
+  const nomesOptions = LISTA_SOLICITANTES
+    .map(nome => `<option value="${nome}">`)
+    .join("");
+
+  const nome = await promptComLista(`
+    <div style="text-align:left;">
+      <label style="font-size:13px; font-weight:bold;">
+        Nome do inspetor
+      </label>
+
+      <input
+        id="nomeInspetor"
+        list="listaInspetores"
+        placeholder="Digite o nome..."
+        style="
+          width:100%;
+          padding:10px;
+          margin-top:8px;
+          border-radius:8px;
+          border:1px solid #ccc;
+          box-sizing:border-box;
+        "
+      >
+
+      <datalist id="listaInspetores">
+        ${nomesOptions}
+      </datalist>
+    </div>
+  `);
+
+  if (!nome) return;
+
+  localStorage.setItem("inspetorAtual", nome);
+
+  window.location =
+    "nova_inspecao.html?inspetor=" +
+    encodeURIComponent(nome);
+};
+
+function promptComLista(html) {
+
+  const overlay = document.createElement("div");
+
+  overlay.style = `
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.5);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+  `;
+
+  overlay.innerHTML = `
+    <div style="
+      background:white;
+      padding:20px;
+      border-radius:12px;
+      width:90%;
+      max-width:400px;
+    ">
+      ${html}
+
+      <div style="
+        display:flex;
+        justify-content:flex-end;
+        gap:10px;
+        margin-top:20px;
+      ">
+        <button id="cancelarBtn">Cancelar</button>
+
+        <button id="okBtn"
+          style="
+            background:#2196f3;
+            color:white;
+            border:none;
+            padding:8px 14px;
+            border-radius:6px;
+          ">
+          Continuar
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  return new Promise(resolve => {
+
+    document
+      .getElementById("cancelarBtn")
+      .onclick = () => {
+        overlay.remove();
+        resolve(null);
+      };
+
+    document
+      .getElementById("okBtn")
+      .onclick = () => {
+
+        const valor = document
+          .getElementById("nomeInspetor")
+          .value
+          .trim();
+
+        if (!valor) {
+          alert("Digite o nome do inspetor");
+          return;
+        }
+
+        overlay.remove();
+        resolve(valor);
+      };
+  });
 }
+
+window.fecharModalInspetor = function() {
+
+  document.getElementById("modalInspetor").style.display = "none";
+};
+
+window.confirmarInspetor = function() {
+
+  const inspetor =
+    document.getElementById("selectInspetor").value;
+
+  if (!inspetor) {
+    alert("Selecione um inspetor");
+    return;
+  }
+
+  const nomeCodificado =
+    encodeURIComponent(inspetor);
+
+  window.location =
+    `nova_inspecao.html?inspetor=${nomeCodificado}`;
+};
+
 import { carregarNavbar } from "./navbar.js";
 
 carregarNavbar();

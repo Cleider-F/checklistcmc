@@ -155,6 +155,35 @@
             padding: 10px;
             border: 1px dashed #ccc;
         }
+
+        .grupo-botoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.btn-opcao {
+    width: auto;
+    padding: 12px 18px;
+    border-radius: 999px;
+    border: 2px solid #d1d5db;
+    background: white;
+    color: #333;
+    font-size: 15px;
+    font-weight: bold;
+    box-shadow: none;
+}
+
+.btn-opcao.ativo {
+    background: #2196f3;
+    color: white;
+    border-color: #2196f3;
+}
+
+.btn-opcao.avaria.ativo {
+    background: #f44336;
+    border-color: #f44336;
+}
     </style>
 </head>
 
@@ -192,6 +221,7 @@
                         <option value="revisao">Revisão</option>
                         <option value="cnp">CNP</option>
                         <option value="gm">GM</option>
+                        <option value="acidente">Acidente</option>
                     </select>
                 </div>
             </div>
@@ -209,57 +239,110 @@
             </div>
 
             <div id="compartimentosField" style="display:none;" class="form-group">
-                <label>Qtd Compartimentos (Implemento)</label>
+                <label>Quantidade de compartimentos</label>
                 <input id="compartimentos" type="number" placeholder="Ex: 3">
             </div>
         </div>
 
         <!-- CARD 2: ADICIONAR NÃO CONFORMIDADE MANUAL -->
         <div class="card">
-            <h3>Novo Item / Avaria</h3>
+            <h3>Novo Item</h3>
             <div class="form-group">
-                <label>Descrição do Item / Avaria</label>
+                <label>Descrição do Item</label>
                 <input id="descricao" placeholder="Ex: Lâmpada queimada">
             </div>
 
-            <div class="grid-2">
-                <div class="form-group">
-                    <label>Eixo</label>
-                    <select id="eixo">
-                        <option value="">Selecione</option>
-                        <option value="N/A">N/A</option>
-                        <option value="1º Eixo">1º Eixo</option>
-                        <option value="2º Eixo">2º Eixo</option>
-                        <option value="3º Eixo">3º Eixo</option>
-                        <option value="4º Eixo">4º Eixo</option>
-                        </select>
-                </div>
-                <div class="form-group">
-                    <label>Lado</label>
-                    <select id="lado">
-                        <option value="">Selecione</option>
-                        <option value="N/A">N/A</option>
-                        <option value="esquerdo">Esquerdo</option>
-                        <option value="direito">Direito</option>
-                        <option value="ambos">Ambos</option>
-                        </select>
-                </div>
-            </div>
+<!-- EIXO -->
+<div class="form-group">
+    <label>Eixo</label>
 
-            <div class="grid-2">
-                <div class="form-group">
-                    <label>Tipo de desgaste</label>
-                    <select id="tipoItem">
-                        <option value="normal">Normal</option>
-                        <option value="avaria">Avaria</option>
-                    </select>
-                </div>
-                <div id="compartimentoItem" style="display:none;" class="form-group">
-                    <label>Compartimento</label>
-                    <input id="compartimentoItemInput" type="number" placeholder="Nº">
-                </div>
-            </div>
+    <div class="grupo-botoes" id="grupoEixo">
 
+        <button type="button" class="btn-opcao ativo" data-grupo="eixo" data-value="N/A">N/A</button>
+
+        <button type="button" class="btn-opcao" data-grupo="eixo" data-value="1º Eixo">1º Eixo</button>
+
+        <button type="button" class="btn-opcao" data-grupo="eixo" data-value="2º Eixo">2º Eixo</button>
+
+        <button type="button" class="btn-opcao" data-grupo="eixo" data-value="3º Eixo">3º Eixo</button>
+
+        <button type="button" class="btn-opcao" data-grupo="eixo" data-value="4º Eixo">4º Eixo</button>
+
+    </div>
+</div>
+
+<!-- LADO -->
+<div class="form-group">
+    <label>Lado</label>
+
+    <div class="grupo-botoes" id="grupoLado">
+
+        <button type="button" class="btn-opcao ativo" data-grupo="lado" data-value="N/A">N/A</button>
+
+        <button type="button" class="btn-opcao" data-grupo="lado" data-value="esquerdo">Esquerdo</button>
+
+        <button type="button" class="btn-opcao" data-grupo="lado" data-value="direito">Direito</button>
+
+        <button type="button" class="btn-opcao" data-grupo="lado" data-value="ambos">Ambos</button>
+
+    </div>
+</div>
+
+<!-- TIPO -->
+<div class="form-group">
+    <label>Tipo</label>
+
+    <div class="grupo-botoes" id="grupoTipo">
+
+        <button type="button" class="btn-opcao ativo"
+            data-grupo="tipo"
+            data-value="normal">
+            Normal
+        </button>
+
+        <button type="button"
+            class="btn-opcao avaria"
+            data-grupo="tipo"
+            data-value="avaria">
+            Avaria
+        </button>
+
+    </div>
+</div>
+
+<!-- COMPARTIMENTO -->
+<div id="compartimentoItem" style="display:none;" class="form-group">
+
+    <label>Compartimento</label>
+
+    <div class="grupo-botoes" id="grupoCompartimento">
+
+        <button type="button" class="btn-opcao ativo"
+            data-grupo="compartimento"
+            data-value="1">1</button>
+
+        <button type="button" class="btn-opcao"
+            data-grupo="compartimento"
+            data-value="2">2</button>
+
+        <button type="button" class="btn-opcao"
+            data-grupo="compartimento"
+            data-value="3">3</button>
+
+        <button type="button" class="btn-opcao"
+            data-grupo="compartimento"
+            data-value="4">4</button>
+
+        <button type="button" class="btn-opcao"
+            data-grupo="compartimento"
+            data-value="5">5</button>
+
+        <button type="button" class="btn-opcao"
+            data-grupo="compartimento"
+            data-value="6">6</button>
+
+    </div>
+</div>
             <div class="form-group">
                 <label>Foto da Evidência</label>
                 <input type="file" id="foto" accept="image/*">
@@ -290,6 +373,8 @@
     import { carregarNavbar } from "./navbar.js";
     carregarNavbar();
 
+
+    const inspetor = new URLSearchParams(window.location.search).get("inspetor");
     const kmField = document.getElementById("kmField");
     const horimetroField = document.getElementById("horimetroField");
     const compartimentosField = document.getElementById("compartimentosField");
@@ -473,13 +558,42 @@ function gerarChecklistComboioPrev(tipo) {
         preview.style.display = "block";
     });
 
+    let eixoSelecionado = "N/A";
+let ladoSelecionado = "N/A";
+let tipoSelecionado = "normal";
+let compartimentoSelecionado = 1;
+
+document.querySelectorAll(".btn-opcao").forEach(btn => {
+
+    btn.addEventListener("click", () => {
+
+        const grupo = btn.dataset.grupo;
+
+        document
+            .querySelectorAll(`[data-grupo="${grupo}"]`)
+            .forEach(b => b.classList.remove("ativo"));
+
+        btn.classList.add("ativo");
+
+        const valor = btn.dataset.value;
+
+        if (grupo === "eixo") eixoSelecionado = valor;
+        if (grupo === "lado") ladoSelecionado = valor;
+        if (grupo === "tipo") tipoSelecionado = valor;
+        if (grupo === "compartimento") {
+            compartimentoSelecionado = Number(valor);
+        }
+
+    });
+
+});
+
     window.adicionarItem = async function() {
         const desc = document.getElementById("descricao").value.trim();
-        const eixo = document.getElementById("eixo").value;
-        const lado = document.getElementById("lado").value;
-        const tipo = document.getElementById("tipoItem").value;
-        const comp = document.getElementById("compartimentoItemInput")?.value;
-
+        const eixo = eixoSelecionado;
+        const lado = ladoSelecionado;
+        const tipo = tipoSelecionado;
+        const comp = compartimentoSelecionado;
         if (!desc || !eixo || !lado) return alert("Preencha Descrição, Eixo e Lado");
 
         let fotos = [];
@@ -505,58 +619,154 @@ if (fotoFile) {
         renderLista();
     };
 
-    function renderLista() {
-        const container = document.getElementById("listaItens");
-        container.innerHTML = "";
+function renderLista() {
 
-        const grupos = {};
-        naoConformidades.forEach(item => {
-            const g = item.grupo || "GERAL";
-            if (!grupos[g]) grupos[g] = [];
-            grupos[g].push(item);
+    const container = document.getElementById("listaItens");
+    container.innerHTML = "";
+
+    const tipoImplemento = document.getElementById("tipo").value;
+
+    // =========================
+    // AGRUPAMENTO
+    // =========================
+
+    const grupos = {};
+
+    naoConformidades.forEach(item => {
+
+        let grupoPrincipal = item.grupo || "GERAL";
+
+        // 🚛 CARRETA → subdivide por compartimento
+        if (
+            tipoImplemento === "carreta" &&
+            item.origem === "manual"
+        ) {
+
+            const comp = item.compartimento || "SEM COMP.";
+
+            grupoPrincipal = `COMPARTIMENTO ${comp}`;
+        }
+
+        if (!grupos[grupoPrincipal]) {
+            grupos[grupoPrincipal] = [];
+        }
+
+        grupos[grupoPrincipal].push(item);
+    });
+
+    // =========================
+    // ORDENA COMPARTIMENTOS
+    // =========================
+
+    const gruposOrdenados = Object.keys(grupos).sort((a, b) => {
+
+        const numA = parseInt(a.replace(/\D/g, "")) || 999;
+        const numB = parseInt(b.replace(/\D/g, "")) || 999;
+
+        return numA - numB;
+    });
+
+    // =========================
+    // RENDER
+    // =========================
+
+    gruposOrdenados.forEach((nomeGrupo) => {
+
+        const itens = grupos[nomeGrupo];
+
+        const header = document.createElement("div");
+        header.className = "grupo-titulo";
+        header.innerText = nomeGrupo;
+
+        container.appendChild(header);
+
+        itens.forEach(item => {
+
+            const idx = naoConformidades.indexOf(item);
+
+            const corBorda =
+                item.origem === "manual"
+                    ? "var(--warning)"
+                    : "var(--primary)";
+
+            const corBadge =
+                item.origem === "manual"
+                    ? "#fff3e0"
+                    : "#e3f2fd";
+
+            const corTextoBadge =
+                item.origem === "manual"
+                    ? "#e65100"
+                    : "#0d47a1";
+
+            const div = document.createElement("div");
+
+            div.className = "item-lista";
+
+            div.style.borderLeft = `5px solid ${corBorda}`;
+
+            div.innerHTML = `
+                <div class="item-info">
+
+                    <strong>${item.descricao}</strong>
+
+                    <small>
+
+                        <span style="
+                            background:${corBadge};
+                            color:${corTextoBadge};
+                            padding: 2px 6px;
+                            border-radius: 4px;
+                            font-weight: bold;
+                            margin-right: 4px;
+                        ">
+                            ${item.tipo ? item.tipo.toUpperCase() : 'N/A'}
+                        </span>
+
+                        ${item.eixo ? `Eixo: ${item.eixo}` : ''}
+
+                        ${item.lado ? ` | Lado: ${item.lado}` : ''}
+
+                        ${
+                            tipoImplemento !== "carreta" &&
+                            item.compartimento !== null &&
+                            item.compartimento !== undefined
+                            ? ` | Comp: ${item.compartimento}`
+                            : ''
+                        }
+
+                    </small>
+
+                </div>
+
+                <button class="btn-remover-icon"
+                    onclick="removerItem(${idx})">
+
+                    <svg width="24" height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round">
+
+                        <polyline points="3 6 5 6 21 6"></polyline>
+
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+
+                        <line x1="10" y1="11" x2="10" y2="17"></line>
+
+                        <line x1="14" y1="11" x2="14" y2="17"></line>
+
+                    </svg>
+
+                </button>
+            `;
+
+            container.appendChild(div);
         });
-
-        Object.entries(grupos).forEach(([nomeGrupo, itens]) => {
-            const header = document.createElement("div");
-            header.className = "grupo-titulo";
-            header.innerText = nomeGrupo;
-            container.appendChild(header);
-
-            itens.forEach(item => {
-                const idx = naoConformidades.indexOf(item);
-                const corBorda = item.origem === 'manual' ? 'var(--warning)' : 'var(--primary)';
-                const corBadge = item.origem === 'manual' ? '#fff3e0' : '#e3f2fd';
-                const corTextoBadge = item.origem === 'manual' ? '#e65100' : '#0d47a1';
-
-                const div = document.createElement("div");
-                div.className = "item-lista";
-                div.style.borderLeft = `5px solid ${corBorda}`;
-                
-                div.innerHTML = `
-                    <div class="item-info">
-                        <strong>${item.descricao}</strong>
-                        <small>
-                            <span style="background:${corBadge}; color:${corTextoBadge}; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-right: 4px;">
-                                ${item.tipo ? item.tipo.toUpperCase() : 'N/A'}
-                            </span>
-                            ${item.eixo ? `Eixo: ${item.eixo}` : ''} 
-                            ${item.lado ? ` | Lado: ${item.lado}` : ''} 
-                            ${item.compartimento !== null && item.compartimento !== undefined ? ` | Comp: ${item.compartimento}` : ''}
-                        </small>
-                    </div>
-                    <button class="btn-remover-icon" onclick="removerItem(${idx})">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="3 6 5 6 21 6"></polyline>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                            <line x1="10" y1="11" x2="10" y2="17"></line>
-                            <line x1="14" y1="11" x2="14" y2="17"></line>
-                        </svg>
-                    </button>
-                `;
-                container.appendChild(div);
-            });
-        });
-    }
+    });
+}
 
     window.removerItem = (i) => {
         naoConformidades.splice(i, 1);
@@ -645,10 +855,7 @@ if (fotoFile) {
 
     function limparCamposItem() {
         document.getElementById("descricao").value = "";
-        document.getElementById("eixo").value = "";
-        document.getElementById("lado").value = "";
         document.getElementById("foto").value = "";
-        document.getElementById("compartimentoItemInput").value = "";
         document.getElementById("preview").style.display = "none";
         fotoFile = null;
     }

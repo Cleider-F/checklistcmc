@@ -142,10 +142,14 @@
 
   <script type="module">
   import { auth } from "./firebase.js";
-  import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import { carregarNavbar } from "./navbar.js";
+import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { carregarNavbar } from "./navbar.js";
 
-  carregarNavbar();
+import "./lista_solicitantes.js";
+
+const LISTA_SOLICITANTES = window.LISTA_SOLICITANTES || [];
+
+carregarNavbar(); 
 
   const authBtn = document.getElementById("authBtn");
 
@@ -165,9 +169,146 @@
   });
 
   // Função para Navegação
-  window.ir = function(pagina) {
-    window.location = pagina;
-  };
+window.ir = async function(pagina) {
+
+  // 🚛 Nova inspeção
+  if (pagina === "nova_inspecao.html") {
+
+    const nomesOptions = LISTA_SOLICITANTES
+      .map(nome => `<option value="${nome}">`)
+      .join("");
+
+    const nome = await promptComLista(`
+      <div style="text-align:left;">
+      
+        <label style="
+          font-size:13px;
+          font-weight:bold;
+        ">
+          Nome do inspetor
+        </label>
+
+        <input
+          id="nomeInspetor"
+          list="listaInspetores"
+          placeholder="Digite o nome..."
+          style="
+            width:100%;
+            padding:10px;
+            margin-top:8px;
+            border-radius:8px;
+            border:1px solid #ccc;
+            box-sizing:border-box;
+          "
+        >
+
+        <datalist id="listaInspetores">
+          ${nomesOptions}
+        </datalist>
+
+      </div>
+    `);
+
+    if (!nome) return;
+
+    localStorage.setItem("inspetorAtual", nome);
+
+    window.location =
+      "nova_inspecao.html?inspetor=" +
+      encodeURIComponent(nome);
+
+    return;
+  }
+
+  // outras páginas
+  window.location = pagina;
+};
+
+function promptComLista(html) {
+
+  const overlay = document.createElement("div");
+
+  overlay.style = `
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.5);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+  `;
+
+  overlay.innerHTML = `
+    <div style="
+      background:white;
+      padding:20px;
+      border-radius:12px;
+      width:90%;
+      max-width:400px;
+      box-sizing:border-box;
+    ">
+
+      ${html}
+
+      <div style="
+        display:flex;
+        justify-content:flex-end;
+        gap:10px;
+        margin-top:20px;
+      ">
+
+        <button id="cancelarBtn">
+          Cancelar
+        </button>
+
+        <button
+          id="okBtn"
+          style="
+            background:#2196f3;
+            color:white;
+            border:none;
+            padding:8px 14px;
+            border-radius:6px;
+          "
+        >
+          Continuar
+        </button>
+
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  return new Promise(resolve => {
+
+    document
+      .getElementById("cancelarBtn")
+      .onclick = () => {
+
+        overlay.remove();
+        resolve(null);
+      };
+
+    document
+      .getElementById("okBtn")
+      .onclick = () => {
+
+        const valor = document
+          .getElementById("nomeInspetor")
+          .value
+          .trim();
+
+        if (!valor) {
+          alert("Digite o nome do inspetor");
+          return;
+        }
+
+        overlay.remove();
+        resolve(valor);
+      };
+  });
+}
 
   // Lógica de Logout
   async function logout() {

@@ -366,25 +366,105 @@ window.LISTA_SOLICITANTES.forEach(nome => {
         renderizarChecklist(container);
     }
 
-    function renderizarChecklist(container) {
+function renderizarChecklist(container) {
+
     const grupos = {};
+
     itens.forEach(item => {
-        // Se for manual, o grupo vira "MANUAL", senão usa o grupo do banco ou "GERAL"
-        const g = item.origem === "manual" ? "MANUAL" : (item.grupo || "GERAL");
-        if (!grupos[g]) grupos[g] = [];
-        grupos[g].push(item);
+
+        let grupo = "";
+
+        // =========================
+        // ITENS MANUAIS
+        // =========================
+
+        if (item.origem === "manual") {
+
+            if (implemento?.tipo?.toLowerCase() === "carreta") {
+
+                grupo = item.compartimento
+                    ? `MANUAL - COMPARTIMENTO ${item.compartimento}`
+                    : "MANUAL - SEM COMPARTIMENTO";
+
+            } else {
+
+                grupo = "MANUAL";
+            }
+
+        }
+
+        // =========================
+        // ITENS AUTOMÁTICOS
+        // =========================
+
+        else {
+
+            grupo = item.grupo || "GERAL";
+        }
+
+        if (!grupos[grupo]) grupos[grupo] = [];
+
+        grupos[grupo].push(item);
     });
 
-    // Ordena os nomes dos grupos para que "MANUAL" fique sempre no topo
+    // =========================
+    // ORDENAÇÃO DOS GRUPOS
+    // =========================
+
     const nomesGruposOrdenados = Object.keys(grupos).sort((a, b) => {
-        if (a === "MANUAL") return -1;
-        if (b === "MANUAL") return 1;
+
+        const aManual = a.startsWith("MANUAL");
+        const bManual = b.startsWith("MANUAL");
+
+        // MANUAIS PRIMEIRO
+        if (aManual && !bManual) return -1;
+        if (!aManual && bManual) return 1;
+
+        // ORDENAR COMPARTIMENTOS
+        if (aManual && bManual) {
+
+            const numA = parseInt(a.match(/\d+/)?.[0] || 999);
+            const numB = parseInt(b.match(/\d+/)?.[0] || 999);
+
+            return numA - numB;
+        }
+
+        // RESTANTE ALFABÉTICO
         return a.localeCompare(b);
     });
 
+    // =========================
+    // RENDERIZAÇÃO
+    // =========================
+
     nomesGruposOrdenados.forEach(nome => {
-        container.appendChild(criarHeaderGrupo(nome));
-        grupos[nome].forEach(item => container.appendChild(criarCardItem(item)));
+
+        container.appendChild(
+            criarHeaderGrupo(nome)
+        );
+
+        // Ordenar itens internos
+        grupos[nome].sort((a, b) => {
+
+            const compA = a.compartimento || 999;
+            const compB = b.compartimento || 999;
+
+            if (compA !== compB) {
+                return compA - compB;
+            }
+
+            return (a.descricao || "")
+                .localeCompare(b.descricao || "");
+        });
+
+        grupos[nome].forEach(item => {
+
+            container.appendChild(
+                criarCardItem(item)
+            );
+
+        });
+
     });
 }
 
