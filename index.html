@@ -1,130 +1,122 @@
-  <!DOCTYPE html>
-  <html lang="pt-br">
-  <head>
+ <!DOCTYPE html>
+<html lang="pt-br">
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Painel Geral</title>
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1f2937">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icone-192.png">
+
   <link rel="stylesheet" href="navbar.css">
 
   <style>
-  body { margin: 0; font-family: Arial; background: #f1f3f6; }
+    body { margin: 0; font-family: Arial; background: #f1f3f6; }
 
-  .topbar {
-    background: #1f2937;
-    color: white;
-    padding: 15px;
-    font-size: 18px;
-    font-weight: bold;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+    .topbar {
+      background: #1f2937;
+      color: white;
+      padding: 15px;
+      font-size: 18px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-  /* Estilo Base do Botão */
-  .auth-btn {
-    border: none;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 14px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: 0.3s;
-  }
+    /* Estilo Base do Botão */
+    .auth-btn {
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+    }
 
-  /* Cor quando for Logout */
-  .btn-logout { background: #ff5252; color: white; }
+    /* Cor quando for Logout */
+    .btn-logout { background: #ff5252; color: white; }
 
-  /* Cor quando for Login */
-  .btn-login { background: #2196f3; color: white; }
+    /* Cor quando for Login */
+    .btn-login { background: #2196f3; color: white; }
 
-  .acoes {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-    padding: 20px;
-  }
+    .acoes {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      padding: 20px;
+    }
 
-  .botao {
-    background: white;
-    border-radius: 20px;
-    height: 130px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-size: 16px;
-    font-weight: bold;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-    transition: 0.2s;
-    cursor: pointer;
-  }
-.topbar {
-  background: #1f2937;
-  color: white;
+    .botao {
+      background: white;
+      border-radius: 20px;
+      height: 130px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-size: 16px;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      transition: 0.2s;
+      cursor: pointer;
+    }
 
-  padding: 15px;
+    .topbar {
+      background: #1f2937;
+      color: white;
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
 
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+    /* Logo centralizada REAL */
+    .logo-topbar {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      height: 32px;
+      object-fit: contain;
+    }
 
-  position: relative;
-}
+    /* Grupo de botões da direita */
+    .topbar-acoes {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
 
-/* Logo centralizada REAL */
-.logo-topbar {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+    /* Evita texto esmagando a logo */
+    .titulo-topbar {
+      min-width: 90px;
+    }
 
-  height: 32px;
-  object-fit: contain;
-}
-
-/* Grupo de botões da direita */
-.topbar-acoes {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-/* Evita texto esmagando a logo */
-.titulo-topbar {
-  min-width: 90px;
-}
-  .botao div { font-size: 28px; margin-bottom: 5px; }
-  .botao:active { transform: scale(0.96); }
+    .botao div { font-size: 28px; margin-bottom: 5px; }
+    .botao:active { transform: scale(0.96); }
   </style>
-  </head>
+</head>
 
-  <body>
+<body> <div class="topbar">
+    <span class="titulo-topbar">🏠 Início</span>
 
-  <body>
+    <img src="suzano-logo.png" class="logo-topbar">
 
-  <div class="topbar">
+    <div class="topbar-acoes">
+      <button id="btnInstalar" class="auth-btn btn-login" style="display: none;">
+        📲 Instalar App
+      </button>
 
-  <!-- Lado esquerdo -->
-  <span class="titulo-topbar">🏠 Início</span>
-
-  <!-- Logo central -->
-  <img src="suzano-logo.png" class="logo-topbar">
-
-  <!-- Lado direito -->
-  <div class="topbar-acoes">
-
-    <button id="btnInstalar"
-      class="auth-btn btn-login"
-      style="display: none;">
-      📲 Instalar App
-    </button>
-
-    <button id="authBtn" class="auth-btn">
-      Carregando...
-    </button>
-
+      <button id="authBtn" class="auth-btn">
+        Carregando...
+      </button>
+    </div>
   </div>
-
-</div>
 
   <div class="acoes">
     <div class="botao" onclick="ir('nova_inspecao.html')"><div>➕</div>Nova Inspeção</div>
@@ -133,37 +125,20 @@
     <div class="botao" onclick="ir('tecnico.html')"><div>🛠️</div>Técnico</div>
   </div>
 
-  <!-- Link para o Manifesto -->
-<link rel="manifest" href="manifest.json">
-
-<meta name="theme-color" content="#1f2937">
-
-<meta name="apple-mobile-web-app-capable" content="yes">
-
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-<link rel="apple-touch-icon" href="/icone-192.png">
-
-
-  <!-- Cor da barra de status no Android -->
-  <meta name="theme-color" content="#1f2937">
-
   <script type="module">
-  import { auth } from "./firebase.js";
-import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { carregarNavbar } from "./navbar.js";
+    import { auth } from "./firebase.js";
+    import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { carregarNavbar } from "./navbar.js";
+    import "./lista_solicitantes.js";
 
-import "./lista_solicitantes.js";
+    const LISTA_SOLICITANTES = window.LISTA_SOLICITANTES || [];
 
-const LISTA_SOLICITANTES = window.LISTA_SOLICITANTES || [];
-
-if ("serviceWorker" in navigator) {
-
-  navigator.serviceWorker.register("/sw.js")
-    .then(() => console.log("PWA ativo"))
-    .catch(err => console.log(err));
-
-}
+    if ("serviceWorker" in navigator) {
+      // Dica: Garanta também que o sw.js esteja sem a barra se estiver na mesma pasta
+      navigator.serviceWorker.register("sw.js") 
+        .then(() => console.log("PWA ativo"))
+        .catch(err => console.log(err));
+    }
 
 carregarNavbar(); 
 
