@@ -35,13 +35,6 @@
   },
   {
     "tipoPlano": "revisao",
-    "grupo": "Catracas de amarração",
-    "itens": [
-      { "descricao": "Avaliar e lubrificar catracas de amarração" , "tipo": "V" }
-    ]
-  },
-  {
-    "tipoPlano": "revisao",
     "grupo": "Balão de ar",
     "itens": [
       { "descricao": "Drenar balões de ar" , "tipo": "V" }
@@ -69,13 +62,6 @@
       { "descricao": "Avaliar funcionamento das catracas de freio" , "tipo": "V" },
       { "descricao": "Regular freio" , "tipo": "V" },
       { "descricao": "Avaliar mangotes e vazamentos" , "tipo": "V" }
-    ]
-  },
-  {
-    "tipoPlano": "preventiva",
-    "grupo": "Catracas de amarração",
-    "itens": [
-      { "descricao": "Avaliar e lubrificar catracas de amarração" , "tipo": "V" }
     ]
   },
   {
