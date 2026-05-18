@@ -1,7 +1,7 @@
 {
   "name": "Controle de Manutenção CMC",
-  "short_name": "CMC",
-  "description": "Sistema de inspeção e manutenção de implementos.",
+  "short_name": "Manutenção-CMC",
+  "description": "Sistema de inspeção e manutenção de equipamentos.",
   "start_url": "index.html",
   "scope": "./",
   "display": "standalone",
