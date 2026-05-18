@@ -99,24 +99,55 @@
 
     .botao div { font-size: 28px; margin-bottom: 5px; }
     .botao:active { transform: scale(0.96); }
+
+    /* Novo Layout: Banner de Instalação do PWA */
+.banner-instalacao {
+  background: #2196f3;
+  color: white;
+  padding: 12px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  animation: slideDown 0.3s ease-out;
+}
+
+.btn-instalar-banner {
+  background: white;
+  color: #2196f3;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 13px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
   </style>
 </head>
 
-<body> <div class="topbar">
-    <span class="titulo-topbar">🏠 Início</span>
+<body> 
+ <div class="topbar">
+  <span class="titulo-topbar">🏠 Início</span>
 
-    <img src="suzano-logo.png" class="logo-topbar">
+  <img src="suzano-logo.png" class="logo-topbar">
 
-    <div class="topbar-acoes">
-      <button id="btnInstalar" class="auth-btn btn-login" style="display: none;">
-        📲 Instalar App
-      </button>
-
-      <button id="authBtn" class="auth-btn">
-        Carregando...
-      </button>
-    </div>
+  <div class="topbar-acoes">
+    <button id="authBtn" class="auth-btn">Carregando...</button>
   </div>
+</div>
+
+<div id="bannerInstalar" class="banner-instalacao" style="display: none;">
+  <span>📲 Instalar App no seu celular?</span>
+  <button id="btnInstalarAcao" class="btn-instalar-banner">Instalar</button>
+</div>
 
   <div class="acoes">
     <div class="botao" onclick="ir('nova_inspecao.html')"><div>➕</div>Nova Inspeção</div>
@@ -326,42 +357,39 @@ if ('serviceWorker' in navigator) {
     console.error(err);
   });
 }
-    let gatilhoInstalacao; // Variável para guardar o evento
+// --- LÓGICA DE INSTALAÇÃO DO PWA ATUALIZADA ---
+let gatilhoInstalacao;
+const bannerInstalar = document.getElementById('bannerInstalar');
+const btnInstalarAcao = document.getElementById('btnInstalarAcao');
 
-  const btnInstalar = document.getElementById('btnInstalar');
+window.addEventListener('beforeinstallprompt', (e) => {
+  // Impede o banner padrão do navegador
+  e.preventDefault();
+  // Guarda o evento
+  gatilhoInstalacao = e;
+  // Mostra o novo banner azul abaixo da topbar
+  bannerInstalar.style.display = 'flex'; 
+});
 
-  // 1. Escuta o evento do navegador
-  window.addEventListener('beforeinstallprompt', (e) => {
-    // Impede que o navegador mostre o banner automático padrão
-    e.preventDefault();
-    // Guarda o evento para usar depois
-    gatilhoInstalacao = e;
-    // Mostra o seu botão customizado
-    btnInstalar.style.display = 'block';
-  });
+btnInstalarAcao.addEventListener('click', async () => {
+  if (!gatilhoInstalacao) return;
 
-  // 2. Lógica do clique no botão
-  btnInstalar.addEventListener('click', async () => {
-    if (!gatilhoInstalacao) return;
+  // Abre a caixinha oficial de instalação do Android
+  gatilhoInstalacao.prompt();
+  
+  const { outcome } = await gatilhoInstalacao.userChoice;
+  console.log(`Usuário escolheu: ${outcome}`);
 
-    // Mostra a janelinha de instalação original do sistema
-    gatilhoInstalacao.prompt();
+  // Limpa o evento e esconde o banner
+  gatilhoInstalacao = null;
+  bannerInstalar.style.display = 'none';
+});
 
-    // Verifica se o usuário aceitou ou recusou
-    const { outcome } = await gatilhoInstalacao.userChoice;
-    console.log(`Usuário escolheu: ${outcome}`);
-
-    // Limpa o gatilho, pois ele só pode ser usado uma vez
-    gatilhoInstalacao = null;
-    // Esconde o botão após a escolha
-    btnInstalar.style.display = 'none';
-  });
-
-  // 3. (Opcional) Detecta se o app já foi instalado
-  window.addEventListener('appinstalled', () => {
-    console.log('App instalado com sucesso!');
-    btnInstalar.style.display = 'none';
-  });
+window.addEventListener('appinstalled', () => {
+  console.log('App instalado com sucesso!');
+  bannerInstalar.style.display = 'none';
+});
+  
   </script>
 
   </body>
