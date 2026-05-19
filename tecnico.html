@@ -248,7 +248,7 @@
               <option value="">Todos</option>
               <option value="em_inspecao">Em inspeção</option>
               <option value="aguardando_manutencao">Aguardando manutenção</option>
-              <option value="em_manutencao">Manutenção</option>
+              <option value="em_manutencao"> Em manutenção</option>
               <option value="liberado">Liberado</option>
           </select>
 </div>
@@ -388,9 +388,9 @@ if ("serviceWorker" in navigator) {
   // 🎨 STATUS
   function getStatusInfo(status) {
     switch(status) {
-      case "em_inspecao": return { nome: "Inspeção", cor: "azul" };
+      case "em_inspecao": return { nome: "Em Inspeção", cor: "azul" };
       case "aguardando_manutencao": return { nome: "Aguardando", cor: "laranja" };
-      case "em_manutencao": return { nome: "Manutenção", cor: "amarelo" };
+      case "em_manutencao": return { nome: " Em Manutenção", cor: "amarelo" };
       case "liberado": return { nome: "Liberado", cor: "verde" };
     }
   }
