@@ -234,7 +234,7 @@
 </button>  </div>
 
 <div class="filtros">
-  <input id="busca" placeholder="Buscar por placa">
+  <input id="busca" placeholder="Buscar por GO/Placa">
 
   <select id="filtroTipo">
     <option value="">Todos os tipos</option>
@@ -369,7 +369,9 @@
     doc,
     updateDoc,
     addDoc,
-    Timestamp
+    Timestamp,
+    limit,
+    orderBy
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 if ("serviceWorker" in navigator) {
@@ -472,7 +474,13 @@ if ("serviceWorker" in navigator) {
   // 🚀 CARREGAR
   async function carregar() {
 
-    const snap = await getDocs(collection(db, "implementos"));
+    const q = query(
+  collection(db, "implementos"),
+  orderBy("dataInspecao", "desc"),
+  limit(45)
+);
+
+const snap = await getDocs(q);
 
     dados = [];
 
