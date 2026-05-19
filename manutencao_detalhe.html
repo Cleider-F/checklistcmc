@@ -181,7 +181,10 @@
 
 <div class="container">
     <div id="info" class="card">Carregando dados...</div>
-    
+
+<div id="acoesManutencao"></div>
+<div id="acoesNC"></div>
+
     <button class="btn-alerta" id="btnIniciar" style="display:none;" onclick="abrirModalEquipe()">
         ▶ Iniciar Manutenção
     </button>
@@ -282,6 +285,168 @@
     </div>
 </div>
 
+<!-- MODAL ADICIONAR RESPONSÁVEL -->
+<div id="modalResponsavel" style="
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.6);
+    z-index:9999;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+">
+
+    <div style="
+        background:white;
+        width:100%;
+        max-width:450px;
+        border-radius:16px;
+        padding:20px;
+    ">
+
+        <h3 style="margin-top:0;">
+            👤 Adicionar Responsável
+        </h3>
+
+        <input
+            id="inputNovoResponsavel"
+            list="listaMembros"
+            placeholder="Digite o nome..."
+            style="
+                width:100%;
+                box-sizing:border-box;
+                padding:12px;
+                border-radius:10px;
+                border:1px solid #ccc;
+                margin-bottom:15px;
+            "
+        >
+
+        <div style="
+            display:flex;
+            gap:10px;
+        ">
+            <button
+                onclick="fecharModalResponsavel()"
+                style="background:#777;color:white;"
+            >
+                Cancelar
+            </button>
+
+            <button
+                onclick="salvarNovoResponsavel()"
+                style="background:#4caf50;color:white;"
+            >
+                Adicionar
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<!-- MODAL NOVA NÃO CONFORMIDADE -->
+<div id="modalNC" style="
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.6);
+    z-index:9999;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+">
+
+    <div style="
+        background:white;
+        width:100%;
+        max-width:500px;
+        border-radius:16px;
+        padding:20px;
+        max-height:90vh;
+        overflow:auto;
+    ">
+
+        <h3 style="margin-top:0;">
+            ➕ Nova Não Conformidade
+        </h3>
+
+        <textarea
+            id="novaDescricao"
+            placeholder="Descrição do problema"
+            style="
+                width:100%;
+                min-height:100px;
+                padding:12px;
+                border-radius:10px;
+                border:1px solid #ccc;
+                box-sizing:border-box;
+                margin-bottom:10px;
+                resize:vertical;
+            "
+        ></textarea>
+
+        <input
+            id="novoEixo"
+            placeholder="Eixo (Opcional)"
+            style="
+                width:100%;
+                padding:12px;
+                border-radius:10px;
+                border:1px solid #ccc;
+                box-sizing:border-box;
+                margin-bottom:10px;
+            "
+        >
+
+        <input
+            id="novoLado"
+            placeholder="Lado (Opcional)"
+            style="
+                width:100%;
+                padding:12px;
+                border-radius:10px;
+                border:1px solid #ccc;
+                box-sizing:border-box;
+                margin-bottom:10px;
+            "
+        >
+
+        <input
+            id="novoCompartimento"
+            placeholder="Compartimento (Opcional)"
+            style="
+                width:100%;
+                padding:12px;
+                border-radius:10px;
+                border:1px solid #ccc;
+                box-sizing:border-box;
+                margin-bottom:15px;
+            "
+        >
+
+        <div style="
+            display:flex;
+            gap:10px;
+        ">
+            <button
+                onclick="fecharModalNC()"
+                style="background:#777;color:white;"
+            >
+                Cancelar
+            </button>
+
+            <button
+                onclick="salvarNovaNC()"
+                style="background:#4caf50;color:white;"
+            >
+                Salvar
+            </button>
+        </div>
+
+    </div>
+</div>
+
 <link rel="stylesheet" href="navbar.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="lista_solicitantes.js"></script>
@@ -308,6 +473,7 @@ window.LISTA_SOLICITANTES.forEach(nome => {
     let itens = [];
     let implemento = null;
     let equipeSelecionada = [];
+    let inspecaoIdGlobal = null;
 
     const podeIniciar = s => s === "aguardando_manutencao";
     const podeMexerItens = s => s === "em_manutencao";
@@ -317,37 +483,141 @@ window.LISTA_SOLICITANTES.forEach(nome => {
         const snap = await getDoc(doc(db, "implementos", id));
         implemento = snap.data();
 
-        document.getElementById("info").innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:start;">
-                <div>
-                    <span style="font-size:22px; font-weight:bold;">${implemento?.placa || "-"}</span><br>
-                    <small>${implemento?.tipo?.toUpperCase() || "-"}</small>
-                </div>
-                <span class="badge" style="background:var(--dark)">${implemento?.status?.replace('_', ' ')}</span>
-                ${
-    implemento?.equipeManutencao?.length
-    ? `
-    <div style="margin-top:10px;">
-        <b>Equipe:</b><br>
-        ${implemento.equipeManutencao.join(", ")}
-    </div>
-    `
-    : ""
-}
-            </div>
-        `;
+document.getElementById("info").innerHTML = `
+    
+    <div style="
+        display:flex;
+        justify-content:space-between;
+        gap:20px;
+        flex-wrap:wrap;
+    ">
 
+        <!-- LADO ESQUERDO -->
+        <div>
+
+            <div style="
+                font-size:28px;
+                font-weight:bold;
+                color:#1f2937;
+            ">
+                ${implemento?.placa || "-"}
+            </div>
+
+            <div style="
+                margin-top:4px;
+                color:#666;
+                font-size:15px;
+                text-transform:uppercase;
+            ">
+                ${implemento?.tipo || "-"}
+            </div>
+
+            <!-- STATUS AGORA FICA ABAIXO -->
+            <div style="margin-top:12px;">
+                <span class="badge" style="
+                    background:var(--dark);
+                    font-size:12px;
+                    padding:6px 12px;
+                ">
+                    ${implemento?.status?.replaceAll("_", " ")}
+                </span>
+            </div>
+
+        </div>
+
+        <!-- LADO DIREITO -->
+        ${
+            implemento?.equipeManutencao?.length
+            ? `
+            <div style="
+                flex:1;
+                min-width:280px;
+            ">
+
+                <div style="
+                    font-weight:bold;
+                    margin-bottom:8px;
+                    color:#1f2937;
+                ">
+                    👥 Equipe Responsável
+                </div>
+
+                <div style="
+                    color:#333;
+                    line-height:1.6;
+                    margin-bottom:15px;
+                ">
+                    ${implemento.equipeManutencao.join(", ")}
+                </div>
+
+                ${
+                    implemento.status === "em_manutencao"
+                    ? `
+                    <button
+                        onclick="abrirModalResponsavel()"
+                        style="
+                            background:#1f2937;
+                            color:white;
+                            border:none;
+                            padding:12px;
+                            border-radius:10px;
+                            font-weight:bold;
+                            cursor:pointer;
+                            width:100%;
+                            max-width:260px;
+                            margin:0;
+                        "
+                    >
+                        👤 + Adicionar Mecânico
+                    </button>
+                    `
+                    : ""
+                }
+
+            </div>
+            `
+            : ""
+        }
+
+    </div>
+`;
         document.getElementById("btnIniciar").style.display = podeIniciar(implemento.status) ? "block" : "none";
         document.getElementById("btnFinalizar").style.display = podeFinalizar(implemento.status) ? "block" : "none";
 
+        const acoes = document.getElementById("acoesManutencao");
+
+if (implemento.status === "em_manutencao") {
+
+
+    document.getElementById("acoesNC").innerHTML = `
+        <button
+            onclick="abrirModalNC()"
+            style="
+                background:#ff9800;
+                color:white;
+                margin-bottom:15px;
+            "
+        >
+            ➕ Adicionar novo item
+        </button>
+    `;
+
+} else {
+
+    acoes.innerHTML = "";
+
+    document.getElementById("acoesNC").innerHTML = "";
+
+}
         const qInspecao = query(collection(db, "inspecoes"), where("implementoId", "==", id));
         const snapInspecao = await getDocs(qInspecao);
-        let inspecaoId = null;
-        snapInspecao.forEach(d => inspecaoId = d.id);
+        inspecaoIdGlobal = null;
+        snapInspecao.forEach(d => inspecaoIdGlobal = d.id);
 
-        if (!inspecaoId) return;
 
-        const qItens = query(collection(db, "naoConformidades"), where("inspecaoId", "==", inspecaoId));
+        if (!inspecaoIdGlobal) return;
+
+        const qItens = query(collection(db, "naoConformidades"), where("inspecaoId", "==", inspecaoIdGlobal));
         const snapItens = await getDocs(qItens);
         
         const container = document.getElementById("itens");
@@ -642,6 +912,130 @@ window.confirmarInicioManutencao = async function() {
     }
         };
 
+window.abrirModalResponsavel = function() {
+
+    document.getElementById("modalResponsavel").style.display = "flex";
+
+    document.getElementById("inputNovoResponsavel").value = "";
+};
+
+window.fecharModalResponsavel = function() {
+
+    document.getElementById("modalResponsavel").style.display = "none";
+};
+
+window.salvarNovoResponsavel = async function() {
+
+    const input = document.getElementById("inputNovoResponsavel");
+
+    const nome = input.value.trim();
+
+    if (!nome) {
+
+        alert("Digite um nome.");
+
+        return;
+    }
+
+    try {
+
+        const equipeAtual = implemento.equipeManutencao || [];
+
+        // EVITA DUPLICADO
+        if (equipeAtual.includes(nome)) {
+
+            alert("Este responsável já está na equipe.");
+
+            return;
+        }
+
+        equipeAtual.push(nome);
+
+        await updateDoc(doc(db, "implementos", id), {
+
+            equipeManutencao: equipeAtual
+
+        });
+
+        fecharModalResponsavel();
+
+        carregar();
+
+    } catch (e) {
+
+        console.error(e);
+
+        alert("Erro ao adicionar responsável.");
+    }
+};
+
+window.abrirModalNC = function() {
+
+    document.getElementById("modalNC").style.display = "flex";
+
+    document.getElementById("novaDescricao").value = "";
+    document.getElementById("novoEixo").value = "";
+    document.getElementById("novoLado").value = "";
+    document.getElementById("novoCompartimento").value = "";
+};
+
+window.fecharModalNC = function() {
+
+    document.getElementById("modalNC").style.display = "none";
+};
+
+window.salvarNovaNC = async function() {
+
+    const descricao = document.getElementById("novaDescricao").value.trim();
+
+    const eixo = document.getElementById("novoEixo").value.trim();
+
+    const lado = document.getElementById("novoLado").value.trim();
+
+    const compartimento = document.getElementById("novoCompartimento").value.trim();
+
+    if (!descricao) {
+
+        alert("Informe a descrição.");
+
+        return;
+    }
+
+    try {
+
+        await addDoc(collection(db, "naoConformidades"), {
+
+            inspecaoId: inspecaoIdGlobal,
+
+            descricao,
+
+            eixo,
+
+            lado,
+
+            compartimento,
+
+            origem: "manual",
+
+            resolvido: false,
+
+            status_manutencao: null,
+
+            criadoEm: serverTimestamp()
+
+        });
+
+        fecharModalNC();
+
+        carregar();
+
+    } catch (e) {
+
+        console.error(e);
+
+        alert("Erro ao adicionar não conformidade.");
+    }
+};
 
 window.finalizar = async function() {
     const total = itens.length;
