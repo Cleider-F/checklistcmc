@@ -768,6 +768,30 @@ function renderizarChecklist(container) {
                 </div>
             </div>
             ${item.justificativa ? `<div class="justificativa-box">⚠️ <b>Justificativa:</b> ${item.justificativa}</div>` : ''}
+            ${
+    item.executadoEm
+    ? `
+    <div style="
+        margin-top:8px;
+        font-size:12px;
+        color:#666;
+        font-weight:bold;
+    ">
+        ${
+            item.status_manutencao === "concluido"
+            ? "✅ Concluído em:"
+            : "❌ Não realizado em:"
+        }
+
+        ${
+            item.executadoEm?.toDate
+            ? item.executadoEm.toDate().toLocaleString("pt-BR")
+            : "-"
+        }
+    </div>
+    `
+    : ""
+}
         `;
         return div;
     }

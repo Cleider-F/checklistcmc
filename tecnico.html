@@ -225,7 +225,7 @@
   <!-- Ajuste na Topbar para incluir o botão -->
   <!-- Ajuste na Topbar -->
   <div class="topbar">
-      <span>🛠️ Técnico</span>
+      <span>🧑‍🔬 Técnico</span>
       <!-- Logo central -->
     <img src="suzano-logo.png" class="logo-topbar">
       <!-- Trocado de 🔍 para as três listrinhas -->
@@ -233,6 +233,25 @@
   &#9776;
 </button>  </div>
 
+<div class="filtros">
+  <input id="busca" placeholder="Buscar por placa">
+
+  <select id="filtroTipo">
+    <option value="">Todos os tipos</option>
+    <option value="carreta">Carreta</option>
+    <option value="prancha">Prancha</option>
+    <option value="comboio">Comboio</option>
+    <option value="cavalo">Cavalo</option>
+  </select>
+
+  <select id="filtroStatus">
+              <option value="">Todos</option>
+              <option value="em_inspecao">Em inspeção</option>
+              <option value="aguardando_manutencao">Aguardando manutenção</option>
+              <option value="em_manutencao">Manutenção</option>
+              <option value="liberado">Liberado</option>
+          </select>
+</div>
 
 
   <!-- Menu Lateral de Filtros -->
@@ -525,11 +544,34 @@ if ("serviceWorker" in navigator) {
       <div class="status ${status.cor}">${status.nome}</div>
     </div>
 
-    <div class="info">
-    Tipo: ${item.tipo}<br>
-    Manutenção: <strong>${formatarTipoManutencao(item.tipoManutencao)}</strong><br>
-    Inspeção: ${formatarData(item.dataInspecao)}
-    
+<div class="info">
+Tipo: ${item.tipo}<br>
+
+Manutenção:
+<strong>${formatarTipoManutencao(item.tipoManutencao)}</strong><br>
+
+<span style="
+      color:#2072d6;
+      font-weight:bold;
+    ">
+    🔍  Inspeção:
+    </span>
+${formatarData(item.dataInspecao)}
+
+${
+  item.status === "liberado" && item.dataLiberacao
+    ? `
+    <br>
+    <span style="
+      color:#2e7d32;
+      font-weight:bold;
+    ">
+      ✔  Liberado:
+    </span>
+    ${formatarData(item.dataLiberacao)}
+    `
+    : ""
+}    
   ${
     item.status === "aguardando_manutencao" ||
     item.status === "em_manutencao"
@@ -856,6 +898,8 @@ if ("serviceWorker" in navigator) {
       img.src = url;
     });
   }
+
+
 
   // Função para filtrar por data, tipo, manutenção e status
   window.gerarRelatorioGeral = async function() {
