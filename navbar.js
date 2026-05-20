@@ -19,7 +19,7 @@ export function carregarNavbar() {
       </div>
 
       <div class="nav-item" data-page="tecnico.html">
-        <div>🧑‍🔬</div>
+        <div>👷🏻‍♂️</div>
         <small>Técnico</small>
       </div>
 
