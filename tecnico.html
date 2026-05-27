@@ -3,25 +3,16 @@
   <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>Dashboard Técnico</title>
-  <link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="navbar.css">
+<title>Dashboard Técnico</title>
 
   <style>
   body {
     margin: 0;
-    font-family: 'Montserrat', sans-serif;
+    font-family: "Montserrat", Arial, sans-serif;
     background: #f1f3f6;
   }
 
-  /* TOPO */
-  .topbar {
-    background: #1f2937;
-    color: white;
-    padding: 15px;
-    font-size: 18px;
-    font-weight: bold;
-  }
 
   /* FILTROS */
   .filtros {
@@ -152,23 +143,7 @@
     float: right;
   }
 
-  /* Estilo da Topbar Ajustada */
-  .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-  }
 
-  .menu-btn{
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.12);
-  color: white;
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  font-size: 20px;
-  cursor: pointer;
-}
 
   /* Menu Lateral (Sidebar) */
 .sidebar {
@@ -201,41 +176,6 @@
       margin-bottom: 5px;
       color: #666;
   }
-  .topbar {
-    background: #1f2937;
-    color: white;
-
-    padding: 15px;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    position: relative;
-  }
-
-  /* Logo centralizada REAL */
-  .logo-topbar {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-
-    height: 32px;
-    object-fit: contain;
-    filter: drop-shadow(0 0 2px white) drop-shadow(0 0 2px white) drop-shadow(0 0 2px white);
-  }
-
-  /* Grupo de botões da direita */
-  .topbar-acoes {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-  }
-
-  /* Evita texto esmagando a logo */
-  .titulo-topbar {
-    min-width: 90px;
-  }
 
   </style>
 
@@ -245,14 +185,22 @@
 
   <!-- Ajuste na Topbar para incluir o botão -->
   <!-- Ajuste na Topbar -->
-  <div class="topbar">
-      <span>👷🏻‍♂️ Técnico</span>
-      <!-- Logo central -->
+<div class="topbar">
+
+    <div class="titulo-topbar">
+      👷🏻‍♂️ Técnico
+    </div>
+
     <img src="suzano-logo.png" class="logo-topbar">
-      <!-- Trocado de 🔍 para as três listrinhas -->
-<button onclick="toggleFiltros()" class="menu-btn">
-  &#9776;
-</button>  </div>
+
+    <div class="topbar-acoes">
+      <button onclick="toggleFiltros()" class="menu-btn">
+        &#9776;
+      </button>
+    </div>
+
+</div>
+
 
 <div class="filtros">
   <input id="busca" placeholder="Buscar por GO/Placa">
@@ -358,9 +306,6 @@
   <div class="contadores" id="contadores"></div>
 
   <div class="lista" id="lista"></div>
-
-  <link rel="stylesheet" href="navbar.css">
-
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -565,7 +510,7 @@ const snap = await getDocs(q);
       const status = getStatusInfo(item.status);
 
       const div = document.createElement("div");
-      div.className = "card";
+      div.className = `card tecnico-card status-borda-${status.cor}`;
 
       div.innerHTML = `
     <div class="card-top">

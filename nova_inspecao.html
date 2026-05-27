@@ -5,7 +5,6 @@
     <!-- CRUCIAL: Faz o site entender o tamanho da tela do celular -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Nova Inspeção - Sistema Integrado</title>
-    <link rel="stylesheet" href="fonts.css">
 
     <style>
         :root {
@@ -19,7 +18,7 @@
 
         body { 
             margin: 0; 
-            font-family: 'Montserrat', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background: var(--bg); 
             color: #333;
             /* Espaço para não cobrir o conteúdo com a navbar no final */
@@ -347,11 +346,12 @@
             <div class="form-group">
                 <label>Foto da Evidência</label>
                 <input 
-                type="file" 
-                id="foto" 
-                accept="image/*"
-                capture="environment">
-                    <img id="preview" class="preview" style="display:none;">
+    type="file" 
+    id="foto" 
+    accept="image/*"
+    capture="environment"
+/>
+                <img id="preview" class="preview" style="display:none;">
             </div>
 
             <button class="btn-primario" onclick="adicionarItem()">+ Adicionar à Lista</button>
@@ -372,7 +372,7 @@
     protegerPagina(["inspetor","tecnico"]);
 
     import { db, storage, auth } from "./firebase.js";
-    import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { collection, addDoc, setDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
     
     import { carregarNavbar } from "./navbar.js";
@@ -799,9 +799,26 @@ function renderLista() {
         const usuario = getUsuarioLogado();
         const dataInfo = formatarDataHora();
 
+        const hoje = new Date();
+
+const dataId =
+  hoje.getFullYear() + "-" +
+  String(hoje.getMonth() + 1).padStart(2, "0") + "-" +
+  String(hoje.getDate()).padStart(2, "0");
+
+const placaLimpa = placaVal
+  .trim()
+  .replace(/\s/g, "")
+  .replace(/[^\w]/g, "");
+
+const implementoId =
+  `${placaLimpa}_${dataId}`;
+
         try {
-            const implementoRef = await addDoc(collection(db, "implementos"), {
-                placa: placaVal,
+const implementoRef =
+  doc(db, "implementos", implementoId);
+
+await setDoc(implementoRef, {                placa: placaVal,
                 tipo: tipoVal,
                 status: "em_inspecao",
                 dataInspecao: dataInfo.timestamp,
@@ -812,7 +829,10 @@ function renderLista() {
                 tipoManutencao: tipoManutencaoVal
             });
 
-            const inspecaoRef = await addDoc(collection(db, "inspecoes"), {
+const inspecaoRef =
+  doc(db, "inspecoes", implementoId);
+
+await setDoc(inspecaoRef, {
                 implementoId: implementoRef.id,
                 km: Number(document.getElementById("km").value) || null,
                 horimetro: Number(document.getElementById("horimetro").value) || null,
@@ -823,15 +843,33 @@ function renderLista() {
                 inspecionadoPor: usuario.nome
             });
 
-            for (const item of naoConformidades) {
-                await addDoc(collection(db, "naoConformidades"), {
-                    ...item,
-                    inspecaoId: inspecaoRef.id
-                });
-            }
+let contadorNc = 1;
+
+for (const item of naoConformidades) {
+
+  const descLimpa = item.descricao
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, "_")
+    .replace(/[^\w]/g, "");
+
+  const ncId =
+    `${implementoId}_${descLimpa}_${String(contadorNc).padStart(3, "0")}`;
+
+  await setDoc(
+    doc(db, "naoConformidades", ncId),
+    {
+      ...item,
+      inspecaoId: implementoId
+    }
+  );
+
+  contadorNc++;
+}
+
 
             alert("Inspeção Criada com sucesso!");
-            inspecaoSalva = true;
             location.href = "detalhe.html?id=" + implementoRef.id;
         } catch (e) {
             console.error(e);
@@ -891,30 +929,6 @@ async function comprimirImagem(file, qualidade = 0.7) {
         };
     });
 }
-
-// ===============================
-// ALERTA AO SAIR DA PÁGINA
-// ===============================
-
-let inspecaoSalva = false;
-
-window.addEventListener("beforeunload", function (e) {
-
-    // Só mostra alerta se existir algo preenchido
-    const temDados =
-        naoConformidades.length > 0 ||
-        document.getElementById("placa").value.trim() !== "" ||
-        document.getElementById("descricao").value.trim() !== "";
-
-    if (!inspecaoSalva && temDados) {
-
-        e.preventDefault();
-
-        // Necessário para funcionar em vários navegadores
-        e.returnValue = "";
-
-    }
-});
 </script>
 
 </body>

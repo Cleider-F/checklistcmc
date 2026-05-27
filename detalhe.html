@@ -11,7 +11,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
     <title>Detalhe da Inspeção - Sistema Integrado</title>
-    <link rel="stylesheet" href="fonts.css">
+
 
     <style>
 
@@ -40,7 +40,7 @@
 
             margin: 0;
 
-            font-family: 'Montserrat', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
             background: var(--bg);
 
@@ -631,6 +631,7 @@ Object.entries(itensAgrupados).forEach(([grupoNome, compartimentos]) => {
 
     // HEADER DO GRUPO
     const grupoDiv = document.createElement("div");
+    grupoDiv.className = "grupo-render-header";
 
     grupoDiv.style.background = "#1f2937";
     grupoDiv.style.color = "white";
@@ -661,6 +662,7 @@ Object.entries(itensAgrupados).forEach(([grupoNome, compartimentos]) => {
         if (compNome !== "SEM COMPARTIMENTO") {
 
             const compDiv = document.createElement("div");
+            compDiv.className = "compartimento-render-header";
 
             compDiv.style.background = "#e5e7eb";
             compDiv.style.color = "#1f2937";
@@ -933,10 +935,10 @@ window.finalizar = async function () {
         const tipoLimpo = tipoOriginal.trim().toLowerCase();
 
         const responsaveis = {
-            "carreta": "cmcmanutencao@outlook.com , cleider1000@hotmail.com",
-            "prancha": "cmcmanutencao@outlook.com , cleider1000@hotmail.com",
-            "comboio": "cmcmanutencao@outlook.com , cleider1000@hotmail.com",
-            "cavalo": "cmcmanutencao@outlook.com , cleider1000@hotmail.com"
+            "carreta": "cmcmanutencao@outlook.com",
+            "prancha": "cleider1000@hotmail.com",
+            "comboio": "cleider1000@hotmail.com",
+            "cavalo": "cleider1000@hotmail.com"
 
         };
 

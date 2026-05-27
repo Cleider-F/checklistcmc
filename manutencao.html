@@ -3,24 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="navbar.css">
 
 <title>Dashboard Manutenção</title>
-<link rel="stylesheet" href="fonts.css">
 
 <style>
 body {
   margin: 0;
-  font-family: 'Montserrat', sans-serif;
+  font-family: "Montserrat", Arial, sans-serif;
   background: #f1f3f6;
 }
 
-.topbar {
-  background: #1f2937;
-  color: white;
-  padding: 15px;
-  font-size: 18px;
-  font-weight: bold;
-}
 
 .contadores {
   display: grid;
@@ -106,48 +99,13 @@ input, select {
   border: 1px solid #ccc;
 }
 
-.topbar {
-  background: #1f2937;
-  color: white;
-
-  padding: 15px;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  position: relative;
-}
-
-/* Logo centralizada REAL */
-.logo-topbar {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-
-  height: 32px;
-  object-fit: contain;
-  filter: drop-shadow(0 0 2px white) drop-shadow(0 0 2px white) drop-shadow(0 0 2px white);
-}
-
-/* Grupo de botões da direita */
-.topbar-acoes {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-/* Evita texto esmagando a logo */
-.titulo-topbar {
-  min-width: 90px;
-}
 </style>
 </head>
 
 <body>
 
 <div class="topbar">
-  🔧 Manutenção
+  <span class="titulo-topbar">🔧 Manutenção</span>
   <!-- Logo central -->
   <img src="suzano-logo.png" class="logo-topbar">
 </div>
@@ -167,8 +125,6 @@ input, select {
 <div class="contadores" id="contadores"></div>
 
 <div class="lista" id="lista"></div>
-
-<link rel="stylesheet" href="navbar.css">
 
 <link rel="manifest" href="/manifest.json">
 
@@ -260,7 +216,7 @@ function render(lista) {
   lista.forEach(data => {
     const status = getStatusInfo(data.status);
     const div = document.createElement("div");
-    div.className = "card";
+    div.className = `card status-borda-${status.cor}`;
     div.innerHTML = `
       <div class="card-top">
         <div class="placa">${data.placa}</div>
