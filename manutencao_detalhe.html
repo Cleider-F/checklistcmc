@@ -652,7 +652,19 @@ window.LISTA_SOLICITANTES.forEach(nome => {
     let inspecaoIdGlobal = null;
 
 window.imprimirListaManutencao = function () {
+    const tituloOriginal = document.title;
+
+    const placa = implemento?.placa || "Sem Placa";
+
+    const nomeArquivo = `${placa} Execução da Manutenção`;
+
+    document.title = nomeArquivo;
+
     window.print();
+
+    setTimeout(() => {
+        document.title = tituloOriginal;
+    }, 1000);
 };
 
     const podeIniciar = s => s === "aguardando_manutencao";
