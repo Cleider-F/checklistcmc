@@ -235,8 +235,8 @@
         border-radius: 4px !important;
         padding: 6px 8px !important;
         margin: 0 0 6px 0 !important;
-        page-break-inside: avoid;
-        break-inside: avoid;
+        page-break-inside: auto !important;
+        break-inside: auto !important;
     }
 
     .card h3 {
@@ -251,6 +251,8 @@
         padding: 6px 8px !important;
         margin-bottom: 6px !important;
         border-left: 4px solid #555 !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
     }
 
     #info > div {
@@ -280,6 +282,23 @@
         margin-top: 2px !important;
     }
 
+    .card-checklist {
+        page-break-before: auto !important;
+        break-before: auto !important;
+        page-break-inside: auto !important;
+        break-inside: auto !important;
+    }
+
+    .card-checklist h3 {
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+    }
+
+    #itens {
+        page-break-before: avoid !important;
+        break-before: avoid !important;
+    }
+
     .grupo-header {
         background: #eee !important;
         color: #000 !important;
@@ -288,8 +307,10 @@
         padding: 4px 6px !important;
         margin: 6px 0 3px 0 !important;
         font-size: 11px !important;
-        page-break-after: avoid;
-        break-after: avoid;
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
     }
 
     .item-container {
@@ -300,8 +321,8 @@
         border-radius: 4px !important;
         padding: 4px 6px !important;
         margin-bottom: 3px !important;
-        page-break-inside: avoid;
-        break-inside: avoid;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
     }
 
     .item-container.automatico {
@@ -365,10 +386,10 @@
         ▶ Iniciar Manutenção
     </button>
 
-    <div class="card">
-        <h3>Lista de Verificação</h3>
-        <div id="itens"></div>
-    </div>
+    <div class="card card-checklist">
+    <h3>Lista de Verificação</h3>
+    <div id="itens"></div>
+</div>
 
     <button class="btn-sucesso" id="btnFinalizar" style="display:none;" onclick="finalizar()">
         🏁 Finalizar Manutenção
