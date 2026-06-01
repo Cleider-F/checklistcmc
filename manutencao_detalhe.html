@@ -172,6 +172,114 @@
             align-items: center;
             z-index: 1000;
         }
+
+.btn-imprimir {
+    background: var(--dark);
+    color: white;
+}
+
+@media print {
+
+    body {
+        background: white;
+        padding: 0;
+        margin: 0;
+        color: #000;
+        font-family: Arial, sans-serif;
+    }
+
+    .no-print,
+    .navbar,
+    button,
+    #modalImg,
+    #modalEquipe,
+    #modalResponsavel,
+    #modalNC,
+    .acoes-container {
+        display: none !important;
+    }
+
+    .topbar {
+        position: static;
+        background: white !important;
+        color: #000 !important;
+        box-shadow: none;
+        border-bottom: 2px solid #000;
+        padding: 10px 0;
+        font-size: 22px;
+    }
+
+    .container {
+        padding: 10px;
+    }
+
+    .card {
+        box-shadow: none;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        padding: 12px;
+        margin-bottom: 12px;
+        page-break-inside: avoid;
+    }
+
+    .card h3 {
+        color: #000;
+        border-bottom: 1px solid #ccc;
+    }
+
+    .grupo-header {
+        background: #e5e7eb !important;
+        color: #000 !important;
+        border: 1px solid #999;
+        margin-top: 16px;
+        page-break-after: avoid;
+    }
+
+    .item-container {
+        box-shadow: none;
+        border: 1px solid #ccc;
+        border-left: 5px solid #999;
+        page-break-inside: avoid;
+        margin-bottom: 8px;
+    }
+
+    .item-container.automatico {
+        border-left-color: #2196f3;
+    }
+
+    .item-container.concluido {
+        border-left-color: #4caf50;
+    }
+
+    .item-container.nao-realizado {
+        border-left-color: #f44336;
+    }
+
+    .item-info strong {
+        color: #000;
+        font-size: 14px;
+    }
+
+    .item-info small {
+        color: #333;
+    }
+
+    .badge {
+        color: #000 !important;
+        background: #e5e7eb !important;
+        border: 1px solid #999;
+    }
+
+    .fotos img {
+        width: 80px;
+        height: 80px;
+    }
+
+    @page {
+        size: A4;
+        margin: 12mm;
+    }
+}
     </style>
 </head>
 
@@ -179,8 +287,11 @@
 
 <div class="topbar">☰ Manutenção</div>
 
-<div class="container">
-    <div id="info" class="card">Carregando dados...</div>
+<div id="info" class="card">Carregando dados...</div>
+
+<button class="btn-imprimir no-print" onclick="imprimirListaManutencao()">
+    🖨️ Imprimir Lista de Manutenção
+</button>
 
 <div id="acoesManutencao"></div>
 <div id="acoesNC"></div>
@@ -474,6 +585,10 @@ window.LISTA_SOLICITANTES.forEach(nome => {
     let implemento = null;
     let equipeSelecionada = [];
     let inspecaoIdGlobal = null;
+
+window.imprimirListaManutencao = function () {
+    window.print();
+};
 
     const podeIniciar = s => s === "aguardando_manutencao";
     const podeMexerItens = s => s === "em_manutencao";
