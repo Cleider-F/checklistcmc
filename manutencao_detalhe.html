@@ -180,12 +180,24 @@
 
 @media print {
 
-    body {
-        background: white;
-        padding: 0;
-        margin: 0;
-        color: #000;
+    @page {
+        size: A4;
+        margin: 8mm;
+    }
+
+    * {
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    html, body {
+        background: white !important;
+        color: #000 !important;
+        padding: 0 !important;
+        margin: 0 !important;
         font-family: Arial, sans-serif;
+        font-size: 11px;
+        line-height: 1.2;
     }
 
     .no-print,
@@ -195,91 +207,144 @@
     #modalEquipe,
     #modalResponsavel,
     #modalNC,
-    .acoes-container {
+    .acoes-container,
+    .btn-acao-item,
+    .fotos {
         display: none !important;
     }
 
     .topbar {
-        position: static;
+        position: static !important;
         background: white !important;
         color: #000 !important;
-        box-shadow: none;
-        border-bottom: 2px solid #000;
-        padding: 10px 0;
-        font-size: 22px;
+        padding: 0 0 4px 0 !important;
+        margin: 0 0 4px 0 !important;
+        font-size: 15px !important;
+        font-weight: bold;
+        border-bottom: 1px solid #000;
     }
 
     .container {
-        padding: 10px;
+        padding: 0 !important;
+        margin: 0 !important;
     }
 
     .card {
-        box-shadow: none;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        padding: 12px;
-        margin-bottom: 12px;
+        box-shadow: none !important;
+        border: 1px solid #bbb !important;
+        border-radius: 4px !important;
+        padding: 6px 8px !important;
+        margin: 0 0 6px 0 !important;
         page-break-inside: avoid;
+        break-inside: avoid;
     }
 
     .card h3 {
-        color: #000;
-        border-bottom: 1px solid #ccc;
-    }
-
-    .grupo-header {
-        background: #e5e7eb !important;
+        font-size: 13px !important;
+        margin: 0 0 5px 0 !important;
+        padding-bottom: 3px !important;
+        border-bottom: 1px solid #ccc !important;
         color: #000 !important;
-        border: 1px solid #999;
-        margin-top: 16px;
-        page-break-after: avoid;
     }
 
-    .item-container {
-        box-shadow: none;
-        border: 1px solid #ccc;
-        border-left: 5px solid #999;
-        page-break-inside: avoid;
-        margin-bottom: 8px;
+    #info {
+        padding: 6px 8px !important;
+        margin-bottom: 6px !important;
+        border-left: 4px solid #555 !important;
     }
 
-    .item-container.automatico {
-        border-left-color: #2196f3;
+    #info > div {
+        display: block !important;
     }
 
-    .item-container.concluido {
-        border-left-color: #4caf50;
+    #info div {
+        margin-top: 0 !important;
+        margin-bottom: 2px !important;
     }
 
-    .item-container.nao-realizado {
-        border-left-color: #f44336;
+    #info div[style*="font-size:28px"] {
+        font-size: 18px !important;
+        line-height: 1.1 !important;
     }
 
-    .item-info strong {
-        color: #000;
-        font-size: 14px;
-    }
-
-    .item-info small {
-        color: #333;
+    #info div[style*="font-size:15px"] {
+        font-size: 11px !important;
     }
 
     .badge {
         color: #000 !important;
-        background: #e5e7eb !important;
-        border: 1px solid #999;
+        background: white !important;
+        border: 1px solid #999 !important;
+        font-size: 9px !important;
+        padding: 2px 5px !important;
+        margin-top: 2px !important;
     }
 
-    .fotos img {
-        width: 80px;
-        height: 80px;
+    .grupo-header {
+        background: #eee !important;
+        color: #000 !important;
+        border: 1px solid #999 !important;
+        border-radius: 4px !important;
+        padding: 4px 6px !important;
+        margin: 6px 0 3px 0 !important;
+        font-size: 11px !important;
+        page-break-after: avoid;
+        break-after: avoid;
     }
 
-    @page {
-        size: A4;
-        margin: 12mm;
+    .item-container {
+        display: block !important;
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+        border-left: 3px solid #777 !important;
+        border-radius: 4px !important;
+        padding: 4px 6px !important;
+        margin-bottom: 3px !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    .item-container.automatico {
+        border-left-color: #2196f3 !important;
+    }
+
+    .item-container.concluido {
+        border-left-color: #4caf50 !important;
+    }
+
+    .item-container.nao-realizado {
+        border-left-color: #f44336 !important;
+    }
+
+    .item-row {
+        display: block !important;
+    }
+
+    .item-info {
+        padding-right: 0 !important;
+    }
+
+    .item-info strong {
+        font-size: 11px !important;
+        display: block !important;
+        margin-bottom: 1px !important;
+        color: #000 !important;
+    }
+
+    .item-info small {
+        font-size: 9.5px !important;
+        line-height: 1.15 !important;
+        color: #333 !important;
+    }
+
+    .justificativa-box {
+        margin-top: 3px !important;
+        padding: 3px 5px !important;
+        font-size: 9.5px !important;
+        border-radius: 3px !important;
     }
 }
+
     </style>
 </head>
 
