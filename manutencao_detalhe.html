@@ -656,7 +656,11 @@ window.imprimirListaManutencao = function () {
 
     const placa = implemento?.placa || "Sem Placa";
 
-    const nomeArquivo = `${placa} Execução da Manutenção`;
+    const placaLimpa = String(placa)
+        .replace(/[\\/:*?"<>|]/g, "-")
+        .trim();
+
+    const nomeArquivo = `${placaLimpa} Execução da Manutenção`;
 
     document.title = nomeArquivo;
 
