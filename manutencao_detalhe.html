@@ -671,6 +671,7 @@ window.LISTA_SOLICITANTES.forEach(nome => {
     let implemento = null;
     let equipeSelecionada = [];
     let inspecaoIdGlobal = null;
+    let inspecaoGlobal = null;
 
 window.imprimirListaManutencao = function () {
     const tituloOriginal = document.title;
@@ -721,13 +722,14 @@ document.getElementById("info").innerHTML = `
             </div>
 
             <div style="
-                margin-top:4px;
-                color:#666;
-                font-size:15px;
-                text-transform:uppercase;
-            ">
-                ${implemento?.tipo || "-"}
-            </div>
+    margin-top:4px;
+    color:#333;
+    font-size:14px;
+    font-weight:bold;
+    text-transform:uppercase;
+">
+    Manutenção: ${obterTipoManutencao()}
+</div>
 
             <!-- STATUS AGORA FICA ABAIXO -->
             <div style="margin-top:12px;">
@@ -827,9 +829,17 @@ if (implemento.status === "em_manutencao") {
 
 }
         const qInspecao = query(collection(db, "inspecoes"), where("implementoId", "==", id));
-        const snapInspecao = await getDocs(qInspecao);
-        inspecaoIdGlobal = null;
-        snapInspecao.forEach(d => inspecaoIdGlobal = d.id);
+const snapInspecao = await getDocs(qInspecao);
+
+inspecaoIdGlobal = null;
+inspecaoGlobal = null;
+
+snapInspecao.forEach(d => {
+    inspecaoIdGlobal = d.id;
+    inspecaoGlobal = d.data();
+});
+        
+       
 
 
         if (!inspecaoIdGlobal) return;
@@ -852,6 +862,21 @@ if (implemento.status === "em_manutencao") {
 });
         renderizarChecklist(container);
     }
+
+function obterTipoManutencao() {
+    const tipo =
+        implemento?.tipoManutencao ||
+        implemento?.tipo_manutencao ||
+        implemento?.tipoManutenção ||
+        inspecaoGlobal?.tipoManutencao ||
+        inspecaoGlobal?.tipo_manutencao ||
+        inspecaoGlobal?.tipoManutenção ||
+        "-";
+
+    return String(tipo)
+        .replaceAll("_", " ")
+        .toUpperCase();
+}
 
 function renderizarChecklist(container) {
 
