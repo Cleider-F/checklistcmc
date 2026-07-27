@@ -390,6 +390,7 @@
     let planoComboio = [];
     let planoCarreta = [];
     let planoPrancha = [];
+    let planoCavalo = [];
     let planoComboioPrev = [];
     let planoCarregado = false;
     let naoConformidades = [];
@@ -400,11 +401,13 @@
         fetch("./plano_manutencao.json").then(res => res.json()).catch(() => []),
         fetch("./plano_manutencao_carreta.json").then(res => res.json()).catch(() => []),
         fetch("./plano_manutencao_prancha.json").then(res => res.json()).catch(() => []),
+        fetch("./plano_manutencao_cavalo.json").then(res => res.json()).catch(() => []),
         fetch("./plano_manutencao_comboio_preventiva.json").then(res => res.json()).catch(() => [])
-    ]).then(([dataComboio, dataCarreta, dataPrancha, dataCombPrev]) => {
+    ]).then(([dataComboio, dataCarreta, dataPrancha, dataCavalo, dataCombPrev]) => {
         planoComboio = dataComboio;
         planoCarreta = dataCarreta;
         planoPrancha = dataPrancha;
+        planoCavalo = dataCavalo;   
         planoComboioPrev = dataCombPrev;
         planoCarregado = true;
     });
@@ -413,7 +416,7 @@
         carreta: { km: false, horimetro: false, compartimentos: true },
         prancha: { km: false, horimetro: false, compartimentos: false },
         comboio: { km: true, horimetro: true, compartimentos: false },
-        cavalo: { km: true, horimetro: false, compartimentos: false }
+        cavalo: { km: true, horimetro: true, compartimentos: false }
     };
 
     // --- LÓGICA DE INTERFACE ---
@@ -442,6 +445,14 @@
             novosItens = gerarChecklistCarreta(tipoManut);
         } else if (tipoImp === "prancha" && (tipoManut === "revisao" || tipoManut === "preventiva")) {
             novosItens = gerarChecklistPrancha(tipoManut);
+        } else if (tipoImp === "cavalo") {
+
+    if (
+        (tipoManut === "revisao" || tipoManut === "preventiva") &&
+        horimetroVal > 0
+    ) {
+        novosItens = gerarChecklistCavalo(horimetroVal);
+    }
         } else if (tipoImp === "comboio") {
             if (tipoManut === "preventiva") {
                 novosItens = gerarChecklistComboioPrev(tipoManut);
@@ -554,6 +565,51 @@ function gerarChecklistComboioPrev(tipo) {
             };
         }).filter(Boolean);
     }
+
+    function gerarChecklistCavalo(horimetro) {
+
+    if (!horimetro || horimetro <= 0)
+        return [];
+
+    const todasHoras = [
+        ...new Set(
+            planoCavalo.flatMap(item =>
+                item.horas.map(h => h.hora)
+            )
+        )
+    ].sort((a, b) => a - b);
+
+    const marco = todasHoras
+        .filter(h => h <= horimetro)
+        .pop();
+
+    if (!marco)
+        return [];
+
+    return planoCavalo
+        .map(item => {
+
+            const acao = item.horas.find(h => h.hora === marco);
+
+            if (!acao)
+                return null;
+
+            return {
+                grupo: item.grupo,
+                descricao: item.descricao,
+                eixo: "",
+                lado: "",
+                tipo: acao.tipo === "T"
+                    ? "troca"
+                    : "vistoria",
+                fotos: [],
+                resolvido: false,
+                origem: "automatico"
+            };
+
+        })
+        .filter(Boolean);
+}
 
     // --- GERENCIAMENTO DE FOTOS E ITENS ---
     foto.addEventListener("change", (e) => {
