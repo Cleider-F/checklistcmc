@@ -430,10 +430,14 @@
         verificarChecklistAutomatico();
     });
 
-    document.getElementById("tipoManutencao").addEventListener("change", verificarChecklistAutomatico);
     document.getElementById("horimetro").addEventListener("input", verificarChecklistAutomatico);
+    document.getElementById("tipo").addEventListener("change", verificarChecklistAutomatico);
+    document.getElementById("tipoManutencao").addEventListener("change", verificarChecklistAutomatico);
 
     function verificarChecklistAutomatico() {
+
+        
+
         if (!planoCarregado) return;
         const tipoImp = document.getElementById("tipo").value;
         const tipoManut = document.getElementById("tipoManutencao").value;
