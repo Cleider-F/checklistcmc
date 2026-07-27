@@ -66,6 +66,45 @@
             color: #555; 
         }
 
+        .sugestao-wrapper {
+            position: relative;
+        }
+
+        .sugestoes-descricao {
+            display: none;
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: calc(100% + 4px);
+            z-index: 20;
+            max-height: 220px;
+            overflow-y: auto;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            background: white;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.16);
+        }
+
+        .sugestoes-descricao.ativo {
+            display: block;
+        }
+
+        .sugestao-descricao-item {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 0;
+            background: white;
+            color: #1f2937;
+            box-shadow: none;
+            text-align: left;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .sugestao-descricao-item:not(:last-child) {
+            border-bottom: 1px solid #eef2f7;
+        }
+
         /* Inputs mobile-friendly */
         input, select { 
             width: 100%; 
@@ -249,7 +288,10 @@
             <h3>Novo Item</h3>
             <div class="form-group">
                 <label>Descrição do Item</label>
-                <input id="descricao" placeholder="Ex: Lâmpada queimada">
+                <div class="sugestao-wrapper">
+                    <input id="descricao" placeholder="Ex: Lâmpada queimada" autocomplete="off">
+                    <div id="sugestoesDescricao" class="sugestoes-descricao"></div>
+                </div>
             </div>
 
 <!-- EIXO -->
@@ -372,7 +414,7 @@
     protegerPagina(["inspetor","tecnico"]);
 
     import { db, storage, auth } from "./firebase.js";
-    import { collection, addDoc, setDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { collection, setDoc, doc, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
     
     import { carregarNavbar } from "./navbar.js";
@@ -396,6 +438,9 @@
     let naoConformidades = [];
     let fotoFile = null;
     const placaInput = document.getElementById("placa");
+    const descricaoInput = document.getElementById("descricao");
+    const sugestoesDescricaoEl = document.getElementById("sugestoesDescricao");
+    let sugestoesDescricao = [];
 
     // --- CARREGAMENTO DOS PLANOS ---
     Promise.all([
@@ -437,6 +482,13 @@
     placaInput.addEventListener("blur", () => {
         placaInput.value = normalizarPlacaGo(placaInput.value);
     });
+    descricaoInput.addEventListener("input", renderSugestoesDescricao);
+    descricaoInput.addEventListener("focus", renderSugestoesDescricao);
+    document.addEventListener("click", (event) => {
+        if (!event.target.closest(".sugestao-wrapper")) esconderSugestoesDescricao();
+    });
+
+    carregarSugestoesDescricao();
 
     function verificarChecklistAutomatico() {
 
@@ -658,7 +710,7 @@ document.querySelectorAll(".btn-opcao").forEach(btn => {
 });
 
     window.adicionarItem = async function() {
-        const desc = document.getElementById("descricao").value.trim();
+        const desc = descricaoInput.value.trim();
         const eixo = eixoSelecionado;
         const lado = ladoSelecionado;
         const tipo = tipoSelecionado;
@@ -686,6 +738,7 @@ if (fotoFile) {
 
         limparCamposItem();
         renderLista();
+        salvarSugestaoDescricao(desc);
     };
 
 function renderLista() {
@@ -964,6 +1017,129 @@ for (const item of naoConformidades) {
             .replace(/^-|-$/g, "");
     }
 
+    async function carregarSugestoesDescricao() {
+        try {
+            const snap = await getDocs(collection(db, "sugestoesDescricoesItens"));
+            const unicas = new Map();
+
+            snap.forEach(docSnap => {
+                const data = docSnap.data();
+                const descricao = String(data.descricao || "").trim();
+                const chave = normalizarTextoBusca(descricao);
+                if (descricao && chave && !unicas.has(chave)) {
+                    unicas.set(chave, descricao);
+                }
+            });
+
+            sugestoesDescricao = Array.from(unicas.values())
+                .sort((a, b) => a.localeCompare(b, "pt-BR"));
+        } catch (e) {
+            console.error("Erro ao carregar sugestões de descrição", e);
+        }
+    }
+
+    async function salvarSugestaoDescricao(descricao) {
+        const descricaoLimpa = String(descricao || "").trim();
+        const chave = normalizarTextoBusca(descricaoLimpa)
+            .replace(/\s+/g, "_")
+            .slice(0, 120);
+
+        if (!descricaoLimpa || !chave) return;
+
+        const jaExiste = sugestoesDescricao.some(item =>
+            normalizarTextoBusca(item) === normalizarTextoBusca(descricaoLimpa)
+        );
+
+        if (!jaExiste) {
+            sugestoesDescricao.push(descricaoLimpa);
+            sugestoesDescricao.sort((a, b) => a.localeCompare(b, "pt-BR"));
+        }
+
+        try {
+            await setDoc(doc(db, "sugestoesDescricoesItens", chave), {
+                descricao: descricaoLimpa,
+                descricaoNormalizada: normalizarTextoBusca(descricaoLimpa),
+                atualizadoEm: serverTimestamp()
+            }, { merge: true });
+        } catch (e) {
+            console.error("Erro ao salvar sugestão de descrição", e);
+        }
+    }
+
+    function renderSugestoesDescricao() {
+        const termo = normalizarTextoBusca(descricaoInput.value);
+        if (termo.length < 2) {
+            esconderSugestoesDescricao();
+            return;
+        }
+
+        const resultados = sugestoesDescricao
+            .map(descricao => ({
+                descricao,
+                score: calcularSimilaridadeDescricao(termo, normalizarTextoBusca(descricao))
+            }))
+            .filter(item => item.score > 0 && normalizarTextoBusca(item.descricao) !== termo)
+            .sort((a, b) => b.score - a.score || a.descricao.localeCompare(b.descricao, "pt-BR"))
+            .slice(0, 6);
+
+        if (!resultados.length) {
+            esconderSugestoesDescricao();
+            return;
+        }
+
+        sugestoesDescricaoEl.innerHTML = resultados.map(item => `
+            <button type="button" class="sugestao-descricao-item" data-descricao="${escapeAttr(item.descricao)}">
+                ${escapeHTML(item.descricao)}
+            </button>
+        `).join("");
+
+        sugestoesDescricaoEl.classList.add("ativo");
+        sugestoesDescricaoEl.querySelectorAll(".sugestao-descricao-item").forEach(btn => {
+            btn.addEventListener("click", () => {
+                descricaoInput.value = btn.dataset.descricao;
+                esconderSugestoesDescricao();
+                descricaoInput.focus();
+            });
+        });
+    }
+
+    function esconderSugestoesDescricao() {
+        sugestoesDescricaoEl.classList.remove("ativo");
+        sugestoesDescricaoEl.innerHTML = "";
+    }
+
+    function calcularSimilaridadeDescricao(termo, descricaoNormalizada) {
+        if (!termo || !descricaoNormalizada) return 0;
+        if (descricaoNormalizada.startsWith(termo)) return 100;
+        if (descricaoNormalizada.includes(termo)) return 80;
+
+        const palavras = termo.split(" ").filter(palavra => palavra.length >= 2);
+        return palavras.reduce((score, palavra) => {
+            return descricaoNormalizada.includes(palavra) ? score + palavra.length : score;
+        }, 0);
+    }
+
+    function normalizarTextoBusca(valor) {
+        return String(valor || "")
+            .trim()
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^\w\s]/g, " ")
+            .replace(/\s+/g, " ");
+    }
+
+    function escapeAttr(value) {
+        return escapeHTML(value).replace(/"/g, "&quot;");
+    }
+
+    function escapeHTML(value) {
+        return String(value ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+    }
+
     function formatarDataHora() {
         const agora = new Date();
         return {
@@ -974,7 +1150,8 @@ for (const item of naoConformidades) {
     }
 
     function limparCamposItem() {
-        document.getElementById("descricao").value = "";
+        descricaoInput.value = "";
+        esconderSugestoesDescricao();
         document.getElementById("foto").value = "";
         document.getElementById("preview").style.display = "none";
         fotoFile = null;
