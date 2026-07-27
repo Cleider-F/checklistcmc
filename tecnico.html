@@ -143,6 +143,20 @@
     float: right;
   }
 
+  .bi-btn {
+    background: #1f2937;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .bi-btn:active {
+    transform: scale(0.96);
+  }
+
 
 
   /* Menu Lateral (Sidebar) */
@@ -194,6 +208,9 @@
     <img src="suzano-logo.png" class="logo-topbar">
 
     <div class="topbar-acoes">
+      <button onclick="window.location='bi.html'" class="bi-btn">
+        📊 BI
+      </button>
       <button onclick="toggleFiltros()" class="menu-btn">
         &#9776;
       </button>

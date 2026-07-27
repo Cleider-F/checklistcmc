@@ -395,6 +395,7 @@
     let planoCarregado = false;
     let naoConformidades = [];
     let fotoFile = null;
+    const placaInput = document.getElementById("placa");
 
     // --- CARREGAMENTO DOS PLANOS ---
     Promise.all([
@@ -433,6 +434,9 @@
     document.getElementById("horimetro").addEventListener("input", verificarChecklistAutomatico);
     document.getElementById("tipo").addEventListener("change", verificarChecklistAutomatico);
     document.getElementById("tipoManutencao").addEventListener("change", verificarChecklistAutomatico);
+    placaInput.addEventListener("blur", () => {
+        placaInput.value = normalizarPlacaGo(placaInput.value);
+    });
 
     function verificarChecklistAutomatico() {
 
@@ -845,9 +849,10 @@ function renderLista() {
         btn.disabled = true;
         btn.innerText = "⏳ Salvando...";
 
-        const placaVal = document.getElementById("placa").value.trim();
+        const placaVal = normalizarPlacaGo(placaInput.value);
         const tipoVal = document.getElementById("tipo").value;
         const tipoManutencaoVal = document.getElementById("tipoManutencao").value;
+        placaInput.value = placaVal;
 
         if (!placaVal || !tipoVal || !tipoManutencaoVal) {
             alert("Preencha os dados obrigatórios (Placa, Tipo e Manutenção)");
@@ -867,9 +872,7 @@ const dataId =
   String(hoje.getDate()).padStart(2, "0");
 
 const placaLimpa = placaVal
-  .trim()
-  .replace(/\s/g, "")
-  .replace(/[^\w]/g, "");
+  .replace(/-/g, "");
 
 const implementoId =
   `${placaLimpa}_${dataId}`;
@@ -879,6 +882,8 @@ const implementoRef =
   doc(db, "implementos", implementoId);
 
 await setDoc(implementoRef, {                placa: placaVal,
+                placaNormalizada: placaVal,
+                placaBusca: placaLimpa,
                 tipo: tipoVal,
                 status: "em_inspecao",
                 dataInspecao: dataInfo.timestamp,
@@ -946,6 +951,17 @@ for (const item of naoConformidades) {
             nome: user?.displayName || nomePadrao, 
             email: user?.email || null 
         };
+    }
+
+    function normalizarPlacaGo(valor) {
+        return String(valor || "")
+            .trim()
+            .toUpperCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^A-Z0-9]+/g, "-")
+            .replace(/-+/g, "-")
+            .replace(/^-|-$/g, "");
     }
 
     function formatarDataHora() {
