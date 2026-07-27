@@ -157,6 +157,30 @@
     transform: scale(0.96);
   }
 
+  .topbar {
+    position: sticky;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  }
+
+  .topbar .logo-topbar {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .topbar .titulo-topbar,
+  .topbar .topbar-acoes {
+    position: relative;
+    z-index: 1;
+  }
+
+  .topbar .topbar-acoes {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
 
 
   /* Menu Lateral (Sidebar) */
