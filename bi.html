@@ -529,18 +529,15 @@
     const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
     const componentes = [
-    { nome: "Freios", termos: ["freio", "cuica", "lona", "tambor", "catraca de freio", "patim", "abs", "mancal", "eixo S", "diafragma", "relé", "ABS"] },
-      { nome: "Pneus/Rodas", termos: ["pneu", "roda", "estojo", "keps", "calibrar", "aro"] },
-      { nome: "Suspensão", termos: ["suspensao", "bolsa", "mola", "amortecedor", "balanca", "pino de centro", "niveladora", "feixe", "tirante", "grampo", "estabilizadora"] },
-      { nome: "Elétrica", termos: ["eletrica", "elétrica", "lanterna", "chicote", "sensor", "luz", "lampada", "pisca", "tomada", "corujinha", "bateria", "conector", "alternador", "partida", "farol", "led"] },
-      { nome: "Motor", termos: ["motor", "correia", "cabeçote", "filtro", "carter", "bomba d'agua", "turbina", "tensor"] },
+      { nome: "Freios", termos: ["freio", "cuica", "lona", "tambor", "catraca de freio", "patim", "abs", "mancal", "eixo S"] },
+      { nome: "Pneus/Rodas", termos: ["pneu", "roda", "estojo", "keps", "calibrar"] },
+      { nome: "Suspensão", termos: ["suspensao", "bolsa", "mola", "amortecedor", "balanca", "pino de centro"] },
+      { nome: "Elétrica", termos: ["eletrica", "elétrica", "lanterna", "chicote", "sensor", "luz", "lampada", "pisca", "tomada", "corujinha"] },
+      { nome: "Motor", termos: ["motor", "correia", "cabeçote", "filtro", "carter"] },
       { nome: "Hidráulico", termos: ["hidraul", "bomba", "óleo", "cilindro", "reservatorio", "tomada de força"] },
-      { nome: "Estrutural", termos: ["chassi", "grade", "malhal", "trinca", "solda", "fueiro", "assoalho", "sapata", "paralama", "lameiro", "para-choque", "barrote", "chassi"] },
+      { nome: "Estrutural", termos: ["chassi", "trinca", "solda", "fueiro", "assoalho", "sapata", "paralama", "lameiro"] },
       { nome: "5ª roda", termos: ["gaviao", "ferradura", "5 roda", "5ª roda", "quinta roda", "pino rei", "barra", "longarina"] },
-      { nome: "Pneumático", termos: ["pneumatico", "mangueira de ar", "balão de ar", "vazamento de ar", "balões"] },
-      { nome: "Cubo", termos: ["cubo"] },
-      { nome: "Sistema de combustível", termos: ["tanque", "filtro diesel", "dosadora", "arla", "pescador"] },
-      { nome: "Segurança", termos: ["buzina", "sirene de ré", "cone", "extintor", "cinto", "refletiva", "refletivas", "alarme de ré" ] },
+      { nome: "Pneumático", termos: ["pneumatico", "mangueira de ar", "balão de ar", "vazamento"] },
       { nome: "Catraca de amarração", termos: ["cinta", "amarração", "catraca de amarração", "manipulo", "gatilho"] }
     ].map(comp => ({
       ...comp,
@@ -946,7 +943,7 @@
 
       views.componentes.innerHTML = `
         <section class="grid-balanced">
-          ${panel("Informação por Componente", bi.componentes.map(row => `
+          ${panel("Pareto por Componente", bi.componentes.map(row => `
             <div class="rank-card">
               <div class="rank-top">
                 <div class="rank-title">${escapeHTML(row.nome)}</div>
