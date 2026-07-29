@@ -587,7 +587,7 @@
 
         const qItens = query(
           collection(db, "naoConformidades"),
-          limit(9000)
+          limit(2000)
         );
 
         const [snapImplementos, snapItens] = await Promise.all([
