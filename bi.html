@@ -528,17 +528,20 @@
 
     const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
-   const componentes = [
-  { nome: "Freios", termos: ["freio", "cuica", "lona", "tambor", "catraca de freio", "patim", "abs", "mancal", "eixo S"] },
-  { nome: "Pneus/Rodas", termos: ["pneu", "roda", "estojo", "keps", "calibrar"] },
-  { nome: "Suspensão", termos: ["suspensao", "bolsa", "mola", "amortecedor", "balanca", "pino de centro"] },
-  { nome: "Elétrica", termos: ["eletrica", "elétrica", "lanterna", "chicote", "sensor", "luz", "lampada", "pisca", "tomada", "corujinha"] },
-  { nome: "Motor", termos: ["motor", "correia", "mangueira", "radiador", "filtro"] },
-  { nome: "Hidráulico", termos: ["hidraul", "bomba", "pto", "cilindro", "reservatorio, tomada de força"] },
-  { nome: "Estrutural", termos: ["chassi", "trinca", "solda", "fueiro", "assoalho", "sapata"] },
-  { nome: "5ª roda", termos: ["gaviao", "ferradura", "5 roda", "5ª roda", "quinta roda", "pino rei", "barra", "longarina"] },
-  { nome: "Catraca de amarração", termos: ["cinta", "amarração", "catraca de amarração", "manipulo", "gatilho"] }
-];
+    const componentes = [
+      { nome: "Freios", termos: ["freio", "cuica", "lona", "tambor", "catraca de freio", "patim", "abs", "mancal", "eixo S"] },
+      { nome: "Pneus/Rodas", termos: ["pneu", "roda", "estojo", "keps", "calibrar"] },
+      { nome: "Suspensão", termos: ["suspensao", "bolsa", "mola", "amortecedor", "balanca", "pino de centro"] },
+      { nome: "Elétrica", termos: ["eletrica", "elétrica", "lanterna", "chicote", "sensor", "luz", "lampada", "pisca", "tomada", "corujinha"] },
+      { nome: "Motor", termos: ["motor", "correia", "mangueira", "radiador", "filtro"] },
+      { nome: "Hidráulico", termos: ["hidraul", "bomba", "pto", "cilindro", "reservatorio", "tomada de força"] },
+      { nome: "Estrutural", termos: ["chassi", "trinca", "solda", "fueiro", "assoalho", "sapata"] },
+      { nome: "5ª roda", termos: ["gaviao", "ferradura", "5 roda", "5ª roda", "quinta roda", "pino rei", "barra", "longarina"] },
+      { nome: "Catraca de amarração", termos: ["cinta", "amarração", "catraca de amarração", "manipulo", "gatilho"] }
+    ].map(comp => ({
+      ...comp,
+      termosNormalizados: comp.termos.map(normalizarDescricao)
+    }));
 
 
     let implementos = [];
@@ -587,7 +590,7 @@
 
         const qItens = query(
           collection(db, "naoConformidades"),
-          limit(2000)
+          limit(9000)
         );
 
         const [snapImplementos, snapItens] = await Promise.all([
@@ -1220,7 +1223,17 @@
 
     function classificarComponente(item) {
       const texto = normalizarDescricao(`${item.grupo || ""} ${item.descricao || ""}`);
-      const achado = componentes.find(comp => comp.termos.some(term => texto.includes(normalizarDescricao(term))));
+      let achado = null;
+
+      componentes.forEach(comp => {
+        comp.termosNormalizados.forEach(term => {
+          if (!term || !texto.includes(term)) return;
+          if (!achado || term.length > achado.term.length) {
+            achado = { nome: comp.nome, term };
+          }
+        });
+      });
+
       return achado?.nome || "Outros";
     }
 
