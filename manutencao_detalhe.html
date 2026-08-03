@@ -622,6 +622,43 @@
             "
         >
 
+        <!-- Tipo do item -->
+<label style="font-weight:bold; display:block; margin-bottom:5px;">
+Tipo do Item
+</label>
+
+<select
+    id="novoTipo"
+    style="
+        width:100%;
+        padding:12px;
+        border-radius:10px;
+        border:1px solid #ccc;
+        margin-bottom:15px;
+    "
+>
+    <option value="normal">🟢 Normal</option>
+    <option value="avaria" selected>🔴 Avaria</option>
+</select>
+
+<!-- Fotos -->
+
+<label style="font-weight:bold; display:block; margin-bottom:5px;">
+Fotos (Máximo 3)
+</label>
+
+<input
+    type="file"
+    id="novasFotos"
+    accept="image/*"
+    capture="environment"
+    multiple
+    style="
+        width:100%;
+        margin-bottom:15px;
+    "
+>
+
         <div style="
             display:flex;
             gap:10px;
@@ -649,8 +686,9 @@
 <script src="lista_solicitantes.js"></script>
 
 <script type="module">
-    import { db } from "./firebase.js";
+    import { db, storage } from "./firebase.js";
     import { doc, getDoc, addDoc, collection, query, where, getDocs, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
     import { carregarNavbar } from "./navbar.js";
 
     
@@ -998,9 +1036,31 @@ function renderizarChecklist(container) {
         div.innerHTML = `
             <div class="item-row">
                 <div class="item-info">
-                    <strong class="${item.status_manutencao === 'concluido' ? 'resolvido' : ''}">${item.descricao}</strong>
-                    <small>${item.eixo ? `Eixo: ${item.eixo} | ` : ''} ${item.lado ? `Lado: ${item.lado}` : ''}</small>
-                    <div class="fotos">${fotosHTML}</div>
+                    <strong class="${item.status_manutencao === 'concluido' ? 'resolvido' : ''}">
+    ${item.descricao}
+</strong>
+
+${
+    item.tipo
+        ? `
+        <div style="margin:6px 0;">
+            <span class="badge" style="
+                background:${item.tipo === "normal" ? "#4caf50" : "#f44336"};
+            ">
+                ${item.tipo === "normal" ? "🟢 NORMAL" : "🔴 AVARIA"}
+            </span>
+        </div>
+        `
+        : ""
+}
+
+<small>
+    ${item.eixo ? `Eixo: ${item.eixo} | ` : ''}
+    ${item.lado ? `Lado: ${item.lado}` : ''}
+    ${item.compartimento ? ` | Compartimento: ${item.compartimento}` : ''}
+</small>
+
+<div class="fotos">${fotosHTML}</div>
                 </div>
                 <div class="acoes-container">
                     <button class="btn-acao-item btn-check ${item.status_manutencao === 'concluido' ? 'ativo' : ''}" 
@@ -1243,6 +1303,8 @@ window.abrirModalNC = function() {
     document.getElementById("novoEixo").value = "";
     document.getElementById("novoLado").value = "";
     document.getElementById("novoCompartimento").value = "";
+    document.getElementById("novoTipo").value = "avaria";
+    document.getElementById("novasFotos").value = "";
 };
 
 window.fecharModalNC = function() {
@@ -1267,7 +1329,33 @@ window.salvarNovaNC = async function() {
         return;
     }
 
-    try {
+    const tipo = document.getElementById("novoTipo").value;
+
+const arquivos = [...document.getElementById("novasFotos").files];
+
+if (arquivos.length > 3) {
+
+    alert("Máximo de 3 fotos.");
+
+    return;
+
+}
+
+const fotos = [];
+
+    try {for (const arquivo of arquivos) {
+
+    const caminho = `naoConformidades/${Date.now()}_${arquivo.name}`;
+
+    const referencia = ref(storage, caminho);
+
+    await uploadBytes(referencia, arquivo);
+
+    const url = await getDownloadURL(referencia);
+
+    fotos.push(url);
+
+}
 
         await addDoc(collection(db, "naoConformidades"), {
 
@@ -1280,6 +1368,10 @@ window.salvarNovaNC = async function() {
             lado,
 
             compartimento,
+
+            tipo,
+
+            fotos,
 
             origem: "manual",
 
@@ -1301,6 +1393,8 @@ window.salvarNovaNC = async function() {
 
         alert("Erro ao adicionar não conformidade.");
     }
+
+    
 };
 
 window.finalizar = async function() {
