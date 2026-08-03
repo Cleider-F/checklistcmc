@@ -1040,19 +1040,13 @@ function renderizarChecklist(container) {
     ${item.descricao}
 </strong>
 
-${
-    item.tipo
-        ? `
-        <div style="margin:6px 0;">
-            <span class="badge" style="
-                background:${item.tipo === "normal" ? "#4caf50" : "#f44336"};
-            ">
-                ${item.tipo === "normal" ? "🟢 NORMAL" : "🔴 AVARIA"}
-            </span>
-        </div>
-        `
-        : ""
-}
+<div style="margin:6px 0;">
+    <span class="badge" style="
+        background:${item.tipo === "avaria" ? "#f44336" : "#4caf50"};
+    ">
+        ${item.tipo === "avaria" ? "🔴 AVARIA" : "🟢 NORMAL"}
+    </span>
+</div>
 
 <small>
     ${item.eixo ? `Eixo: ${item.eixo} | ` : ''}
