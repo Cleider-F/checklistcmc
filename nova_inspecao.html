@@ -249,6 +249,8 @@
                         <option value="prancha">Prancha</option>
                         <option value="comboio">Comboio</option>
                         <option value="cavalo">Cavalo Mecânico</option>
+                        <option value="cavprancha">Cavalo Prancha</option>
+                        <option value="plataforma">Plataforma</option>
                     </select>
                 </div>
 
@@ -431,6 +433,8 @@
 
     let planoComboio = [];
     let planoCarreta = [];
+    let planoPlataforma = [];
+    let planoCavPrancha = [];
     let planoPrancha = [];
     let planoCavalo = [];
     let planoComboioPrev = [];
@@ -446,12 +450,16 @@
     Promise.all([
         fetch("./plano_manutencao.json").then(res => res.json()).catch(() => []),
         fetch("./plano_manutencao_carreta.json").then(res => res.json()).catch(() => []),
+        fetch("./plano_manutencao_cavalo_prancha.json").then(res => res.json()).catch(() => []),
+        fetch("./plano_manutencao_plataforma.json").then(res => res.json()).catch(() => []),
         fetch("./plano_manutencao_prancha.json").then(res => res.json()).catch(() => []),
         fetch("./plano_manutencao_cavalo.json").then(res => res.json()).catch(() => []),
         fetch("./plano_manutencao_comboio_preventiva.json").then(res => res.json()).catch(() => [])
-    ]).then(([dataComboio, dataCarreta, dataPrancha, dataCavalo, dataCombPrev]) => {
+    ]).then(([dataComboio, dataCarreta, dataCavPrancha, dataPlataforma, dataPrancha, dataCavalo, dataCombPrev]) => {
         planoComboio = dataComboio;
         planoCarreta = dataCarreta;
+        planoCavPrancha = dataCavPrancha;
+        planoPlataforma = dataPlataforma;
         planoPrancha = dataPrancha;
         planoCavalo = dataCavalo;   
         planoComboioPrev = dataCombPrev;
@@ -462,7 +470,9 @@
         carreta: { km: false, horimetro: false, compartimentos: true },
         prancha: { km: false, horimetro: false, compartimentos: false },
         comboio: { km: true, horimetro: true, compartimentos: false },
-        cavalo: { km: true, horimetro: true, compartimentos: false }
+        cavalo: { km: true, horimetro: true, compartimentos: false },
+        cavprancha: { km: true, horimetro: true, compartimentos: false },
+        plataforma: { km: true, horimetro: true, compartimentos: false },
     };
 
     // --- LÓGICA DE INTERFACE ---
@@ -520,6 +530,26 @@
                 novosItens = gerarChecklistComboio(horimetroVal);
             }
         }
+        else if (tipoImp === "cavprancha") {
+
+    if (
+        (tipoManut === "revisao" || tipoManut === "preventiva") &&
+        horimetroVal > 0
+    ) {
+        novosItens = gerarChecklistCavPrancha(horimetroVal);
+    }
+
+}
+else if (tipoImp === "plataforma") {
+
+    if (
+        (tipoManut === "revisao" || tipoManut === "preventiva") &&
+        horimetroVal > 0
+    ) {
+        novosItens = gerarChecklistPlataforma(horimetroVal);
+    }
+
+}
 
         const manuais = naoConformidades.filter(i => i.origem === "manual");
         naoConformidades = [...manuais, ...novosItens];
@@ -647,6 +677,96 @@ function gerarChecklistComboioPrev(tipo) {
         return [];
 
     return planoCavalo
+        .map(item => {
+
+            const acao = item.horas.find(h => h.hora === marco);
+
+            if (!acao)
+                return null;
+
+            return {
+                grupo: item.grupo,
+                descricao: item.descricao,
+                eixo: "",
+                lado: "",
+                tipo: acao.tipo === "T"
+                    ? "troca"
+                    : "vistoria",
+                fotos: [],
+                resolvido: false,
+                origem: "automatico"
+            };
+
+        })
+        .filter(Boolean);
+}
+
+function gerarChecklistCavPrancha(horimetro) {
+
+    if (!horimetro || horimetro <= 0)
+        return [];
+
+    const todasHoras = [
+        ...new Set(
+            planoCavPrancha.flatMap(item =>
+                item.horas.map(h => h.hora)
+            )
+        )
+    ].sort((a, b) => a - b);
+
+    const marco = todasHoras
+        .filter(h => h <= horimetro)
+        .pop();
+
+    if (!marco)
+        return [];
+
+    return planoCavPrancha
+        .map(item => {
+
+            const acao = item.horas.find(h => h.hora === marco);
+
+            if (!acao)
+                return null;
+
+            return {
+                grupo: item.grupo,
+                descricao: item.descricao,
+                eixo: "",
+                lado: "",
+                tipo: acao.tipo === "T"
+                    ? "troca"
+                    : "vistoria",
+                fotos: [],
+                resolvido: false,
+                origem: "automatico"
+            };
+
+        })
+        .filter(Boolean);
+}
+
+function gerarChecklistPlataforma(horimetro) {
+
+    if (!horimetro || horimetro <= 0)
+        return [];
+
+    const todasHoras = [
+        ...new Set(
+            planoPlataforma.flatMap(item =>
+                item.horas.map(h => h.hora)
+            )
+        )
+    ].sort((a, b) => a - b);
+
+    const marco = todasHoras
+        .filter(h => h <= horimetro)
+        .pop();
+
+    if (!marco)
+        return [];
+
+    return planoPlataforma
         .map(item => {
 
             const acao = item.horas.find(h => h.hora === marco);
