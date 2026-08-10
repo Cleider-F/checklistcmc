@@ -1210,4 +1210,1427 @@ const COLECAO_NC =
     "naoConformidades";
 
 
-let todas
+let todasInspecoes = [];
+
+let inspecoesFiltradas = [];
+
+let selecionadas = new Set();
+
+
+
+/* ==========================================================
+   CARREGAR INSPEÇÕES
+========================================================== */
+
+
+async function carregarInspecoes() {
+
+
+    const lista =
+        document.getElementById("lista");
+
+
+    lista.innerHTML = `
+
+        <div class="estado">
+            Carregando inspeções...
+        </div>
+
+    `;
+
+
+    try {
+
+
+        const snapshot =
+            await getDocs(
+                collection(
+                    db,
+                    COLECAO_INSPECOES
+                )
+            );
+
+
+        todasInspecoes = [];
+
+
+        snapshot.forEach(
+            documento => {
+
+
+                const dados =
+                    documento.data();
+
+
+                /*
+                 * O ID é a nossa chave principal.
+                 *
+                 * Exemplo:
+                 *
+                 * 13571_2026-06-01
+                 */
+
+                todasInspecoes.push({
+
+                    id:
+                        documento.id,
+
+                    ...dados
+
+                });
+
+            }
+        );
+
+
+        aplicarFiltros();
+
+
+    } catch (erro) {
+
+
+        console.error(
+            "Erro ao carregar inspeções:",
+            erro
+        );
+
+
+        lista.innerHTML = `
+
+            <div class="estado">
+
+                ❌ Erro ao carregar as inspeções.
+
+                <br><br>
+
+                ${escapeHtml(
+                    erro.message
+                )}
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+
+/* ==========================================================
+   APLICAR FILTROS
+========================================================== */
+
+
+window.aplicarFiltros =
+function() {
+
+
+    const dataInicial =
+        document.getElementById(
+            "dataInicial"
+        ).value;
+
+
+    const dataFinal =
+        document.getElementById(
+            "dataFinal"
+        ).value;
+
+
+    const status =
+        document.getElementById(
+            "filtroStatus"
+        ).value;
+
+
+    const tipo =
+        document.getElementById(
+            "filtroTipo"
+        ).value;
+
+
+    inspecoesFiltradas =
+        todasInspecoes.filter(
+            item => {
+
+
+                /*
+                 * ==========================
+                 * DATA
+                 * ==========================
+                 */
+
+                const data =
+                    obterData(item);
+
+
+                if (
+                    dataInicial &&
+                    data &&
+                    data < dataInicial
+                ) {
+
+                    return false;
+
+                }
+
+
+                if (
+                    dataFinal &&
+                    data &&
+                    data > dataFinal
+                ) {
+
+                    return false;
+
+                }
+
+
+                /*
+                 * ==========================
+                 * STATUS
+                 * ==========================
+                 */
+
+                if (status) {
+
+
+                    const statusItem =
+                        normalizar(
+                            item.status
+                            ||
+                            item.statusInspecao
+                            ||
+                            ""
+                        );
+
+
+                    if (
+                        statusItem !==
+                        normalizar(status)
+                    ) {
+
+                        return false;
+
+                    }
+
+                }
+
+
+                /*
+                 * ==========================
+                 * TIPO
+                 * ==========================
+                 */
+
+                if (tipo) {
+
+
+                    const tipoItem =
+                        normalizar(
+                            item.tipo
+                            ||
+                            item.tipoFrota
+                            ||
+                            ""
+                        );
+
+
+                    if (
+                        tipoItem !==
+                        normalizar(tipo)
+                    ) {
+
+                        return false;
+
+                    }
+
+                }
+
+
+                return true;
+
+            }
+        );
+
+
+    /*
+     * Mais recentes primeiro.
+     */
+
+    inspecoesFiltradas.sort(
+        (a, b) => {
+
+            const dataA =
+                obterDataCompleta(a);
+
+            const dataB =
+                obterDataCompleta(b);
+
+
+            return dataB - dataA;
+
+        }
+    );
+
+
+    renderizar();
+
+};
+
+
+
+/* ==========================================================
+   OBTÉM DATA
+========================================================== */
+
+
+function obterData(item) {
+
+
+    /*
+     * No seu documento:
+     *
+     * data: "01/06/2026"
+     *
+     * Convertemos para:
+     *
+     * 2026-06-01
+     */
+
+    if (item.data) {
+
+
+        const partes =
+            String(item.data).split("/");
+
+
+        if (
+            partes.length === 3
+        ) {
+
+            return (
+                partes[2] +
+                "-" +
+                partes[1].padStart(2, "0") +
+                "-" +
+                partes[0].padStart(2, "0")
+            );
+
+        }
+
+    }
+
+
+    /*
+     * Fallback:
+     *
+     * tenta retirar a data do próprio ID.
+     *
+     * 13571_2026-06-01
+     */
+
+    const match =
+        item.id.match(
+            /_(\d{4}-\d{2}-\d{2})/
+        );
+
+
+    if (match) {
+
+        return match[1];
+
+    }
+
+
+    return "";
+
+}
+
+
+
+/* ==========================================================
+   DATA COMPLETA PARA ORDENAÇÃO
+========================================================== */
+
+
+function obterDataCompleta(item) {
+
+
+    const data =
+        obterData(item);
+
+
+    if (!data) {
+
+        return 0;
+
+    }
+
+
+    const hora =
+        item.hora || "00:00:00";
+
+
+    return new Date(
+        `${data}T${hora}`
+    ).getTime();
+
+}
+
+
+
+/* ==========================================================
+   RENDERIZAR LISTA
+========================================================== */
+
+
+function renderizar() {
+
+
+    const lista =
+        document.getElementById(
+            "lista"
+        );
+
+
+    document.getElementById(
+        "contadorResultados"
+    ).textContent =
+        inspecoesFiltradas.length;
+
+
+    if (
+        inspecoesFiltradas.length === 0
+    ) {
+
+
+        lista.innerHTML = `
+
+            <div class="estado">
+
+                Nenhuma inspeção encontrada
+                com os filtros selecionados.
+
+            </div>
+
+        `;
+
+
+        return;
+
+    }
+
+
+    lista.innerHTML = "";
+
+
+    inspecoesFiltradas.forEach(
+        item => {
+
+
+            const div =
+                document.createElement(
+                    "div"
+                );
+
+
+            div.className =
+                "inspecao";
+
+
+            if (
+                selecionadas.has(item.id)
+            ) {
+
+                div.classList.add(
+                    "selecionada"
+                );
+
+            }
+
+
+            const checkbox =
+                document.createElement(
+                    "input"
+                );
+
+
+            checkbox.type =
+                "checkbox";
+
+
+            checkbox.className =
+                "checkbox";
+
+
+            checkbox.checked =
+                selecionadas.has(
+                    item.id
+                );
+
+
+            checkbox.addEventListener(
+                "change",
+                () => {
+
+
+                    if (
+                        checkbox.checked
+                    ) {
+
+                        selecionadas.add(
+                            item.id
+                        );
+
+                        div.classList.add(
+                            "selecionada"
+                        );
+
+                    } else {
+
+                        selecionadas.delete(
+                            item.id
+                        );
+
+                        div.classList.remove(
+                            "selecionada"
+                        );
+
+                    }
+
+
+                    atualizarContadores();
+
+                }
+            );
+
+
+            /*
+             * ====================================
+             * DADOS
+             * ====================================
+             */
+
+
+            const dados =
+                document.createElement(
+                    "div"
+                );
+
+
+            dados.className =
+                "dados";
+
+
+            const placa =
+                item.placa
+                ||
+                item.implementoId
+                ||
+                item.id.split("_")[0]
+                ||
+                "Sem identificação";
+
+
+            const tipo =
+                item.tipo
+                ||
+                item.tipoFrota
+                ||
+                "Não informado";
+
+
+            const status =
+                item.status
+                ||
+                item.statusInspecao
+                ||
+                "Não informado";
+
+
+            const data =
+                item.data
+                ||
+                obterData(item);
+
+
+            const hora =
+                item.hora
+                ||
+                "";
+
+
+            dados.innerHTML = `
+
+                <div class="linha-principal">
+
+                    <span class="placa">
+
+                        ${escapeHtml(
+                            placa
+                        )}
+
+                    </span>
+
+
+                    <span class="tipo">
+
+                        ${escapeHtml(
+                            formatarTipo(tipo)
+                        )}
+
+                    </span>
+
+                </div>
+
+
+                <div class="detalhes">
+
+                    <span>
+
+                        📅
+                        ${escapeHtml(data)}
+
+                    </span>
+
+
+                    <span>
+
+                        🕐
+                        ${escapeHtml(hora)}
+
+                    </span>
+
+
+                    <span>
+
+                        ID:
+                        ${escapeHtml(item.id)}
+
+                    </span>
+
+                </div>
+
+            `;
+
+
+            /*
+             * ====================================
+             * STATUS
+             * ====================================
+             */
+
+
+            const statusElemento =
+                document.createElement(
+                    "span"
+                );
+
+
+            statusElemento.className =
+                "status " +
+                classeStatus(status);
+
+
+            statusElemento.textContent =
+                formatarStatus(status);
+
+
+            div.appendChild(
+                checkbox
+            );
+
+
+            div.appendChild(
+                dados
+            );
+
+
+            div.appendChild(
+                statusElemento
+            );
+
+
+            lista.appendChild(
+                div
+            );
+
+        }
+    );
+
+
+    atualizarContadores();
+
+}
+
+
+
+/* ==========================================================
+   SELECIONAR TODOS
+========================================================== */
+
+
+window.selecionarTodos =
+function() {
+
+
+    if (
+        inspecoesFiltradas.length === 0
+    ) {
+
+        return;
+
+    }
+
+
+    const todosSelecionados =
+        inspecoesFiltradas.every(
+            item =>
+                selecionadas.has(
+                    item.id
+                )
+        );
+
+
+    inspecoesFiltradas.forEach(
+        item => {
+
+
+            if (
+                todosSelecionados
+            ) {
+
+                selecionadas.delete(
+                    item.id
+                );
+
+            } else {
+
+                selecionadas.add(
+                    item.id
+                );
+
+            }
+
+        }
+    );
+
+
+    renderizar();
+
+};
+
+
+
+/* ==========================================================
+   CONTADORES
+========================================================== */
+
+
+function atualizarContadores() {
+
+
+    document.getElementById(
+        "contadorSelecionadas"
+    ).textContent =
+        selecionadas.size;
+
+
+    document.getElementById(
+        "btnExcluir"
+    ).disabled =
+        selecionadas.size === 0;
+
+}
+
+
+
+/* ==========================================================
+   ABRIR MODAL
+========================================================== */
+
+
+window.abrirModal =
+function() {
+
+
+    if (
+        selecionadas.size === 0
+    ) {
+
+        return;
+
+    }
+
+
+    document.getElementById(
+        "quantidadeModal"
+    ).textContent =
+        selecionadas.size;
+
+
+    document.getElementById(
+        "modal"
+    ).classList.add(
+        "aberto"
+    );
+
+};
+
+
+
+/* ==========================================================
+   FECHAR MODAL
+========================================================== */
+
+
+window.fecharModal =
+function() {
+
+
+    document.getElementById(
+        "modal"
+    ).classList.remove(
+        "aberto"
+    );
+
+};
+
+
+
+/* ==========================================================
+   EXCLUSÃO COMPLETA
+========================================================== */
+
+
+window.excluirSelecionadas =
+async function() {
+
+
+    if (
+        selecionadas.size === 0
+    ) {
+
+        return;
+
+    }
+
+
+    const ids =
+        [...selecionadas];
+
+
+    const botao =
+        document.getElementById(
+            "btnConfirmarExclusao"
+        );
+
+
+    botao.disabled =
+        true;
+
+
+    botao.textContent =
+        "EXCLUINDO...";
+
+
+    try {
+
+
+        /*
+         * ==================================================
+         * 1. LOCALIZAR TODAS AS NÃO CONFORMIDADES
+         * ==================================================
+         *
+         * Para cada inspeção:
+         *
+         * 13571_2026-06-01
+         *
+         * procuramos documentos como:
+         *
+         * 13571_2026-06-01_qualquer_coisa
+         *
+         */
+
+
+        const idsNC =
+            new Set();
+
+
+        await Promise.all(
+
+            ids.map(
+                async idInspecao => {
+
+
+                    const inicio =
+                        idInspecao;
+
+
+                    const fim =
+                        idInspecao +
+                        "\uf8ff";
+
+
+                    const consulta =
+                        query(
+
+                            collection(
+                                db,
+                                COLECAO_NC
+                            ),
+
+                            where(
+                                documentId(),
+                                ">=",
+                                inicio
+                            ),
+
+                            where(
+                                documentId(),
+                                "<=",
+                                fim
+                            )
+
+                        );
+
+
+                    const snapshot =
+                        await getDocs(
+                            consulta
+                        );
+
+
+                    snapshot.forEach(
+                        documento => {
+
+                            idsNC.add(
+                                documento.id
+                            );
+
+                        }
+                    );
+
+                }
+            )
+
+        );
+
+
+        /*
+         * ==================================================
+         * 2. MONTAR OPERAÇÕES DE EXCLUSÃO
+         * ==================================================
+         *
+         * Cada inspeção possui:
+         *
+         * implementos
+         * inspecoes
+         *
+         * E suas respectivas NCs.
+         */
+
+
+        const operacoes = [];
+
+
+        ids.forEach(
+            id => {
+
+
+                /*
+                 * IMPLEMENTO
+                 */
+
+                operacoes.push({
+
+                    colecao:
+                        COLECAO_IMPLEMENTOS,
+
+                    id:
+                        id
+
+                });
+
+
+                /*
+                 * INSPEÇÃO
+                 */
+
+                operacoes.push({
+
+                    colecao:
+                        COLECAO_INSPECOES,
+
+                    id:
+                        id
+
+                });
+
+            }
+        );
+
+
+        /*
+         * NÃO CONFORMIDADES
+         */
+
+        idsNC.forEach(
+            id => {
+
+
+                operacoes.push({
+
+                    colecao:
+                        COLECAO_NC,
+
+                    id:
+                        id
+
+                });
+
+            }
+        );
+
+
+        console.log(
+            "Inspeções selecionadas:",
+            ids
+        );
+
+
+        console.log(
+            "Não conformidades encontradas:",
+            [...idsNC]
+        );
+
+
+        console.log(
+            "Total de documentos a excluir:",
+            operacoes.length
+        );
+
+
+        /*
+         * ==================================================
+         * 3. FIRESTORE BATCH
+         * ==================================================
+         *
+         * O Firestore aceita no máximo 500 operações
+         * em cada batch.
+         *
+         * Por segurança usamos 450.
+         */
+
+
+        const TAMANHO_BATCH =
+            450;
+
+
+        let excluidos =
+            0;
+
+
+        for (
+            let inicio = 0;
+            inicio < operacoes.length;
+            inicio += TAMANHO_BATCH
+        ) {
+
+
+            const lote =
+                operacoes.slice(
+                    inicio,
+                    inicio + TAMANHO_BATCH
+                );
+
+
+            const batch =
+                writeBatch(db);
+
+
+            lote.forEach(
+                operacao => {
+
+
+                    batch.delete(
+
+                        doc(
+                            db,
+                            operacao.colecao,
+                            operacao.id
+                        )
+
+                    );
+
+                }
+            );
+
+
+            await batch.commit();
+
+
+            excluidos +=
+                lote.length;
+
+
+        }
+
+
+        /*
+         * ==================================================
+         * 4. LIMPAR SELEÇÃO
+         * ==================================================
+         */
+
+
+        ids.forEach(
+            id =>
+                selecionadas.delete(id)
+        );
+
+
+        /*
+         * Remove também da memória.
+         */
+
+
+        todasInspecoes =
+            todasInspecoes.filter(
+                item =>
+                    !ids.includes(
+                        item.id
+                    )
+            );
+
+
+        inspecoesFiltradas =
+            inspecoesFiltradas.filter(
+                item =>
+                    !ids.includes(
+                        item.id
+                    )
+            );
+
+
+        fecharModal();
+
+
+        renderizar();
+
+
+        alert(
+
+            "Exclusão concluída!\n\n" +
+
+            ids.length +
+            " inspeção(ões) excluída(s).\n" +
+
+            ids.length +
+            " registro(s) de implementos excluído(s).\n" +
+
+            ids.length +
+            " registro(s) de inspeções excluído(s).\n" +
+
+            idsNC.size +
+            " não conformidade(s) excluída(s).\n\n" +
+
+            "Total de documentos removidos: " +
+            excluidos
+
+        );
+
+
+    } catch (erro) {
+
+
+        console.error(
+            "Erro durante exclusão:",
+            erro
+        );
+
+
+        alert(
+
+            "ERRO AO EXCLUIR.\n\n" +
+
+            erro.message +
+
+            "\n\nNenhuma nova tentativa automática foi realizada."
+
+        );
+
+    } finally {
+
+
+        botao.disabled =
+            false;
+
+
+        botao.textContent =
+            "EXCLUIR TUDO";
+
+    }
+
+};
+
+
+
+/* ==========================================================
+   LIMPAR FILTROS
+========================================================== */
+
+
+window.limparFiltros =
+function() {
+
+
+    document.getElementById(
+        "dataInicial"
+    ).value = "";
+
+
+    document.getElementById(
+        "dataFinal"
+    ).value = "";
+
+
+    document.getElementById(
+        "filtroStatus"
+    ).value = "";
+
+
+    document.getElementById(
+        "filtroTipo"
+    ).value = "";
+
+
+    selecionadas.clear();
+
+
+    aplicarFiltros();
+
+};
+
+
+
+/* ==========================================================
+   NORMALIZAÇÃO
+========================================================== */
+
+
+function normalizar(valor) {
+
+
+    return String(
+        valor || ""
+    )
+    .trim()
+    .toLowerCase()
+    .replaceAll(
+        " ",
+        "_"
+    )
+    .normalize("NFD")
+    .replace(
+        /[\u0300-\u036f]/g,
+        ""
+    );
+
+}
+
+
+
+/* ==========================================================
+   FORMATAR TIPO
+========================================================== */
+
+
+function formatarTipo(tipo) {
+
+
+    const mapa = {
+
+        carreta:
+            "Carreta",
+
+        cavalo:
+            "Cavalo Mecânico",
+
+        cavalo_mecanico:
+            "Cavalo Mecânico",
+
+        comboio:
+            "Comboio",
+
+        prancha:
+            "Prancha",
+
+        plataforma:
+            "Plataforma",
+
+        cavprancha:
+            "Cavalo Prancha"
+
+    };
+
+
+    return mapa[
+        normalizar(tipo)
+    ] || tipo;
+
+}
+
+
+
+/* ==========================================================
+   FORMATAR STATUS
+========================================================== */
+
+
+function formatarStatus(status) {
+
+
+    const mapa = {
+
+        em_inspecao:
+            "Em inspeção",
+
+        aguardando_manutencao:
+            "Aguardando manutenção",
+
+        em_manutencao:
+            "Em manutenção",
+
+        liberado:
+            "Liberado",
+
+        finalizada:
+            "Finalizada",
+
+        concluida:
+            "Concluída",
+
+        concluido:
+            "Concluído"
+
+    };
+
+
+    return mapa[
+        normalizar(status)
+    ] || status;
+
+}
+
+
+
+/* ==========================================================
+   CLASSE DO STATUS
+========================================================== */
+
+
+function classeStatus(status) {
+
+
+    const valor =
+        normalizar(status);
+
+
+    if (
+        valor === "finalizada" ||
+        valor === "concluida" ||
+        valor === "concluido" ||
+        valor === "liberado"
+    ) {
+
+        return "status-finalizada";
+
+    }
+
+
+    if (
+        valor === "em_manutencao"
+    ) {
+
+        return "status-manutencao";
+
+    }
+
+
+    if (
+        valor === "aguardando_manutencao"
+    ) {
+
+        return "status-pendente";
+
+    }
+
+
+    if (
+        valor === "em_inspecao"
+    ) {
+
+        return "status-inspecao";
+
+    }
+
+
+    return "status-outro";
+
+}
+
+
+
+/* ==========================================================
+   SEGURANÇA HTML
+========================================================== */
+
+
+function escapeHtml(valor) {
+
+
+    return String(
+        valor ?? ""
+    )
+    .replaceAll(
+        "&",
+        "&amp;"
+    )
+    .replaceAll(
+        "<",
+        "&lt;"
+    )
+    .replaceAll(
+        ">",
+        "&gt;"
+    )
+    .replaceAll(
+        '"',
+        "&quot;"
+    )
+    .replaceAll(
+        "'",
+        "&#039;"
+    );
+
+}
+
+
+
+/* ==========================================================
+   INICIAR
+========================================================== */
+
+
+carregarInspecoes();
+
+
+</script>
+
+
+</body>
+
+</html>
