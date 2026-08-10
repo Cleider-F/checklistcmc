@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width,
+                   initial-scale=1.0,
+                   maximum-scale=1.0,
+                   user-scalable=no">
+
+    <title>Excluir Inspeções - CMC</title>
+
+    <style>
+
+        :root {
+            --azul: #0099d8;
+            --azul-escuro: #0077b5;
+            --azul-claro: #eaf7fd;
+
+            --branco: #ffffff;
+            --fundo: #f5f7f9;
+
+            --texto: #1d2939;
+            --cinza: #667085;
+            --borda: #d9dee5;
+
+            --vermelho: #d92d20;
+            --vermelho-escuro: #b42318;
+            --vermelho-claro: #fff1f0;
+
+            --verde: #16803c;
+            --verde-claro: #ecfdf3;
+
+            --amarelo: #b54708;
+            --amarelo-claro: #fffaeb;
+
+            --sombra: 0 2px 10px rgba(0,0,0,.07);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--fundo);
+            color: var(--texto);
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+        }
+
+        /* =========================================
+           TOPO
+        ========================================= */
+
+        .topbar {
+
+            height: 64px;
+
+            background: white;
+
+            border-bottom:
+                1px solid var(--borda);
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            padding:
+                0 20px;
+
+            position: sticky;
+
+            top: 0;
+
+            z-index: 100;
+        }
+
+        .logo {
+
+            font-size: 21px;
+
+            font-weight: 700;
+
+            color: var(--azul);
+        }
+
+        .logo span {
+
+            color: #333;
+
+            font-weight: 400;
+        }
+
+        .btn-menu {
+
+            border: none;
+
+            background: transparent;
+
+            font-size: 26px;
+
+            cursor: pointer;
+
+            color: #333;
+        }
+
+        /* =========================================
+           CONTAINER
+        ========================================= */
+
+        .container {
+
+            width: 100%;
+
+            max-width: 1200px;
+
+            margin: auto;
+
+            padding:
+                25px 18px 60px;
+        }
+
+        .titulo {
+
+            margin-bottom: 20px;
+        }
+
+        .titulo h1 {
+
+            margin: 0;
+
+            font-size: 26px;
+        }
+
+        .titulo p {
+
+            margin:
+                7px 0 0;
+
+            color: var(--cinza);
+
+            font-size: 14px;
+        }
+
+        /* =========================================
+           FILTROS
+        ========================================= */
+
+        .filtros {
+
+            background: white;
+
+            border:
+                1px solid var(--borda);
+
+            border-radius: 12px;
+
+            padding: 18px;
+
+            box-shadow: var(--sombra);
+
+            margin-bottom: 15px;
+        }
+
+        .filtros h2 {
+
+            margin:
+                0 0 15px;
+
+            font-size: 16px;
+        }
+
+        .filtros-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                1fr
+                1fr
+                1fr
+                1fr
+                auto;
+
+            gap: 12px;
+
+            align-items: end;
+        }
+
+        .campo {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 6px;
+        }
+
+        .campo label {
+
+            font-size: 13px;
+
+            font-weight: 600;
+
+            color: #344054;
+        }
+
+        .campo input,
+        .campo select {
+
+            width: 100%;
+
+            height: 42px;
+
+            border:
+                1px solid #cfd5dc;
+
+            border-radius: 8px;
+
+            padding:
+                0 10px;
+
+            background: white;
+
+            font-size: 14px;
+
+            outline: none;
+        }
+
+        .campo input:focus,
+        .campo select:focus {
+
+            border-color:
+                var(--azul);
+
+            box-shadow:
+                0 0 0 2px
+                rgba(0,153,216,.12);
+        }
+
+        /* =========================================
+           BOTÕES
+        ========================================= */
+
+        .btn {
+
+            height: 42px;
+
+            border: none;
+
+            border-radius: 8px;
+
+            padding:
+                0 17px;
+
+            font-weight: 600;
+
+            cursor: pointer;
+
+            transition:
+                .2s;
+        }
+
+        .btn-filtrar {
+
+            background:
+                var(--azul);
+
+            color: white;
+        }
+
+        .btn-filtrar:hover {
+
+            background:
+                var(--azul-escuro);
+        }
+
+        .btn-limpar {
+
+            background:
+                #eef1f4;
+
+            color:
+                #344054;
+        }
+
+        .btn-selecionar {
+
+            background:
+                var(--azul-claro);
+
+            color:
+                var(--azul-escuro);
+
+            border:
+                1px solid #b9dff1;
+        }
+
+        .btn-excluir {
+
+            background:
+                var(--vermelho);
+
+            color: white;
+        }
+
+        .btn-excluir:hover {
+
+            background:
+                var(--vermelho-escuro);
+        }
+
+        .btn-excluir:disabled {
+
+            opacity: .45;
+
+            cursor:
+                not-allowed;
+        }
+
+        /* =========================================
+           BARRA DE AÇÕES
+        ========================================= */
+
+        .acoes {
+
+            background: white;
+
+            border:
+                1px solid var(--borda);
+
+            border-radius: 10px;
+
+            padding:
+                12px 15px;
+
+            margin-bottom: 12px;
+
+            display: flex;
+
+            justify-content:
+                space-between;
+
+            align-items: center;
+
+            gap: 10px;
+
+            flex-wrap: wrap;
+        }
+
+        .acoes-esquerda {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            flex-wrap: wrap;
+        }
+
+        .contador {
+
+            font-size: 13px;
+
+            color:
+                var(--cinza);
+        }
+
+        .contador strong {
+
+            color:
+                var(--azul);
+
+            font-size: 15px;
+        }
+
+        /* =========================================
+           LISTA
+        ========================================= */
+
+        .lista {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 8px;
+        }
+
+        .inspecao {
+
+            background: white;
+
+            border:
+                1px solid var(--borda);
+
+            border-radius: 10px;
+
+            padding:
+                13px 15px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 14px;
+
+            transition:
+                .15s;
+        }
+
+        .inspecao:hover {
+
+            border-color:
+                #aeb8c3;
+        }
+
+        .inspecao.selecionada {
+
+            background:
+                var(--azul-claro);
+
+            border-color:
+                #8fc9e7;
+        }
+
+        .checkbox {
+
+            width: 20px;
+
+            height: 20px;
+
+            cursor: pointer;
+
+            flex-shrink: 0;
+        }
+
+        .dados {
+
+            flex: 1;
+
+            min-width: 0;
+        }
+
+        .linha-principal {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 9px;
+
+            flex-wrap: wrap;
+        }
+
+        .placa {
+
+            font-size: 16px;
+
+            font-weight: 700;
+        }
+
+        .tipo {
+
+            background:
+                #f2f4f7;
+
+            color:
+                #344054;
+
+            border-radius:
+                20px;
+
+            padding:
+                4px 8px;
+
+            font-size:
+                12px;
+        }
+
+        .detalhes {
+
+            display: flex;
+
+            flex-wrap: wrap;
+
+            gap: 14px;
+
+            margin-top: 5px;
+
+            font-size: 12px;
+
+            color:
+                var(--cinza);
+        }
+
+        .status {
+
+            white-space: nowrap;
+
+            font-size: 12px;
+
+            font-weight: 600;
+
+            border-radius: 20px;
+
+            padding:
+                5px 9px;
+        }
+
+        .status-inspecao {
+
+            background:
+                var(--azul-claro);
+
+            color:
+                var(--azul-escuro);
+        }
+
+        .status-finalizada {
+
+            background:
+                var(--verde-claro);
+
+            color:
+                var(--verde);
+        }
+
+        .status-manutencao {
+
+            background:
+                var(--vermelho-claro);
+
+            color:
+                var(--vermelho);
+        }
+
+        .status-pendente {
+
+            background:
+                var(--amarelo-claro);
+
+            color:
+                var(--amarelo);
+        }
+
+        .status-outro {
+
+            background:
+                #f2f4f7;
+
+            color:
+                #475467;
+        }
+
+        /* =========================================
+           ESTADO VAZIO
+        ========================================= */
+
+        .estado {
+
+            background: white;
+
+            border:
+                1px solid var(--borda);
+
+            border-radius:
+                12px;
+
+            padding:
+                35px 20px;
+
+            text-align:
+                center;
+
+            color:
+                var(--cinza);
+        }
+
+        /* =========================================
+           MODAL
+        ========================================= */
+
+        .modal-overlay {
+
+            position: fixed;
+
+            inset: 0;
+
+            background:
+                rgba(16,24,40,.60);
+
+            display: none;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 20px;
+
+            z-index: 1000;
+        }
+
+        .modal-overlay.aberto {
+
+            display: flex;
+        }
+
+        .modal {
+
+            width: 100%;
+
+            max-width: 470px;
+
+            background: white;
+
+            border-radius:
+                15px;
+
+            padding:
+                25px;
+
+            box-shadow:
+                0 20px 50px
+                rgba(0,0,0,.25);
+        }
+
+        .modal-icone {
+
+            width: 45px;
+
+            height: 45px;
+
+            border-radius: 50%;
+
+            background:
+                var(--vermelho-claro);
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 22px;
+
+            margin-bottom: 13px;
+        }
+
+        .modal h2 {
+
+            margin:
+                0 0 10px;
+
+            font-size:
+                20px;
+        }
+
+        .modal p {
+
+            color:
+                var(--cinza);
+
+            font-size:
+                14px;
+
+            line-height:
+                1.55;
+
+            margin:
+                0 0 18px;
+        }
+
+        .aviso {
+
+            background:
+                var(--vermelho-claro);
+
+            border:
+                1px solid #fecdca;
+
+            border-radius:
+                8px;
+
+            padding:
+                12px;
+
+            color:
+                #912018;
+
+            font-size:
+                13px;
+
+            line-height:
+                1.45;
+
+            margin-bottom:
+                20px;
+        }
+
+        .modal-acoes {
+
+            display: flex;
+
+            justify-content:
+                flex-end;
+
+            gap: 10px;
+        }
+
+        /* =========================================
+           RESPONSIVO
+        ========================================= */
+
+        @media (max-width: 950px) {
+
+            .filtros-grid {
+
+                grid-template-columns:
+                    1fr
+                    1fr;
+            }
+
+        }
+
+        @media (max-width: 600px) {
+
+            .topbar {
+
+                padding:
+                    0 15px;
+            }
+
+            .container {
+
+                padding:
+                    18px 12px 45px;
+            }
+
+            .titulo h1 {
+
+                font-size:
+                    22px;
+            }
+
+            .filtros-grid {
+
+                grid-template-columns:
+                    1fr;
+            }
+
+            .acoes {
+
+                align-items:
+                    stretch;
+            }
+
+            .acoes-esquerda {
+
+                width: 100%;
+            }
+
+            .btn-excluir {
+
+                width: 100%;
+            }
+
+            .inspecao {
+
+                align-items:
+                    flex-start;
+            }
+
+            .status {
+
+                align-self:
+                    center;
+            }
+
+            .modal-acoes {
+
+                flex-direction:
+                    column-reverse;
+            }
+
+            .modal-acoes .btn {
+
+                width:
+                    100%;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<header class="topbar">
+
+    <div class="logo">
+        CMC <span>| Administração</span>
+    </div>
+
+    <button
+        class="btn-menu"
+        onclick="history.back()">
+
+        ☰
+
+    </button>
+
+</header>
+
+
+<main class="container">
+
+
+    <div class="titulo">
+
+        <h1>
+            Excluir inspeções
+        </h1>
+
+        <p>
+            Selecione as inspeções que deseja excluir
+            permanentemente.
+        </p>
+
+    </div>
+
+
+    <!-- ==========================================
+         FILTROS
+    =========================================== -->
+
+    <section class="filtros">
+
+        <h2>
+            Filtros
+        </h2>
+
+
+        <div class="filtros-grid">
+
+
+            <div class="campo">
+
+                <label>
+                    Data inicial
+                </label>
+
+                <input
+                    type="date"
+                    id="dataInicial">
+
+            </div>
+
+
+            <div class="campo">
+
+                <label>
+                    Data final
+                </label>
+
+                <input
+                    type="date"
+                    id="dataFinal">
+
+            </div>
+
+
+            <div class="campo">
+
+                <label>
+                    Status
+                </label>
+
+                <select id="filtroStatus">
+
+                    <option value="">
+                        Todos
+                    </option>
+
+                    <option value="em_inspecao">
+                        Em inspeção
+                    </option>
+
+                    <option value="aguardando_manutencao">
+                        Aguardando manutenção
+                    </option>
+
+                    <option value="em_manutencao">
+                        Em manutenção
+                    </option>
+
+                    <option value="liberado">
+                        Liberado
+                    </option>
+
+                    <option value="finalizada">
+                        Finalizada
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="campo">
+
+                <label>
+                    Tipo
+                </label>
+
+                <select id="filtroTipo">
+
+                    <option value="">
+                        Todos
+                    </option>
+
+                    <option value="carreta">
+                        Carreta
+                    </option>
+
+                    <option value="cavalo">
+                        Cavalo Mecânico
+                    </option>
+
+                    <option value="comboio">
+                        Comboio
+                    </option>
+
+                    <option value="prancha">
+                        Prancha
+                    </option>
+
+                    <option value="plataforma">
+                        Plataforma
+                    </option>
+
+                    <option value="cavprancha">
+                        Cavalo Prancha
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div
+                style="
+                    display:flex;
+                    gap:8px;
+                ">
+
+                <button
+                    class="btn btn-filtrar"
+                    onclick="aplicarFiltros()">
+
+                    Filtrar
+
+                </button>
+
+
+                <button
+                    class="btn btn-limpar"
+                    onclick="limparFiltros()">
+
+                    Limpar
+
+                </button>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================
+         AÇÕES
+    =========================================== -->
+
+    <section class="acoes">
+
+
+        <div class="acoes-esquerda">
+
+
+            <button
+                class="btn btn-selecionar"
+                onclick="selecionarTodos()">
+
+                ☑ Selecionar todos
+
+            </button>
+
+
+            <span class="contador">
+
+                <strong
+                    id="contadorSelecionadas">
+
+                    0
+
+                </strong>
+
+                selecionada(s)
+
+            </span>
+
+
+            <span class="contador">
+
+                |
+
+                <strong
+                    id="contadorResultados">
+
+                    0
+
+                </strong>
+
+                encontrada(s)
+
+            </span>
+
+
+        </div>
+
+
+        <button
+            id="btnExcluir"
+            class="btn btn-excluir"
+            onclick="abrirModal()"
+            disabled>
+
+            🗑 Excluir selecionadas
+
+        </button>
+
+
+    </section>
+
+
+    <!-- ==========================================
+         LISTA
+    =========================================== -->
+
+    <section
+        id="lista"
+        class="lista">
+
+        <div class="estado">
+
+            Carregando inspeções...
+
+        </div>
+
+    </section>
+
+
+</main>
+
+
+<!-- ==========================================
+     MODAL
+=========================================== -->
+
+<div
+    id="modal"
+    class="modal-overlay">
+
+
+    <div class="modal">
+
+
+        <div class="modal-icone">
+            ⚠️
+        </div>
+
+
+        <h2>
+            Excluir inspeções?
+        </h2>
+
+
+        <p>
+
+            Você está prestes a excluir
+
+            <strong id="quantidadeModal">
+                0
+            </strong>
+
+            inspeção(ões).
+
+        </p>
+
+
+        <div class="aviso">
+
+            <strong>
+                Atenção:
+            </strong>
+
+            serão excluídos permanentemente:
+
+            <br><br>
+
+            ✓ Registro em <strong>inspecoes</strong><br>
+
+            ✓ Registro em <strong>implementos</strong><br>
+
+            ✓ Todas as <strong>não conformidades</strong>
+              relacionadas à inspeção
+
+            <br><br>
+
+            Esta operação não poderá ser desfeita.
+
+        </div>
+
+
+        <div class="modal-acoes">
+
+
+            <button
+                class="btn btn-limpar"
+                onclick="fecharModal()">
+
+                Cancelar
+
+            </button>
+
+
+            <button
+                id="btnConfirmarExclusao"
+                class="btn btn-excluir"
+                onclick="excluirSelecionadas()">
+
+                EXCLUIR TUDO
+
+            </button>
+
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+<script type="module">
+
+
+/* ==========================================================
+   FIREBASE
+========================================================== */
+
+
+import {
+
+    db
+
+} from "./firebase.js";
+
+
+import {
+
+    collection,
+    getDocs,
+    query,
+    where,
+    documentId,
+    writeBatch,
+    doc
+
+} from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+
+/* ==========================================================
+   CONFIGURAÇÃO
+========================================================== */
+
+
+const COLECAO_IMPLEMENTOS =
+    "implementos";
+
+const COLECAO_INSPECOES =
+    "inspecoes";
+
+const COLECAO_NC =
+    "naoConformidades";
+
+
+let todas
