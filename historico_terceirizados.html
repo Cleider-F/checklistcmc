@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="navbar.css">
+  <title>Historico Terceirizados</title>
+
+  <style>
+    :root {
+      --dark: #1f2937;
+      --primary: #2196f3;
+      --success: #4caf50;
+      --warning: #ff9800;
+      --danger: #f44336;
+      --purple: #673ab7;
+      --bg: #f1f3f6;
+      --muted: #64748b;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: #1f2937;
+      padding-bottom: 90px;
+    }
+
+    .topbar {
+      background: var(--dark);
+      color: white;
+      padding: 18px 15px;
+      font-size: 20px;
+      font-weight: 800;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .page {
+      padding: 14px;
+      max-width: 920px;
+      margin: 0 auto;
+    }
+
+    .filters,
+    .summary {
+      background: white;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: 10px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      box-sizing: border-box;
+      font-size: 15px;
+      background: #f9fafb;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .metric {
+      border-left: 5px solid var(--primary);
+      background: #f8fafc;
+      border-radius: 10px;
+      padding: 10px;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 22px;
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .metric.purple { border-left-color: var(--purple); }
+    .metric.red { border-left-color: var(--danger); }
+    .metric.green { border-left-color: var(--success); }
+
+    .section-title {
+      margin: 18px 4px 8px;
+      font-size: 13px;
+      font-weight: 900;
+      color: #334155;
+      text-transform: uppercase;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      border-left: 6px solid var(--primary);
+      cursor: pointer;
+    }
+
+    .card.inspecionado_terceiro { border-left-color: var(--purple); }
+    .card.reinspecao_reprovada { border-left-color: var(--danger); }
+    .card.liberado { border-left-color: var(--success); }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .placa {
+      font-size: 19px;
+      font-weight: 900;
+    }
+
+    .badge {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 5px 10px;
+      color: white;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+      background: var(--primary);
+    }
+
+    .badge.inspecionado_terceiro { background: var(--purple); }
+    .badge.reinspecao_reprovada { background: var(--danger); }
+    .badge.liberado { background: var(--success); }
+
+    .info {
+      margin-top: 8px;
+      color: #52636f;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .empty {
+      background: white;
+      border-radius: 12px;
+      padding: 24px 14px;
+      color: var(--muted);
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    @media (max-width: 700px) {
+      .filters,
+      .summary {
+        grid-template-columns: 1fr;
+      }
+
+      .card-top {
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">Historico de Terceirizados</div>
+
+  <main class="page">
+    <div class="filters">
+      <input id="busca" placeholder="Buscar por GO/Placa">
+      <select id="filtroStatus">
+        <option value="">Todos os status</option>
+        <option value="em_inspecao">Em inspecao</option>
+        <option value="inspecionado_terceiro">Inspecionado / aguardando reinspecao</option>
+        <option value="reinspecao_reprovada">Reinspecao reprovada</option>
+        <option value="liberado">Liberado</option>
+      </select>
+    </div>
+
+    <div class="summary" id="resumo"></div>
+    <div id="lista"><div class="empty">Carregando historico...</div></div>
+  </main>
+
+  <script type="module">
+    import { protegerPagina } from "./auth.js";
+    protegerPagina(["inspetor", "tecnico"]);
+
+    import { db } from "./firebase.js";
+    import {
+      collection,
+      getDocs,
+      query,
+      where
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    import { carregarNavbar } from "./navbar.js";
+    carregarNavbar();
+
+    const buscaEl = document.getElementById("busca");
+    const filtroStatusEl = document.getElementById("filtroStatus");
+    const listaEl = document.getElementById("lista");
+    const resumoEl = document.getElementById("resumo");
+
+    let registros = [];
+
+    const statusLabels = {
+      em_inspecao: "Em inspecao",
+      inspecionado_terceiro: "Inspecionado",
+      reinspecao_reprovada: "Reinspecao reprovada",
+      liberado: "Liberado"
+    };
+
+    buscaEl.addEventListener("input", render);
+    filtroStatusEl.addEventListener("change", render);
+
+    carregar();
+
+    async function carregar() {
+      listaEl.innerHTML = `<div class="empty">Carregando historico...</div>`;
+
+      try {
+        const baseRef = collection(db, "implementos");
+        const consultas = [
+          query(baseRef, where("fluxoInspecao", "==", "terceirizada")),
+          query(baseRef, where("terceirizada", "==", true)),
+          query(baseRef, where("tipo", "==", "cavalo_terceiro"))
+        ];
+
+        const snaps = await Promise.all(consultas.map(qRef => getDocs(qRef)));
+        const mapa = new Map();
+
+        snaps.forEach(snap => {
+          snap.docs.forEach(d => {
+            const item = { id: d.id, ...d.data() };
+            if (isTerceirizada(item)) mapa.set(item.id, item);
+          });
+        });
+
+        registros = Array.from(mapa.values())
+          .sort((a, b) => dataMillis(b.dataInspecao) - dataMillis(a.dataInspecao));
+
+        render();
+      } catch (e) {
+        console.error(e);
+        listaEl.innerHTML = `<div class="empty">Erro ao carregar historico.</div>`;
+      }
+    }
+
+    function render() {
+      const busca = normalizar(buscaEl.value);
+      const status = filtroStatusEl.value;
+
+      let filtrados = registros;
+
+      if (busca) {
+        filtrados = filtrados.filter(item =>
+          normalizar(item.placa).includes(busca) ||
+          normalizar(item.placaBusca).includes(busca)
+        );
+      }
+
+      if (status) {
+        filtrados = filtrados.filter(item => item.status === status);
+      }
+
+      renderResumo(filtrados);
+      renderLista(filtrados);
+    }
+
+    function renderResumo(lista) {
+      const cont = {
+        total: lista.length,
+        inspecionado_terceiro: 0,
+        reinspecao_reprovada: 0,
+        liberado: 0
+      };
+
+      lista.forEach(item => {
+        if (cont[item.status] !== undefined) cont[item.status]++;
+      });
+
+      resumoEl.innerHTML = `
+        <div class="metric"><strong>${cont.total}</strong><span>Total</span></div>
+        <div class="metric purple"><strong>${cont.inspecionado_terceiro}</strong><span>Aguardando reinspecao</span></div>
+        <div class="metric red"><strong>${cont.reinspecao_reprovada}</strong><span>Reprovadas</span></div>
+        <div class="metric green"><strong>${cont.liberado}</strong><span>Liberadas</span></div>
+      `;
+    }
+
+    function renderLista(lista) {
+      if (!lista.length) {
+        listaEl.innerHTML = `<div class="empty">Nenhum cavalo terceirizado encontrado.</div>`;
+        return;
+      }
+
+      const grupos = {
+        pendentes: lista.filter(item => ["em_inspecao", "inspecionado_terceiro", "reinspecao_reprovada"].includes(item.status)),
+        liberados: lista.filter(item => item.status === "liberado")
+      };
+
+      listaEl.innerHTML = "";
+
+      renderSecao("Pendentes / reinspecao", grupos.pendentes);
+      renderSecao("Liberados", grupos.liberados);
+    }
+
+    function renderSecao(titulo, itens) {
+      if (!itens.length) return;
+
+      const header = document.createElement("div");
+      header.className = "section-title";
+      header.textContent = titulo;
+      listaEl.appendChild(header);
+
+      itens.forEach(item => {
+        const card = document.createElement("div");
+        card.className = `card ${item.status || ""}`;
+
+        card.innerHTML = `
+          <div class="card-top">
+            <div class="placa">${escapeHTML(item.placa || "-")}</div>
+            <span class="badge ${item.status || ""}">${escapeHTML(formatarStatusItem(item))}</span>
+          </div>
+          <div class="info">
+            Inspecao: ${escapeHTML(formatarData(item.dataInspecao))}<br>
+            Inspetor: ${escapeHTML(item.inspecionadoPor || "-")}<br>
+            Resultado reinspecao: ${escapeHTML(item.resultadoReinspecao || "-")}
+          </div>
+        `;
+
+        card.addEventListener("click", () => {
+          window.location = "detalhe.html?id=" + item.id;
+        });
+
+        listaEl.appendChild(card);
+      });
+    }
+
+    function isTerceirizada(item) {
+      return item?.terceirizada === true ||
+        item?.fluxoInspecao === "terceirizada" ||
+        item?.tipo === "cavalo_terceiro";
+    }
+
+    function formatarStatus(status) {
+      return statusLabels[status] || status || "-";
+    }
+
+    function formatarStatusItem(item) {
+      if (item?.reinspecaoEmAndamento === true) return "Em reinspecao";
+      return formatarStatus(item?.status);
+    }
+
+    function formatarData(ts) {
+      if (!ts) return "-";
+
+      try {
+        const d = ts.toDate ? ts.toDate() : new Date(ts);
+        return d.toLocaleString("pt-BR");
+      } catch (e) {
+        return "-";
+      }
+    }
+
+    function dataMillis(ts) {
+      if (!ts) return 0;
+      try {
+        const d = ts.toDate ? ts.toDate() : new Date(ts);
+        return d.getTime() || 0;
+      } catch (e) {
+        return 0;
+      }
+    }
+
+    function normalizar(valor) {
+      return String(valor || "")
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function escapeHTML(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+  </script>
+</body>
+</html>

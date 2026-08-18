@@ -905,10 +905,10 @@ function obterTipoManutencao() {
     const tipo =
         implemento?.tipoManutencao ||
         implemento?.tipo_manutencao ||
-        implemento?.tipoManutenção ||
+        implemento?.["tipoManutenção"] ||
         inspecaoGlobal?.tipoManutencao ||
         inspecaoGlobal?.tipo_manutencao ||
-        inspecaoGlobal?.tipoManutenção ||
+        inspecaoGlobal?.["tipoManutenção"] ||
         "-";
 
     return String(tipo)

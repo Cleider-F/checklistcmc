@@ -168,6 +168,8 @@
     .status-pill.em_inspecao { background: var(--primary); }
     .status-pill.aguardando_manutencao { background: var(--warning); }
     .status-pill.em_manutencao { background: #d4a600; color: #1f2937; }
+    .status-pill.inspecionado_terceiro { background: #673ab7; }
+    .status-pill.reinspecao_reprovada { background: var(--danger); }
     .status-pill.liberado { background: var(--success); }
 
     .empty {
@@ -281,6 +283,8 @@
                 <option value="em_inspecao">Em inspeção</option>
                 <option value="aguardando_manutencao">Aguardando manutenção</option>
                 <option value="em_manutencao">Em manutenção</option>
+                <option value="inspecionado_terceiro">Inspecionado terceirizada</option>
+                <option value="reinspecao_reprovada">Reinspecao reprovada</option>
                 <option value="liberado">Liberado</option>
               </select>
 
@@ -290,6 +294,7 @@
                 <option value="prancha">Prancha</option>
                 <option value="comboio">Comboio</option>
                 <option value="cavalo">Cavalo</option>
+                <option value="cavalo_terceiro">Cavalo terceirizado</option>
               </select>
             </div>
             <button id="btnRecarregar" class="btn-primary">Recarregar</button>
@@ -375,6 +380,8 @@
       em_inspecao: "Em inspeção",
       aguardando_manutencao: "Aguardando manutenção",
       em_manutencao: "Em manutenção",
+      inspecionado_terceiro: "Inspecionado terceirizada",
+      reinspecao_reprovada: "Reinspecao reprovada",
       liberado: "Liberado"
     };
 
@@ -383,7 +390,8 @@
       revisao: "Revisão",
       cnp: "CNP",
       gm: "GM",
-      acidente: "Acidente"
+      acidente: "Acidente",
+      terceirizada: "Terceirizada"
     };
 
     btnRecarregar.addEventListener("click", carregarImplementos);
@@ -449,7 +457,7 @@
         card.innerHTML = `
           <strong>${escapeHTML(item.placa || "-")}</strong>
           <div class="inspection-meta">
-            Tipo: ${escapeHTML(item.tipo || "-")}<br>
+            Tipo: ${escapeHTML(formatarTipoImplemento(item.tipo))}<br>
             Manutenção: ${escapeHTML(formatarTipoManutencao(item.tipoManutencao))}<br>
             Inspeção: ${formatarData(item.dataInspecao)}
           </div>
@@ -542,6 +550,7 @@
               ${option("prancha", "Prancha", implementoAtual.tipo)}
               ${option("comboio", "Comboio", implementoAtual.tipo)}
               ${option("cavalo", "Cavalo", implementoAtual.tipo)}
+              ${option("cavalo_terceiro", "Cavalo terceirizado", implementoAtual.tipo)}
             </select>
           </div>
         </div>
@@ -556,6 +565,7 @@
               ${option("cnp", "CNP", implementoAtual.tipoManutencao)}
               ${option("gm", "GM", implementoAtual.tipoManutencao)}
               ${option("acidente", "Acidente", implementoAtual.tipoManutencao)}
+              ${option("terceirizada", "Terceirizada", implementoAtual.tipoManutencao)}
             </select>
           </div>
 
@@ -565,6 +575,8 @@
               ${option("em_inspecao", "Em inspeção", implementoAtual.status)}
               ${option("aguardando_manutencao", "Aguardando manutenção", implementoAtual.status)}
               ${option("em_manutencao", "Em manutenção", implementoAtual.status)}
+              ${option("inspecionado_terceiro", "Inspecionado terceirizada", implementoAtual.status)}
+              ${option("reinspecao_reprovada", "Reinspecao reprovada", implementoAtual.status)}
               ${option("liberado", "Liberado", implementoAtual.status)}
             </select>
           </div>
@@ -582,8 +594,9 @@
           </div>
         </div>
 
-        <div style="margin-top:12px;">
+        <div class="grid-2" style="margin-top:12px;">
           <button id="btnSalvarStatus" class="btn-success">Salvar dados/status</button>
+          <button id="btnExcluirRegistro" class="btn-danger">Excluir registro</button>
         </div>
 
         <div class="inspection-meta" style="margin-top:10px;">
@@ -595,6 +608,10 @@
       document
         .getElementById("btnSalvarStatus")
         .addEventListener("click", salvarDadosImplemento);
+
+      document
+        .getElementById("btnExcluirRegistro")
+        .addEventListener("click", excluirRegistroAtual);
     }
 
     function renderNovoItem() {
@@ -801,6 +818,57 @@
       }
     }
 
+    async function excluirRegistroAtual() {
+      if (!implementoAtual) return;
+
+      if (!confirm("Deseja excluir completamente este registro?")) return;
+
+      const btn = document.getElementById("btnExcluirRegistro");
+      btn.disabled = true;
+
+      try {
+        const qInspecao = query(
+          collection(db, "inspecoes"),
+          where("implementoId", "==", implementoAtual.id)
+        );
+
+        const snapInspecao = await getDocs(qInspecao);
+
+        for (const inspecaoDoc of snapInspecao.docs) {
+          const inspecaoId = inspecaoDoc.id;
+
+          const qItens = query(
+            collection(db, "naoConformidades"),
+            where("inspecaoId", "==", inspecaoId)
+          );
+
+          const snapItens = await getDocs(qItens);
+
+          for (const item of snapItens.docs) {
+            await deleteDoc(doc(db, "naoConformidades", item.id));
+          }
+
+          await deleteDoc(doc(db, "inspecoes", inspecaoId));
+        }
+
+        await deleteDoc(doc(db, "implementos", implementoAtual.id));
+
+        showToast("Registro excluído.");
+        implementoAtual = null;
+        inspecaoAtual = null;
+        itensAtuais = [];
+        detalhesEl.innerHTML = `<div class="empty">Registro excluído.</div>`;
+        novoItemBox.innerHTML = `<div class="empty">Selecione uma inspeção.</div>`;
+        itensEl.innerHTML = `<div class="empty">Nenhum checklist carregado.</div>`;
+        await carregarImplementos();
+      } catch (e) {
+        console.error(e);
+        alert("Erro ao excluir");
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
     async function adicionarItem() {
       if (!inspecaoAtual) return;
 
@@ -902,6 +970,11 @@
 
     function formatarTipoManutencao(tipo) {
       return tipoManutencaoLabels[tipo] || tipo || "-";
+    }
+
+    function formatarTipoImplemento(tipo) {
+      if (tipo === "cavalo_terceiro") return "Cavalo terceirizado";
+      return tipo || "-";
     }
 
     function formatarData(ts) {

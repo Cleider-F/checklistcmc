@@ -29,6 +29,8 @@ body {
   .laranja { color: #ff9800; }
   .amarelo { color: #ffc107; }
   .verde { color: #4caf50; }
+  .roxo { color: #673ab7; }
+  .vermelho { color: #f44336; }
 
   .lista {
     padding: 10px;
@@ -67,10 +69,31 @@ body {
   .status.laranja { background: #ff9800; }
   .status.amarelo { background: #ffc107; color: black; }
   .status.verde { background: #4caf50; }
+  .status.vermelho { background: #f44336; }
+  .status.roxo { background: #673ab7; }
 
   .info {
     margin-top: 5px;
     color: #555;
+  }
+
+  .secao-lista {
+    font-size: 13px;
+    font-weight: 800;
+    color: #1f2937;
+    margin: 18px 8px 8px;
+    text-transform: uppercase;
+  }
+
+  .tag-terceiro {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: #ede7f6;
+    color: #4527a0;
+    font-size: 11px;
+    font-weight: 800;
   }
 
   .add-inspecao-btn {
@@ -134,6 +157,8 @@ body {
 </div>
 
 <button class="add-inspecao-btn" onclick="nova()">+ Adicionar inspeção</button>
+
+<div class="contadores" id="contadores"></div>
 
 <div class="lista" id="lista"></div>
 
@@ -240,7 +265,10 @@ function getStatusInfo(status) {
     case "em_inspecao": return { nome: "Inspeção", cor: "azul" };
     case "aguardando_manutencao": return { nome: "Aguardando", cor: "laranja" };
     case "em_manutencao": return { nome: "Manutenção", cor: "amarelo" };
+    case "inspecionado_terceiro": return { nome: "Inspecionado", cor: "roxo" };
+    case "reinspecao_reprovada": return { nome: "Reprovado", cor: "vermelho" };
     case "liberado": return { nome: "Liberado", cor: "verde" };
+    default: return { nome: status || "-", cor: "azul" };
   }
 }
 
@@ -248,19 +276,13 @@ function getStatusInfo(status) {
 function atualizarContadores(lista) {
 
   const cont = {
-    em_inspecao: 0,
-    aguardando_manutencao: 0,
-    em_manutencao: 0,
-    liberado: 0
+    abertas: lista.length,
+    terceirizadas: lista.filter(item => isTerceirizada(item)).length
   };
 
-  lista.forEach(i => cont[i.status]++);
-
   document.getElementById("contadores").innerHTML = `
-    <div class="contador azul"><strong>${cont.em_inspecao}</strong>Inspeção</div>
-    <div class="contador laranja"><strong>${cont.aguardando_manutencao}</strong>Aguardando</div>
-    <div class="contador amarelo"><strong>${cont.em_manutencao}</strong>Manutenção</div>
-    <div class="contador verde"><strong>${cont.liberado}</strong>Liberado</div>
+    <div class="contador azul"><strong>${cont.abertas}</strong>Inspecoes abertas</div>
+    <div class="contador roxo"><strong>${cont.terceirizadas}</strong>Terceirizadas abertas</div>
   `;
 }
 
@@ -279,8 +301,29 @@ onSnapshot(q, (snapshot) => {
   snapshot.forEach(doc => {
 
     const data = doc.data();
-    lista.push(data);
+    lista.push({ id: doc.id, ...data });
 
+  });
+
+  const normais = lista.filter(item => !isTerceirizada(item));
+  const terceirizadas = lista.filter(item => isTerceirizada(item));
+
+  renderSecao(container, "Inspecoes em andamento", normais);
+  renderSecao(container, "Cavalos terceirizados", terceirizadas);
+
+  atualizarContadores(lista);
+
+});
+
+function renderSecao(container, titulo, itens) {
+  if (!itens.length) return;
+
+  const header = document.createElement("div");
+  header.className = "secao-lista";
+  header.textContent = titulo;
+  container.appendChild(header);
+
+  itens.forEach(data => {
     const status = getStatusInfo(data.status);
 
     const div = document.createElement("div");
@@ -295,21 +338,29 @@ onSnapshot(q, (snapshot) => {
       </div>
 
       <div class="info">
-        Tipo: ${data.tipo}
+        Tipo: ${formatarTipo(data.tipo)}
+        ${isTerceirizada(data) ? `<br><span class="tag-terceiro">${data.resultadoReinspecao === "reprovado" ? "Reinspecao reprovada" : "Aguardando reinspecao"}</span>` : ""}
       </div>
     `;
 
     div.onclick = () => {
-      window.location = "detalhe.html?id=" + doc.id;
+      window.location = "detalhe.html?id=" + data.id;
     };
 
     container.appendChild(div);
-
   });
+}
 
-  atualizarContadores(lista);
+function isTerceirizada(item) {
+  return item?.terceirizada === true ||
+    item?.fluxoInspecao === "terceirizada" ||
+    item?.tipo === "cavalo_terceiro";
+}
 
-});
+function formatarTipo(tipo) {
+  if (tipo === "cavalo_terceiro") return "Cavalo Mecanico Terceirizado";
+  return tipo || "-";
+}
 
 // ➕ nova inspeção
 window.nova = async function() {

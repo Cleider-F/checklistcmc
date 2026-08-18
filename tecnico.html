@@ -117,6 +117,8 @@
   .status.laranja { background: #ff9800; }
   .status.amarelo { background: #ffc107; color: black; }
   .status.verde { background: #4caf50; }
+  .status.roxo { background: #673ab7; }
+  .status.vermelho { background: #f44336; }
 
   .info {
     margin-top: 5px;
@@ -247,9 +249,9 @@
 
 
 <div class="filtros">
-  <input id="busca" placeholder="Buscar por GO/Placa">
+  <input id="buscaRapida" placeholder="Buscar por GO/Placa">
 
-  <select id="filtroTipo">
+  <select id="filtroTipoRapido">
     <option value="">Todos os tipos</option>
     <option value="carreta">Carreta</option>
     <option value="prancha">Prancha</option>
@@ -257,7 +259,7 @@
     <option value="cavalo">Cavalo</option>
   </select>
 
-  <select id="filtroStatus">
+  <select id="filtroStatusRapido">
               <option value="">Todos</option>
               <option value="em_inspecao">Em inspeção</option>
               <option value="aguardando_manutencao">Aguardando manutenção</option>
@@ -332,7 +334,6 @@
   id="overlay"
   onclick="
     toggleFiltros();
-    togglePlanoSemanal();
     fecharMenus();
   "
   style="
@@ -401,7 +402,10 @@ if ("serviceWorker" in navigator) {
       case "em_inspecao": return { nome: "Em Inspeção", cor: "azul" };
       case "aguardando_manutencao": return { nome: "Aguardando", cor: "laranja" };
       case "em_manutencao": return { nome: " Em Manutenção", cor: "amarelo" };
+      case "inspecionado_terceiro": return { nome: "Inspecionado", cor: "roxo" };
+      case "reinspecao_reprovada": return { nome: "Reprovado", cor: "vermelho" };
       case "liberado": return { nome: "Liberado", cor: "verde" };
+      default: return { nome: status || "-", cor: "azul" };
     }
   }
 
@@ -412,9 +416,13 @@ if ("serviceWorker" in navigator) {
 
     if (status === "em_manutencao") return 2;
 
-    if (status === "liberado") return 3;
+    if (status === "inspecionado_terceiro") return 3;
 
-    if (status === "em_inspecao") return 4;
+    if (status === "reinspecao_reprovada") return 4;
+
+    if (status === "liberado") return 5;
+
+    if (status === "em_inspecao") return 6;
 
     return 5;
   }
@@ -442,8 +450,20 @@ if ("serviceWorker" in navigator) {
       case "revisao": return "Revisão";
       case "cnp": return "CNP";
       case "gm": return "GM";
+      case "terceirizada": return "Terceirizada";
       default: return tipo || "-";
     }
+  }
+
+  function formatarTipoImplemento(tipo) {
+    if (tipo === "cavalo_terceiro") return "Cavalo terceirizado";
+    return tipo || "-";
+  }
+
+  function isTerceirizada(item) {
+    return item?.terceirizada === true ||
+      item?.fluxoInspecao === "terceirizada" ||
+      item?.tipo === "cavalo_terceiro";
   }
 
   // 🔢 CONTADORES
@@ -453,10 +473,14 @@ if ("serviceWorker" in navigator) {
       em_inspecao: 0,
       aguardando_manutencao: 0,
       em_manutencao: 0,
+      inspecionado_terceiro: 0,
+      reinspecao_reprovada: 0,
       liberado: 0
     };
 
-    lista.forEach(i => cont[i.status]++);
+    lista.forEach(i => {
+      if (cont[i.status] !== undefined) cont[i.status]++;
+    });
 
     document.getElementById("contadores").innerHTML = `
       <div class="contador-card azul">
@@ -495,7 +519,8 @@ const snap = await getDocs(q);
     dados = [];
 
     snap.forEach(d => {
-      dados.push({ id: d.id, ...d.data() });
+      const item = { id: d.id, ...d.data() };
+      if (!isTerceirizada(item)) dados.push(item);
     });
 
     aplicarFiltros();
@@ -504,9 +529,9 @@ const snap = await getDocs(q);
   // 🔎 FILTROS
   function aplicarFiltros() {
 
-    const busca = document.getElementById("busca").value.toLowerCase();
-    const tipo = document.getElementById("filtroTipo").value;
-    const status = document.getElementById("filtroStatus").value;
+    const busca = document.getElementById("buscaRapida").value.toLowerCase();
+    const tipo = document.getElementById("filtroTipoRapido").value;
+    const status = document.getElementById("filtroStatusRapido").value;
 
     let resultado = dados;
 
@@ -563,7 +588,7 @@ const snap = await getDocs(q);
     </div>
 
 <div class="info">
-Tipo: ${item.tipo}<br>
+Tipo: ${formatarTipoImplemento(item.tipo)}<br>
 
 Manutenção:
 <strong>${formatarTipoManutencao(item.tipoManutencao)}</strong><br>
@@ -674,9 +699,9 @@ ${
   }
 
   // 🔄 EVENTOS
-  document.getElementById("busca").addEventListener("input", aplicarFiltros);
-  document.getElementById("filtroTipo").addEventListener("change", aplicarFiltros);
-  document.getElementById("filtroStatus").addEventListener("change", aplicarFiltros);
+  document.getElementById("buscaRapida").addEventListener("input", aplicarFiltros);
+  document.getElementById("filtroTipoRapido").addEventListener("change", aplicarFiltros);
+  document.getElementById("filtroStatusRapido").addEventListener("change", aplicarFiltros);
 
   // FUNÇÃO ALTERAR BOX //
 
@@ -1142,14 +1167,9 @@ y += 6;
 
   document
     .getElementById("sidebarFiltros")
-    .classList.remove("active");
+    ?.classList.remove("active");
 
-  document
-    .getElementById("sidebarPlano")
-    .classList.remove("active");
-
-  document
-    .getElementById("overlay")
-    .style.display = "none";
+  const overlay = document.getElementById("overlay");
+  if (overlay) overlay.style.display = "none";
 };
   </script>

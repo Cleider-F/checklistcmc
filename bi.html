@@ -88,24 +88,6 @@
 
     .btn-primary { background: var(--primary); }
     .btn-success { background: var(--success); }
-    .btn-secondary { background: #475569; }
-
-    .bi-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin: -4px 0 14px;
-    }
-
-    .bi-actions button {
-      min-height: 38px;
-      padding: 8px 12px;
-      border-radius: 999px;
-    }
-
-    .print-summary {
-      display: none;
-    }
 
     .tabs {
       display: flex;
@@ -409,44 +391,6 @@
         grid-template-columns: 1fr;
       }
     }
-
-    @media print {
-      body {
-        background: white;
-        padding-bottom: 0;
-      }
-
-      .toolbar,
-      .tabs,
-      .bi-actions,
-      #toast {
-        display: none !important;
-      }
-
-      .page {
-        max-width: none;
-        padding: 0;
-      }
-
-      .print-summary {
-        display: block;
-        margin: 0 0 12px;
-        padding: 0 0 10px;
-        border-bottom: 1px solid #cbd5e1;
-        color: #334155;
-        font-size: 12px;
-        line-height: 1.5;
-      }
-
-      .panel,
-      .metric-card,
-      .rank-card,
-      .detail-card,
-      .insight-card {
-        box-shadow: none;
-        break-inside: avoid;
-      }
-    }
   </style>
 </head>
 
@@ -516,14 +460,6 @@
       <button id="btnAtualizar" class="btn-primary">Atualizar</button>
     </section>
 
-    <section class="bi-actions">
-      <button id="btnImprimir" type="button">Imprimir / PDF</button>
-      <button id="btnExportarCsv" type="button" class="btn-secondary">Baixar CSV</button>
-      <button id="btnCompartilhar" type="button" class="btn-success">Compartilhar resumo</button>
-    </section>
-
-    <section id="printResumo" class="print-summary"></section>
-
     <nav class="tabs">
       <button class="tab active" data-view="executivo">Executivo</button>
       <button class="tab" data-view="recorrencias">Recorrências</button>
@@ -564,11 +500,7 @@
       manutencao: document.getElementById("filtroManutencao"),
       status: document.getElementById("filtroStatus"),
       tipoItem: document.getElementById("filtroTipoItem"),
-      btnAtualizar: document.getElementById("btnAtualizar"),
-      btnImprimir: document.getElementById("btnImprimir"),
-      btnExportarCsv: document.getElementById("btnExportarCsv"),
-      btnCompartilhar: document.getElementById("btnCompartilhar"),
-      printResumo: document.getElementById("printResumo")
+      btnAtualizar: document.getElementById("btnAtualizar")
     };
 
     const views = {
@@ -601,10 +533,11 @@
       { nome: "Pneus/Rodas", termos: ["pneu", "roda", "estojo", "keps", "calibrar"] },
       { nome: "Suspensão", termos: ["suspensao", "bolsa", "mola", "amortecedor", "balanca", "pino de centro"] },
       { nome: "Elétrica", termos: ["eletrica", "elétrica", "lanterna", "chicote", "sensor", "luz", "lampada", "pisca", "tomada", "corujinha"] },
-      { nome: "Motor", termos: ["motor", "correia", "mangueira", "radiador", "filtro"] },
-      { nome: "Hidráulico", termos: ["hidraul", "bomba", "pto", "cilindro", "reservatorio", "tomada de força"] },
-      { nome: "Estrutural", termos: ["chassi", "trinca", "solda", "fueiro", "assoalho", "sapata"] },
+      { nome: "Motor", termos: ["motor", "correia", "cabeçote", "filtro", "carter"] },
+      { nome: "Hidráulico", termos: ["hidraul", "bomba", "óleo", "cilindro", "reservatorio", "tomada de força"] },
+      { nome: "Estrutural", termos: ["chassi", "trinca", "solda", "fueiro", "assoalho", "sapata", "paralama", "lameiro"] },
       { nome: "5ª roda", termos: ["gaviao", "ferradura", "5 roda", "5ª roda", "quinta roda", "pino rei", "barra", "longarina"] },
+      { nome: "Pneumático", termos: ["pneumatico", "mangueira de ar", "balão de ar", "vazamento"] },
       { nome: "Catraca de amarração", termos: ["cinta", "amarração", "catraca de amarração", "manipulo", "gatilho"] }
     ].map(comp => ({
       ...comp,
@@ -620,11 +553,8 @@
     let selectedFleet = null;
 
     els.btnAtualizar.addEventListener("click", carregarDados);
-    els.btnImprimir.addEventListener("click", imprimirBI);
-    els.btnExportarCsv.addEventListener("click", exportarCSV);
-    els.btnCompartilhar.addEventListener("click", compartilharResumo);
     Object.values(els)
-      .filter(el => ["INPUT", "SELECT"].includes(el.tagName))
+      .filter(el => el.tagName !== "BUTTON")
       .forEach(el => el.addEventListener("change", processar));
 
     document.querySelectorAll(".tab").forEach(tab => {
@@ -1428,198 +1358,6 @@
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;");
-    }
-
-    function imprimirBI() {
-      if (!bi) return showToast("Atualize o BI antes de imprimir.");
-      els.printResumo.innerHTML = escapeHTML(montarResumoBI()).replace(/\n/g, "<br>");
-      window.print();
-    }
-
-    async function compartilharResumo() {
-      if (!bi) return showToast("Atualize o BI antes de compartilhar.");
-
-      const text = montarResumoBI();
-      const shareData = {
-        title: "BI Executivo",
-        text
-      };
-
-      if (navigator.share) {
-        try {
-          await navigator.share(shareData);
-          return;
-        } catch (e) {
-          if (e?.name === "AbortError") return;
-        }
-      }
-
-      if (navigator.clipboard?.writeText) {
-        try {
-          await navigator.clipboard.writeText(text);
-          showToast("Resumo copiado para compartilhar.");
-          return;
-        } catch (e) {}
-      }
-
-      baixarArquivo("resumo-bi.txt", text, "text/plain;charset=utf-8");
-    }
-
-    function exportarCSV() {
-      if (!bi) return showToast("Atualize o BI antes de exportar.");
-
-      const m = bi.metricas;
-      const secoes = [
-        {
-          titulo: "Resumo",
-          linhas: [
-            ["Indicador", "Valor"],
-            ["Filtros", resumoFiltros()],
-            ["Inspecoes", m.totalInspecoes],
-            ["Manutencoes abertas", m.abertas],
-            ["Finalizadas", m.finalizadas],
-            ["Disponibilidade", `${m.disponibilidade.toFixed(1)}%`],
-            ["Tempo ate manutencao", formatarHoras(m.tempoInicio)],
-            ["Tempo de manutencao", formatarHoras(m.tempoOficina)],
-            ["Total de itens", m.totalItens],
-            ["Avarias", m.avarias]
-          ]
-        },
-        {
-          titulo: "Componentes",
-          linhas: [
-            ["Componente", "Ocorrencias", "Avarias", "Top itens"],
-            ...bi.componentes.map(row => [
-              row.nome,
-              row.total,
-              row.avarias,
-              row.topItens.map(([desc, qtd]) => `${desc}: ${qtd}`).join(" | ")
-            ])
-          ]
-        },
-        {
-          titulo: "Recorrencias",
-          linhas: [
-            ["Descricao", "Total", "Implementos", "Avarias", "MTBF"],
-            ...bi.recorrencias.slice(0, 100).map(row => [
-              row.descricao,
-              row.total,
-              row.implementosQtd,
-              row.avarias,
-              formatarDias(row.mtbfDias)
-            ])
-          ]
-        },
-        {
-          titulo: "Frota",
-          linhas: [
-            ["Placa", "Tipo", "Inspecoes", "Itens manuais", "Recorrencias", "Avarias"],
-            ...bi.frota.map(row => [
-              row.placa,
-              row.tipo,
-              row.inspecoes,
-              row.totalItens,
-              row.recorrencias,
-              row.avarias
-            ])
-          ]
-        },
-        {
-          titulo: "Inspetores",
-          linhas: [
-            ["Inspetor", "Inspecoes", "Defeitos", "Avarias", "Media itens por inspecao"],
-            ...bi.inspetores.map(row => [
-              row.nome,
-              row.inspecoes,
-              row.defeitos,
-              row.avarias,
-              row.media.toFixed(1)
-            ])
-          ]
-        }
-      ];
-
-      const csv = secoes.map(secao => [
-        csvLinha([secao.titulo]),
-        ...secao.linhas.map(csvLinha)
-      ].join("\n")).join("\n\n");
-
-      baixarArquivo(`bi-executivo-${toInputDate(new Date())}.csv`, `\ufeff${csv}`, "text/csv;charset=utf-8");
-      showToast("CSV gerado.");
-    }
-
-    function montarResumoBI() {
-      const m = bi.metricas;
-      const topComp = bi.componentes[0];
-      const topRec = bi.recorrencias[0];
-      const topFrota = bi.frota[0];
-
-      return [
-        "BI Executivo",
-        `Gerado em: ${new Date().toLocaleString("pt-BR")}`,
-        `Visao: ${labelView(activeView)}`,
-        `Filtros: ${resumoFiltros()}`,
-        "",
-        `Inspecoes: ${m.totalInspecoes}`,
-        `Manutencoes abertas: ${m.abertas}`,
-        `Finalizadas: ${m.finalizadas}`,
-        `Disponibilidade: ${m.disponibilidade.toFixed(1)}%`,
-        `Tempo ate manutencao: ${formatarHoras(m.tempoInicio)}`,
-        `Tempo de manutencao: ${formatarHoras(m.tempoOficina)}`,
-        `Itens: ${m.totalItens}`,
-        `Avarias: ${m.avarias}`,
-        topComp ? `Top componente: ${topComp.nome} (${topComp.total} ocorrencias)` : "Top componente: sem dados",
-        topRec ? `Top recorrencia: ${topRec.descricao} (${topRec.total} ocorrencias)` : "Top recorrencia: sem dados",
-        topFrota ? `Frota com maior recorrencia: ${topFrota.placa} (${topFrota.recorrencias})` : "Frota com maior recorrencia: sem dados"
-      ].join("\n");
-    }
-
-    function resumoFiltros() {
-      const filtros = [
-        `periodo ${formatarDataFiltro(els.dataInicio.value)} ate ${formatarDataFiltro(els.dataFim.value)}`,
-        `equipamento ${textoSelecionado(els.tipoEquipamento)}`,
-        `manutencao ${textoSelecionado(els.manutencao)}`,
-        `status ${textoSelecionado(els.status)}`,
-        `tipo do item ${textoSelecionado(els.tipoItem)}`
-      ];
-      return filtros.join("; ");
-    }
-
-    function labelView(view) {
-      const labels = {
-        executivo: "Executivo",
-        recorrencias: "Recorrencias",
-        frota: "Frota Problema",
-        componentes: "Componentes",
-        inspetores: "Inspetores"
-      };
-      return labels[view] || view;
-    }
-
-    function textoSelecionado(select) {
-      return select.selectedOptions[0]?.textContent || "Todos";
-    }
-
-    function formatarDataFiltro(value) {
-      if (!value) return "sem data";
-      const [ano, mes, dia] = value.split("-");
-      return `${dia}/${mes}/${ano}`;
-    }
-
-    function csvLinha(cells) {
-      return cells.map(value => `"${String(value ?? "").replace(/"/g, '""')}"`).join(";");
-    }
-
-    function baixarArquivo(nome, conteudo, tipo) {
-      const blob = new Blob([conteudo], { type: tipo });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = nome;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
     }
 
     function showToast(msg) {

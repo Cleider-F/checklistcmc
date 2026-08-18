@@ -236,9 +236,21 @@
         <div class="card">
             <h3>EQUIPAMENTO</h3>
             <div class="form-group">
-                <label>GO ou Placa</label>
-                <input id="placa" placeholder="Ex: ABC-1234">
-            </div>
+    <label>GO ou Placa</label>
+
+    <div class="sugestao-wrapper">
+        <input
+            id="placa"
+            placeholder="Ex: GO1234 ou ABC-1234"
+            autocomplete="off">
+
+        <div
+            id="sugestoesPlaca"
+            class="sugestoes-descricao">
+        </div>
+    </div>
+
+</div>
 
             <div class="grid-2">
                 <div class="form-group">
@@ -394,6 +406,7 @@
     id="foto" 
     accept="image/*"
     capture="environment"
+    multiple
 />
                 <img id="preview" class="preview" style="display:none;">
             </div>
@@ -440,10 +453,14 @@
     let planoComboioPrev = [];
     let planoCarregado = false;
     let naoConformidades = [];
-    let fotoFile = null;
+    let fotosSelecionadas = [];
+    let alteracoesPendentes = false;
     const placaInput = document.getElementById("placa");
     const descricaoInput = document.getElementById("descricao");
     const sugestoesDescricaoEl = document.getElementById("sugestoesDescricao");
+    const sugestoesPlacaEl = document.getElementById("sugestoesPlaca");
+
+    let frotas = [];
     let sugestoesDescricao = [];
 
     // --- CARREGAMENTO DOS PLANOS ---
@@ -454,8 +471,11 @@
         fetch("./plano_manutencao_plataforma.json").then(res => res.json()).catch(() => []),
         fetch("./plano_manutencao_prancha.json").then(res => res.json()).catch(() => []),
         fetch("./plano_manutencao_cavalo.json").then(res => res.json()).catch(() => []),
-        fetch("./plano_manutencao_comboio_preventiva.json").then(res => res.json()).catch(() => [])
-    ]).then(([dataComboio, dataCarreta, dataCavPrancha, dataPlataforma, dataPrancha, dataCavalo, dataCombPrev]) => {
+        fetch("./plano_manutencao_comboio_preventiva.json").then(res => res.json()).catch(() => []),
+        fetch("./frotas.json")
+    .then(res => res.json())
+    .catch(() => [])
+    ]).then(([dataComboio, dataCarreta, dataCavPrancha, dataPlataforma, dataPrancha, dataCavalo, dataCombPrev, dataFrotas]) => {
         planoComboio = dataComboio;
         planoCarreta = dataCarreta;
         planoCavPrancha = dataCavPrancha;
@@ -463,6 +483,7 @@
         planoPrancha = dataPrancha;
         planoCavalo = dataCavalo;   
         planoComboioPrev = dataCombPrev;
+        frotas = dataFrotas;
         planoCarregado = true;
     });
 
@@ -476,7 +497,7 @@
     };
 
     // --- LÓGICA DE INTERFACE ---
-    document.getElementById("tipo").addEventListener("change", (e) => {
+        document.getElementById("tipo").addEventListener("change", (e) => {
         const tipo = e.target.value;
         const cfg = configTipo[tipo] || {};
         kmField.style.display = cfg.km ? "block" : "none";
@@ -484,21 +505,51 @@
         compartimentosField.style.display = cfg.compartimentos ? "block" : "none";
         compartimentoItem.style.display = cfg.compartimentos ? "block" : "none";
         verificarChecklistAutomatico();
-    });
+            });
 
     document.getElementById("horimetro").addEventListener("input", verificarChecklistAutomatico);
     document.getElementById("tipo").addEventListener("change", verificarChecklistAutomatico);
     document.getElementById("tipoManutencao").addEventListener("change", verificarChecklistAutomatico);
+
+    [
+    "placa",
+    "tipo",
+    "tipoManutencao",
+    "km",
+    "horimetro",
+    "compartimentos"
+].forEach(id => {
+
+    const campo = document.getElementById(id);
+
+    if (campo) {
+
+        campo.addEventListener("input", marcarAlteracao);
+
+        campo.addEventListener("change", marcarAlteracao);
+
+    }
+
+});
+
     placaInput.addEventListener("blur", () => {
         placaInput.value = normalizarPlacaGo(placaInput.value);
     });
+    placaInput.addEventListener("input", renderSugestoesPlaca);
+    placaInput.addEventListener("focus", renderSugestoesPlaca);
     descricaoInput.addEventListener("input", renderSugestoesDescricao);
     descricaoInput.addEventListener("focus", renderSugestoesDescricao);
     document.addEventListener("click", (event) => {
-        if (!event.target.closest(".sugestao-wrapper")) esconderSugestoesDescricao();
-    });
 
-    carregarSugestoesDescricao();
+    if (!event.target.closest(".sugestao-wrapper")) {
+
+        esconderSugestoesDescricao();
+
+        esconderSugestoesPlaca();
+
+    }
+
+});
 
     function verificarChecklistAutomatico() {
 
@@ -792,14 +843,28 @@ function gerarChecklistPlataforma(horimetro) {
 }
 
     // --- GERENCIAMENTO DE FOTOS E ITENS ---
-    foto.addEventListener("change", (e) => {
-        fotoFile = e.target.files[0];
-        if (!fotoFile) return;
-        preview.src = URL.createObjectURL(fotoFile);
-        preview.style.display = "block";
-    });
+foto.addEventListener("change", (e) => {
 
-    let eixoSelecionado = "N/A";
+    fotosSelecionadas = [...e.target.files];
+
+    if (fotosSelecionadas.length > 3) {
+        alert("Você pode selecionar no máximo 3 fotos.");
+        foto.value = "";
+        fotosSelecionadas = [];
+        preview.style.display = "none";
+        return;
+    }
+
+    if (fotosSelecionadas.length > 0) {
+        preview.src = URL.createObjectURL(fotosSelecionadas[0]);
+        preview.style.display = "block";
+    } else {
+        preview.style.display = "none";
+    }
+marcarAlteracao();
+});
+
+let eixoSelecionado = "N/A";
 let ladoSelecionado = "N/A";
 let tipoSelecionado = "normal";
 let compartimentoSelecionado = 1;
@@ -838,24 +903,29 @@ document.querySelectorAll(".btn-opcao").forEach(btn => {
         if (!desc || !eixo || !lado) return alert("Preencha Descrição, Eixo e Lado");
 
         let fotos = [];
-// Localize este trecho dentro de window.adicionarItem e substitua:
-if (fotoFile) {
-    const storageRef = ref(storage, "avarias/" + Date.now() + ".jpg");
-    
-    // NOVO: Comprime a imagem antes de enviar
-    const fotoOtimizada = await comprimirImagem(fotoFile);
-    
-    // Envia o arquivo otimizado em vez do original
+
+for (const arquivo of fotosSelecionadas) {
+
+    const storageRef = ref(
+        storage,
+        `avarias/${Date.now()}_${Math.random().toString(36).substring(2)}.jpg`
+    );
+
+    const fotoOtimizada = await comprimirImagem(arquivo);
+
     await uploadBytes(storageRef, fotoOtimizada);
+
     const url = await getDownloadURL(storageRef);
+
     fotos.push(url);
+
 }
         naoConformidades.push({
             grupo: "MANUAL", descricao: desc, eixo: eixo, lado: lado, tipo: tipo,
             compartimento: comp ? Number(comp) : null,
             fotos: fotos, resolvido: false, origem: "manual"
         });
-
+        marcarAlteracao();
         limparCamposItem();
         renderLista();
         salvarSugestaoDescricao(desc);
@@ -1010,10 +1080,15 @@ function renderLista() {
     });
 }
 
-    window.removerItem = (i) => {
-        naoConformidades.splice(i, 1);
-        renderLista();
-    };
+window.removerItem = (i) => {
+
+    naoConformidades.splice(i, 1);
+
+    marcarAlteracao();
+
+    renderLista();
+
+};
 
     // --- FINALIZAÇÃO ---
     window.criar = async function() {
@@ -1106,7 +1181,7 @@ for (const item of naoConformidades) {
   contadorNc++;
 }
 
-
+            limparAlteracao();
             alert("Inspeção Criada com sucesso!");
             location.href = "detalhe.html?id=" + implementoRef.id;
         } catch (e) {
@@ -1116,6 +1191,46 @@ for (const item of naoConformidades) {
             btn.innerText = "✅ Finalizar Inspeção";
         }
     };
+
+    function marcarAlteracao() {
+    alteracoesPendentes = true;
+}
+
+function limparAlteracao() {
+    alteracoesPendentes = false;
+}
+
+window.addEventListener("beforeunload", (e) => {
+
+    if (!alteracoesPendentes) return;
+
+    e.preventDefault();
+    e.returnValue = "";
+
+});
+
+history.pushState(null, "", location.href);
+
+window.addEventListener("popstate", () => {
+
+    if (!alteracoesPendentes)
+        return;
+
+    const sair = confirm(
+        "Existe uma inspeção em andamento.\n\nDeseja realmente sair?"
+    );
+
+    if (sair) {
+
+        history.back();
+
+    } else {
+
+        history.pushState(null, "", location.href);
+
+    }
+
+});
 
     function getUsuarioLogado() {
         const user = auth.currentUser;
@@ -1186,47 +1301,174 @@ for (const item of naoConformidades) {
         }
     }
 
-    function renderSugestoesDescricao() {
-        const termo = normalizarTextoBusca(descricaoInput.value);
-        if (termo.length < 2) {
-            esconderSugestoesDescricao();
-            return;
-        }
+function renderSugestoesDescricao() {
 
-        const resultados = sugestoesDescricao
-            .map(descricao => ({
-                descricao,
-                score: calcularSimilaridadeDescricao(termo, normalizarTextoBusca(descricao))
-            }))
-            .filter(item => item.score > 0 && normalizarTextoBusca(item.descricao) !== termo)
-            .sort((a, b) => b.score - a.score || a.descricao.localeCompare(b.descricao, "pt-BR"))
-            .slice(0, 6);
+    const termo = normalizarTextoBusca(descricaoInput.value);
 
-        if (!resultados.length) {
-            esconderSugestoesDescricao();
-            return;
-        }
-
-        sugestoesDescricaoEl.innerHTML = resultados.map(item => `
-            <button type="button" class="sugestao-descricao-item" data-descricao="${escapeAttr(item.descricao)}">
-                ${escapeHTML(item.descricao)}
-            </button>
-        `).join("");
-
-        sugestoesDescricaoEl.classList.add("ativo");
-        sugestoesDescricaoEl.querySelectorAll(".sugestao-descricao-item").forEach(btn => {
-            btn.addEventListener("click", () => {
-                descricaoInput.value = btn.dataset.descricao;
-                esconderSugestoesDescricao();
-                descricaoInput.focus();
-            });
-        });
+    if (termo.length < 2) {
+        esconderSugestoesDescricao();
+        return;
     }
+
+    const resultados = sugestoesDescricao
+        .map(descricao => ({
+            descricao,
+            score: calcularSimilaridadeDescricao(
+                termo,
+                normalizarTextoBusca(descricao)
+            )
+        }))
+        .filter(item =>
+            item.score > 0 &&
+            normalizarTextoBusca(item.descricao) !== termo
+        )
+        .sort((a, b) =>
+            b.score - a.score ||
+            a.descricao.localeCompare(b.descricao, "pt-BR")
+        )
+        .slice(0, 6);
+
+    if (!resultados.length) {
+        esconderSugestoesDescricao();
+        return;
+    }
+
+    sugestoesDescricaoEl.innerHTML = resultados.map(item => `
+        <button
+            type="button"
+            class="sugestao-descricao-item"
+            data-descricao="${escapeAttr(item.descricao)}">
+            ${escapeHTML(item.descricao)}
+        </button>
+    `).join("");
+
+    sugestoesDescricaoEl.classList.add("ativo");
+
+    sugestoesDescricaoEl
+        .querySelectorAll(".sugestao-descricao-item")
+        .forEach(btn => {
+
+            btn.addEventListener("click", () => {
+
+                descricaoInput.value = btn.dataset.descricao;
+
+                esconderSugestoesDescricao();
+
+                descricaoInput.focus();
+
+            });
+
+        });
+
+}    
+
+function renderSugestoesPlaca() {
+
+    const termo = placaInput.value.trim().toUpperCase();
+
+    if (termo.length < 2) {
+        esconderSugestoesPlaca();
+        return;
+    }
+
+    const resultados = frotas
+        .filter(f =>
+            String(f.frota || "")
+                .toUpperCase()
+                .includes(termo)
+        )
+        .slice(0, 8);
+
+    if (!resultados.length) {
+        esconderSugestoesPlaca();
+        return;
+    }
+
+    sugestoesPlacaEl.innerHTML = resultados.map(f => `
+        <button
+            type="button"
+            class="sugestao-descricao-item"
+            data-frota="${f.frota}">
+            ${f.frota}
+        </button>
+    `).join("");
+
+    sugestoesPlacaEl.classList.add("ativo");
+
+    sugestoesPlacaEl.querySelectorAll(".sugestao-descricao-item")
+        .forEach(btn => {
+
+            btn.addEventListener("click", () => {
+
+                const frota = frotas.find(f => String(f.frota) === btn.dataset.frota);
+
+                if (frota) {
+                    preencherDadosFrota(frota);
+                }
+
+                esconderSugestoesPlaca();
+
+            });
+
+        });
+
+}
+
+function preencherDadosFrota(frota) {
+
+    placaInput.value = frota.frota || "";
+
+    // Tipo
+    if (frota.tipo) {
+        document.getElementById("tipo").value = String(frota.tipo).toLowerCase();
+    }
+
+    // Compartimentos
+    if (frota.compartimentos) {
+        document.getElementById("compartimentos").value = frota.compartimentos;
+    }
+
+    // Atualiza os campos visíveis
+    document.getElementById("tipo").dispatchEvent(new Event("change"));
+
+    // Quantidade de eixos
+    const qtdEixos = Number(frota.eixos || 0);
+
+    if (qtdEixos > 0) {
+
+        document.querySelectorAll("#grupoEixo .btn-opcao").forEach(btn => {
+
+            const valor = btn.dataset.value;
+
+            if (valor === "N/A") {
+                btn.style.display = "inline-flex";
+                return;
+            }
+
+            const numero = parseInt(valor);
+
+            btn.style.display = numero <= qtdEixos
+                ? "inline-flex"
+                : "none";
+
+        });
+
+    }
+
+}
 
     function esconderSugestoesDescricao() {
         sugestoesDescricaoEl.classList.remove("ativo");
         sugestoesDescricaoEl.innerHTML = "";
     }
+
+    function esconderSugestoesPlaca() {
+
+    sugestoesPlacaEl.classList.remove("ativo");
+
+    sugestoesPlacaEl.innerHTML = "";
+
+}
 
     function calcularSimilaridadeDescricao(termo, descricaoNormalizada) {
         if (!termo || !descricaoNormalizada) return 0;
@@ -1274,7 +1516,7 @@ for (const item of naoConformidades) {
         esconderSugestoesDescricao();
         document.getElementById("foto").value = "";
         document.getElementById("preview").style.display = "none";
-        fotoFile = null;
+        fotosSelecionadas = [];
     }
 
     // Função para reduzir o tamanho da imagem antes do upload

@@ -18,6 +18,11 @@ export function carregarNavbar() {
         <small>Inspeção</small>
       </div>
 
+      <div class="nav-item" data-page="historico_terceirizados.html">
+        <div>🚛</div>
+        <small>Terceiros</small>
+      </div>
+
       <div class="nav-item" data-page="tecnico.html">
         <div>👷🏻‍♂️</div>
         <small>Técnico</small>

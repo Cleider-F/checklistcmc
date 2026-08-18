@@ -366,6 +366,50 @@
 
         .btn-outline { background: transparent; border: 2px solid #ccc; color: #555; box-shadow: none; }
 
+        .reinspecao-acoes {
+            display: none;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn-danger { background: var(--danger); color: white; }
+
+        .btn-mini {
+            width: auto;
+            min-width: 52px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            box-shadow: none;
+        }
+
+        .btn-mini.ativo {
+            outline: 3px solid rgba(33, 150, 243, 0.25);
+        }
+
+        .badge-danger { background: #ffebee; color: #b71c1c; }
+
+        .complemento-card {
+            display: none;
+        }
+
+        .helper-text {
+            margin: -4px 0 12px;
+            color: var(--text-muted);
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .readonly-box {
+            padding: 12px;
+            border-radius: 8px;
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            color: #374151;
+            white-space: pre-wrap;
+        }
+
 
     </style>
 
@@ -388,6 +432,62 @@
 
         <div style="text-align: center; color: #888;">Carregando dados...</div>
 
+    </div>
+
+    <div id="complementosInspecao" class="card complemento-card">
+        <h3>Complementos da Inspeção</h3>
+
+        <div id="novoItemComplementar">
+            <div class="helper-text">
+                Adicione itens enquanto o equipamento ainda não foi liberado.
+            </div>
+
+            <label style="font-size:12px;font-weight:bold;color:#555;">Descrição do item</label>
+            <input id="novoItemDescricao" placeholder="Ex: Vazamento identificado">
+
+            <div class="grid-2">
+                <div>
+                    <label style="font-size:12px;font-weight:bold;color:#555;">Eixo</label>
+                    <input id="novoItemEixo" value="N/A">
+                </div>
+                <div>
+                    <label style="font-size:12px;font-weight:bold;color:#555;">Lado</label>
+                    <select id="novoItemLado">
+                        <option value="N/A">N/A</option>
+                        <option value="esquerdo">Esquerdo</option>
+                        <option value="direito">Direito</option>
+                        <option value="ambos">Ambos</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div>
+                    <label style="font-size:12px;font-weight:bold;color:#555;">Tipo</label>
+                    <select id="novoItemTipo">
+                        <option value="avaria">X / Avaria</option>
+                        <option value="normal">Visto / Normal</option>
+                        <option value="troca">Troca</option>
+                        <option value="vistoria">Vistoria</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:12px;font-weight:bold;color:#555;">Compartimento</label>
+                    <input id="novoItemCompartimento" type="number" placeholder="Opcional">
+                </div>
+            </div>
+
+            <button class="btn-acao btn-primario" onclick="adicionarItemComplementar()">
+                Adicionar item
+            </button>
+        </div>
+
+        <label style="font-size:12px;font-weight:bold;color:#555;">Observações gerais</label>
+        <textarea id="observacoesInspecao" rows="4" placeholder="Registre observações da inspeção..."></textarea>
+        <div id="observacoesReadOnly" class="readonly-box" style="display:none;"></div>
+        <button id="btnSalvarObservacoes" class="btn-acao btn-outline" onclick="salvarObservacoesInspecao()">
+            Salvar observações
+        </button>
     </div>
 
 
@@ -413,6 +513,19 @@
         ✅ Enviar para Manutenção
 
     </button>
+
+    <button id="btnIniciarReinspecao" class="btn-acao btn-primario" onclick="iniciarReinspecao()" style="display:none;">
+        Iniciar Reinspecao
+    </button>
+
+    <div id="reinspecaoAcoes" class="reinspecao-acoes">
+        <button class="btn-acao btn-sucesso" onclick="finalizarReinspecao('aprovado')">
+            Aprovar Reinspecao
+        </button>
+        <button class="btn-acao btn-danger" onclick="finalizarReinspecao('reprovado')">
+            Reprovar Reinspecao
+        </button>
+    </div>
 
 
 </div>
@@ -454,6 +567,35 @@
 
     let inspecao = null;
 
+    const EMAIL_TERCEIRIZADA = "cmcmanutencao@outlook.com";
+
+    function isTerceirizada() {
+        return implemento?.terceirizada === true ||
+            implemento?.fluxoInspecao === "terceirizada" ||
+            implemento?.tipo === "cavalo_terceiro";
+    }
+
+    function podeReinspecionarTerceirizada() {
+        return isTerceirizada() &&
+            implemento?.reinspecaoEmAndamento === true &&
+            ["inspecionado_terceiro", "reinspecao_reprovada"].includes(implemento?.status);
+    }
+
+    function podeIniciarReinspecaoTerceirizada() {
+        return isTerceirizada() &&
+            implemento?.reinspecaoEmAndamento !== true &&
+            ["inspecionado_terceiro", "reinspecao_reprovada"].includes(implemento?.status);
+    }
+
+    function podeComplementarInspecao() {
+        return implemento && implemento.status !== "liberado";
+    }
+
+    function formatarTipoImplemento(tipo) {
+        if (tipo === "cavalo_terceiro") return "Cavalo Mecanico Terceirizado";
+        return tipo || "Desconhecido";
+    }
+
 
     // Helper para formatar o status com cores
 
@@ -462,6 +604,10 @@
         if(status === 'em_inspecao') return '<span class="badge badge-warning">Em Inspeção</span>';
 
         if(status === 'aguardando_manutencao') return '<span class="badge badge-primary">Aguardando Manut.</span>';
+
+        if(status === 'inspecionado_terceiro') return '<span class="badge badge-primary">Inspecionado</span>';
+
+        if(status === 'reinspecao_reprovada') return '<span class="badge badge-danger">Reinspecao Reprovada</span>';
 
         if(status === 'liberado') return '<span class="badge badge-success">Liberado</span>';
 
@@ -512,7 +658,7 @@
 
                     <h2 class="info-placa">${implemento.placa || 'Sem Placa'}</h2>
 
-                    <span class="info-tipo">${implemento.tipo || 'Desconhecido'}</span>
+                    <span class="info-tipo">${formatarTipoImplemento(implemento.tipo)}</span>
 
                 </div>
 
@@ -525,6 +671,8 @@
             </div>
 
             ${implemento.tipoManutencao ? `<div style="margin-top: 10px; font-size: 14px; color: #555;">Manutenção: <strong>${implemento.tipoManutencao.toUpperCase()}</strong></div>` : ''}
+
+            ${isTerceirizada() ? `<div style="margin-top: 10px; font-size: 14px; color: #555;">Fluxo: <strong>TERCEIRIZADA</strong>${implemento.resultadoReinspecao ? ` | Reinspecao: <strong>${String(implemento.resultadoReinspecao).toUpperCase()}</strong>` : ""}</div>` : ''}
 
         `;
 
@@ -552,10 +700,13 @@
         if (!inspecao) {
 
             document.getElementById("itens").innerHTML = "<div style='text-align:center; padding: 20px;'>Nenhuma inspeção atrelada a este implemento.</div>";
+            renderComplementosInspecao(false);
 
             return;
 
         }
+
+        renderComplementosInspecao(true);
 
 
         // ⚠ Não conformidades
@@ -584,6 +735,7 @@
 
 
         const emInspecao = implemento.status === "em_inspecao";
+        const emReinspecaoTerceirizada = podeReinspecionarTerceirizada();
 
 
 const itensAgrupados = {};
@@ -689,6 +841,13 @@ Object.entries(itensAgrupados).forEach(([grupoNome, compartimentos]) => {
                     ? 'badge-warning'
                     : 'badge-primary';
 
+            const statusReinspecao = item.statusReinspecao || "";
+            const reinspecaoLabel = statusReinspecao === "aprovado"
+                ? "Visto na reinspecao"
+                : statusReinspecao === "reprovado"
+                    ? "X na reinspecao"
+                    : "Sem marcacao de reinspecao";
+
             const div = document.createElement("div");
 
             div.className = "item-card";
@@ -719,6 +878,14 @@ Object.entries(itensAgrupados).forEach(([grupoNome, compartimentos]) => {
                             }
                         </p>
 
+                        ${isTerceirizada() ? `
+                            <div style="margin-top:8px;">
+                                <span class="badge ${statusReinspecao === "reprovado" ? "badge-danger" : "badge-success"}">
+                                    ${reinspecaoLabel}
+                                </span>
+                            </div>
+                        ` : ""}
+
                     </div>
 
                     ${emInspecao ? `
@@ -734,6 +901,24 @@ Object.entries(itensAgrupados).forEach(([grupoNome, compartimentos]) => {
                             class="btn-icon btn-delete"
                             onclick="removerItem('${item.id}')">
                             🗑️
+                        </button>
+
+                    </div>
+                    ` : ""}
+
+                    ${emReinspecaoTerceirizada ? `
+                    <div class="item-acoes">
+
+                        <button
+                            class="btn-mini btn-sucesso ${statusReinspecao === "aprovado" ? "ativo" : ""}"
+                            onclick="marcarReinspecaoItem('${item.id}', 'aprovado')">
+                            V
+                        </button>
+
+                        <button
+                            class="btn-mini btn-danger ${statusReinspecao === "reprovado" ? "ativo" : ""}"
+                            onclick="marcarReinspecaoItem('${item.id}', 'reprovado')">
+                            X
                         </button>
 
                     </div>
@@ -881,10 +1066,15 @@ Object.entries(itensAgrupados).forEach(([grupoNome, compartimentos]) => {
         // Controle de Exibição do Botão Finalizar
 
         const btnFinal = document.getElementById("btnFinalizar");
+        const btnIniciarReinspecao = document.getElementById("btnIniciarReinspecao");
+        const reinspecaoAcoes = document.getElementById("reinspecaoAcoes");
 
         if (podeFinalizarInspecao(implemento.status)) {
 
             btnFinal.style.display = "block";
+            btnFinal.innerText = isTerceirizada()
+                ? "Finalizar Inspecao Terceirizada"
+                : "✅ Enviar para Manutenção";
 
         } else {
 
@@ -892,15 +1082,125 @@ Object.entries(itensAgrupados).forEach(([grupoNome, compartimentos]) => {
 
         }
 
+        btnIniciarReinspecao.style.display = podeIniciarReinspecaoTerceirizada() ? "block" : "none";
+        reinspecaoAcoes.style.display = emReinspecaoTerceirizada ? "grid" : "none";
+
     }
 
 
     carregar();
 
+    function renderComplementosInspecao(temInspecao) {
+        const card = document.getElementById("complementosInspecao");
+        const novoItemBox = document.getElementById("novoItemComplementar");
+        const textarea = document.getElementById("observacoesInspecao");
+        const readOnly = document.getElementById("observacoesReadOnly");
+        const btnSalvar = document.getElementById("btnSalvarObservacoes");
+        const observacao = implemento?.observacoesInspecao || inspecao?.observacoesInspecao || "";
+        const podeEditar = temInspecao && podeComplementarInspecao();
+
+        if (!podeEditar && !observacao) {
+            card.style.display = "none";
+            return;
+        }
+
+        card.style.display = "block";
+        novoItemBox.style.display = podeEditar ? "block" : "none";
+        btnSalvar.style.display = podeEditar ? "block" : "none";
+        textarea.style.display = podeEditar ? "block" : "none";
+        readOnly.style.display = podeEditar ? "none" : "block";
+
+        if (podeEditar) {
+            textarea.value = observacao;
+        } else {
+            readOnly.innerHTML = escapeHTML(observacao);
+        }
+    }
+
+    window.adicionarItemComplementar = async function() {
+        if (!podeComplementarInspecao() || !inspecao?.id) {
+            alert("Não é possível adicionar item neste status.");
+            return;
+        }
+
+        const descricao = document.getElementById("novoItemDescricao").value.trim();
+        const eixo = document.getElementById("novoItemEixo").value.trim() || "N/A";
+        const lado = document.getElementById("novoItemLado").value;
+        const tipo = document.getElementById("novoItemTipo").value;
+        const compartimentoValor = document.getElementById("novoItemCompartimento").value;
+
+        if (!descricao) {
+            alert("Informe a descrição do item.");
+            return;
+        }
+
+        try {
+            await addDoc(collection(db, "naoConformidades"), {
+                inspecaoId: inspecao.id,
+                grupo: "COMPLEMENTAR",
+                descricao,
+                eixo,
+                lado,
+                tipo,
+                compartimento: compartimentoValor ? Number(compartimentoValor) : null,
+                fotos: [],
+                resolvido: false,
+                origem: "manual",
+                adicionadoAposInspecao: implemento.status !== "em_inspecao",
+                adicionadoNoStatus: implemento.status || null,
+                adicionadoEm: serverTimestamp()
+            });
+
+            document.getElementById("novoItemDescricao").value = "";
+            document.getElementById("novoItemEixo").value = "N/A";
+            document.getElementById("novoItemLado").value = "N/A";
+            document.getElementById("novoItemTipo").value = "avaria";
+            document.getElementById("novoItemCompartimento").value = "";
+
+            alert("Item complementar adicionado.");
+            await carregar();
+        } catch (e) {
+            console.error(e);
+            alert("Erro ao adicionar item complementar.");
+        }
+    };
+
+    window.salvarObservacoesInspecao = async function() {
+        if (!podeComplementarInspecao() || !inspecao?.id) {
+            alert("Não é possível salvar observações neste status.");
+            return;
+        }
+
+        const observacoesInspecao = document.getElementById("observacoesInspecao").value.trim();
+
+        try {
+            const dados = {
+                observacoesInspecao,
+                observacoesAtualizadasEm: serverTimestamp()
+            };
+
+            await updateDoc(doc(db, "implementos", id), dados);
+            await updateDoc(doc(db, "inspecoes", inspecao.id), dados);
+
+            implemento.observacoesInspecao = observacoesInspecao;
+            inspecao.observacoesInspecao = observacoesInspecao;
+            alert("Observações salvas.");
+            renderComplementosInspecao(true);
+        } catch (e) {
+            console.error(e);
+            alert("Erro ao salvar observações.");
+        }
+    };
+
 
     // 🔄 Finalizar inspeção
 
 window.finalizar = async function () {
+
+    if (isTerceirizada()) {
+        await finalizarInspecaoTerceirizada();
+        return;
+    }
 
     if (!confirm("Deseja enviar este implemento para manutenção?")) return;
 
@@ -1012,7 +1312,22 @@ window.finalizar = async function () {
             y
         );
 
-        y += 15;
+        y += 10;
+
+        const observacoesPdf = implemento?.observacoesInspecao || inspecao?.observacoesInspecao || "";
+        if (observacoesPdf) {
+            pdf.setFont("helvetica", "bold");
+            pdf.text("Observacoes:", 10, y);
+            y += 6;
+
+            pdf.setFont("helvetica", "normal");
+            pdf.setFontSize(10);
+            const linhasObs = pdf.splitTextToSize(String(observacoesPdf), 185);
+            pdf.text(linhasObs, 15, y);
+            y += linhasObs.length * 5 + 6;
+        } else {
+            y += 5;
+        }
 
         // Linha divisória
         pdf.setDrawColor(200, 200, 200);
@@ -1260,6 +1575,344 @@ Object.keys(itensAgrupados).forEach(grupo => {
         btn.disabled = false;
     }
 };
+
+async function finalizarInspecaoTerceirizada() {
+
+    if (!confirm("Deseja finalizar a inspeção terceirizada e enviar o relatório?")) return;
+
+    const btn = document.getElementById("btnFinalizar");
+    btn.innerText = "Gerando relatorio...";
+    btn.disabled = true;
+
+    try {
+        const itens = await buscarItensInspecao();
+        const pdfBlob = gerarPdfTerceirizada(
+            "RELATORIO DE INSPECAO TERCEIRIZADA",
+            "Inspecionado / aguardando reinspecao",
+            itens,
+            false
+        );
+
+        const base64data = await blobToBase64(pdfBlob);
+
+        await enviarEmailRelatorioTerceirizada(
+            `Inspecao terceirizada finalizada - ${implemento.placa}`,
+            "Inspecao terceirizada finalizada",
+            `O cavalo mecanico terceirizado <b>${implemento.placa}</b> foi inspecionado e aguarda reinspecao.`,
+            base64data,
+            `Inspecao_Terceirizada_${implemento.placa}.pdf`
+        );
+
+        await updateDoc(doc(db, "implementos", id), {
+            status: "inspecionado_terceiro",
+            resultadoReinspecao: null,
+            reinspecaoEmAndamento: false,
+            dataFinalizacaoInspecaoTerceiro: serverTimestamp()
+        });
+
+        alert(`Inspecao terceirizada finalizada.\nE-mail enviado para ${EMAIL_TERCEIRIZADA}`);
+        window.location = "historico_terceirizados.html";
+    } catch (e) {
+        console.error(e);
+        alert("Erro ao finalizar a inspeção terceirizada.");
+        btn.disabled = false;
+        btn.innerText = "Finalizar Inspecao Terceirizada";
+    }
+}
+
+window.iniciarReinspecao = async function() {
+    if (!podeIniciarReinspecaoTerceirizada()) {
+        alert("Este cavalo nao esta disponivel para iniciar reinspecao.");
+        return;
+    }
+
+    if (!confirm("Deseja iniciar a reinspecao deste cavalo terceirizado?")) return;
+
+    try {
+        const itens = await buscarItensInspecao();
+
+        await Promise.all(itens.map(item =>
+            updateDoc(doc(db, "naoConformidades", item.id), {
+                statusReinspecao: null,
+                dataMarcacaoReinspecao: null
+            })
+        ));
+
+        await updateDoc(doc(db, "implementos", id), {
+            reinspecaoEmAndamento: true,
+            resultadoReinspecao: null,
+            dataInicioReinspecao: serverTimestamp()
+        });
+
+        await carregar();
+    } catch (e) {
+        console.error(e);
+        alert("Erro ao iniciar a reinspecao.");
+    }
+};
+
+window.marcarReinspecaoItem = async function(itemId, status) {
+    if (!podeReinspecionarTerceirizada()) {
+        alert("Este item nao esta disponivel para reinspecao.");
+        return;
+    }
+
+    try {
+        await updateDoc(doc(db, "naoConformidades", itemId), {
+            statusReinspecao: status,
+            dataMarcacaoReinspecao: serverTimestamp()
+        });
+        carregar();
+    } catch (e) {
+        console.error(e);
+        alert("Erro ao marcar item da reinspecao.");
+    }
+};
+
+window.finalizarReinspecao = async function(resultado) {
+    if (!podeReinspecionarTerceirizada()) {
+        alert("Este cavalo nao esta disponivel para finalizar reinspecao.");
+        return;
+    }
+
+    const itens = await buscarItensInspecao();
+    const pendentes = itens.filter(item => !item.statusReinspecao);
+    if (pendentes.length) {
+        alert("Pontue todos os itens da reinspecao com V ou X antes de finalizar.");
+        return;
+    }
+
+    const itensReprovados = itens.filter(item => item.statusReinspecao === "reprovado");
+    if (
+        resultado === "aprovado" &&
+        itensReprovados.length &&
+        !confirm("Existem itens com X na reinspecao. Deseja aprovar mesmo assim?")
+    ) {
+        return;
+    }
+
+    const aprovado = resultado === "aprovado";
+    const mensagemConfirmacao = aprovado
+        ? "Deseja aprovar a reinspecao e liberar o cavalo?"
+        : "Deseja reprovar a reinspecao e manter o cavalo como inspecionado?";
+
+    if (!confirm(mensagemConfirmacao)) return;
+
+    try {
+        const pdfBlob = gerarPdfTerceirizada(
+            "RELATORIO DE REINSPECAO TERCEIRIZADA",
+            aprovado ? "Liberado" : "Reinspecao reprovada",
+            itens,
+            true
+        );
+        const base64data = await blobToBase64(pdfBlob);
+
+        const dados = {
+            status: aprovado ? "liberado" : "reinspecao_reprovada",
+            resultadoReinspecao: resultado,
+            reinspecaoEmAndamento: false,
+            dataReinspecao: serverTimestamp()
+        };
+
+        if (aprovado) {
+            dados.dataLiberacao = serverTimestamp();
+        }
+
+        await enviarEmailRelatorioTerceirizada(
+            `Reinspecao terceirizada ${resultado} - ${implemento.placa}`,
+            `Reinspecao terceirizada ${resultado}`,
+            `A reinspecao do cavalo mecanico terceirizado <b>${implemento.placa}</b> foi finalizada como <b>${resultado.toUpperCase()}</b>.`,
+            base64data,
+            `Reinspecao_Terceirizada_${implemento.placa}.pdf`
+        );
+
+        await updateDoc(doc(db, "implementos", id), dados);
+
+        alert(`Reinspecao finalizada como ${resultado}.\nE-mail enviado para ${EMAIL_TERCEIRIZADA}`);
+        window.location = "historico_terceirizados.html";
+    } catch (e) {
+        console.error(e);
+        alert("Erro ao finalizar a reinspecao.");
+    }
+};
+
+async function buscarItensInspecao() {
+    const qItens = query(
+        collection(db, "naoConformidades"),
+        where("inspecaoId", "==", inspecao.id)
+    );
+    const itensSnap = await getDocs(qItens);
+    const itens = [];
+    itensSnap.forEach(docSnap => itens.push({ id: docSnap.id, ...docSnap.data() }));
+    return itens;
+}
+
+function gerarPdfTerceirizada(titulo, statusTexto, itens, incluirReinspecao) {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF();
+    let y = 20;
+
+    pdf.setFillColor(31, 41, 55);
+    pdf.rect(0, 0, 210, 30, "F");
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(16);
+    pdf.text(titulo, 105, 18, { align: "center" });
+
+    y = 45;
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFontSize(11);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("GO/Placa:", 10, y);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(implemento.placa || "-", 38, y);
+
+    y += 7;
+    pdf.setFont("helvetica", "bold");
+    pdf.text("Tipo:", 10, y);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(formatarTipoImplemento(implemento.tipo), 38, y);
+
+    y += 7;
+    pdf.setFont("helvetica", "bold");
+    pdf.text("Status:", 10, y);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(statusTexto, 38, y);
+
+    y += 7;
+    pdf.setFont("helvetica", "bold");
+    pdf.text("Data:", 10, y);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(new Date().toLocaleString("pt-BR"), 38, y);
+
+    y += 10;
+
+    const observacoesPdf = implemento?.observacoesInspecao || inspecao?.observacoesInspecao || "";
+    if (observacoesPdf) {
+        pdf.setFont("helvetica", "bold");
+        pdf.text("Observacoes:", 10, y);
+        y += 6;
+
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(10);
+        const linhasObs = pdf.splitTextToSize(String(observacoesPdf), 185);
+        pdf.text(linhasObs, 15, y);
+        y += linhasObs.length * 5 + 6;
+    } else {
+        y += 2;
+    }
+
+    pdf.setDrawColor(200, 200, 200);
+    pdf.line(10, y, 200, y);
+    y += 10;
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(13);
+    pdf.text("ITENS PONTUADOS", 10, y);
+    y += 8;
+
+    if (!itens.length) {
+        pdf.setFont("helvetica", "normal");
+        pdf.text("Nenhum item registrado.", 15, y);
+        return pdf.output("blob");
+    }
+
+    const grupos = {};
+    itens.forEach(item => {
+        const grupo = item.grupo || "GERAL";
+        if (!grupos[grupo]) grupos[grupo] = [];
+        grupos[grupo].push(item);
+    });
+
+    Object.keys(grupos).forEach(grupo => {
+        if (y > 260) {
+            pdf.addPage();
+            y = 20;
+        }
+
+        pdf.setFillColor(31, 41, 55);
+        pdf.rect(10, y - 5, 190, 8, "F");
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(11);
+        pdf.text(grupo.toUpperCase(), 15, y);
+        y += 10;
+
+        grupos[grupo].forEach(item => {
+            if (y > 265) {
+                pdf.addPage();
+                y = 20;
+            }
+
+            const localizacao = [item.eixo, item.lado, item.compartimento ? `Comp. ${item.compartimento}` : null]
+                .filter(Boolean)
+                .join(" - ");
+            const pontuacao = item.tipo === "avaria" ? "X" : "Visto";
+            const reinspecao = item.statusReinspecao === "reprovado"
+                ? "X"
+                : item.statusReinspecao === "aprovado"
+                    ? "Visto"
+                    : "-";
+
+            pdf.setTextColor(0, 0, 0);
+            pdf.setFont("helvetica", "bold");
+            pdf.setFontSize(10);
+            const linhas = pdf.splitTextToSize(`- ${item.descricao || "-"}`, 175);
+            pdf.text(linhas, 15, y);
+            y += linhas.length * 5;
+
+            pdf.setFont("helvetica", "normal");
+            pdf.text(`Inspecao: ${pontuacao}${incluirReinspecao ? ` | Reinspecao: ${reinspecao}` : ""}`, 20, y);
+            y += 5;
+
+            if (localizacao) {
+                pdf.text(`Local: ${localizacao}`, 20, y);
+                y += 5;
+            }
+
+            y += 4;
+        });
+    });
+
+    return pdf.output("blob");
+}
+
+function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result.split(",")[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
+}
+
+async function enviarEmailRelatorioTerceirizada(subject, titulo, htmlMensagem, base64data, filename) {
+    await addDoc(collection(db, "mail"), {
+        to: EMAIL_TERCEIRIZADA,
+        message: {
+            subject,
+            html: `
+                <h2>${titulo}</h2>
+                <p>${htmlMensagem}</p>
+                <p>Segue em anexo o relatorio em PDF.</p>
+            `,
+            attachments: [
+                {
+                    filename,
+                    content: base64data,
+                    encoding: "base64"
+                }
+            ]
+        }
+    });
+}
+
+function escapeHTML(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+}
 
     function podeFinalizarInspecao(status) {
 

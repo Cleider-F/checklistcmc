@@ -1,0 +1,1238 @@
+[
+  {
+    "frota": "23230",
+    "compartimentos": 6,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23231",
+    "compartimentos": 6,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23232",
+    "compartimentos": 6,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23233",
+    "compartimentos": 6,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23234",
+    "compartimentos": 6,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23235",
+    "compartimentos": 6,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23236",
+    "compartimentos": 6,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23237",
+    "compartimentos": 6,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23238",
+    "compartimentos": 6,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23239",
+    "compartimentos": 6,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23241",
+    "compartimentos": 6,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23242",
+    "compartimentos": 6,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23243",
+    "compartimentos": 6,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23260",
+    "compartimentos": 4,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23263",
+    "compartimentos": 6,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23268",
+    "compartimentos": 4,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23269",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23270",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23271",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23272",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23274",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23279",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23281",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23282",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23284",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23285",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23286",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23287",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23288",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23289",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23290",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23291",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23292",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23293",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23294",
+    "compartimentos": 4,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23296",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23302",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23304",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23309",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23312",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23313",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23315",
+    "compartimentos": 4,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23316",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23326",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23327",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23328",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23329",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23330",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23331",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23332",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23333",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23334",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23335",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23336",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23343",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23344",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23346",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23347",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23348",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23349",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23350",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23354",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23358",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23359",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23363",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23364",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23365",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23366",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23367",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23368",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23369",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23371",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23375",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23376",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23377",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23378",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23379",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23380",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23381",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23382",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23383",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23387",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23388",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23389",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23390",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23391",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23392",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23393",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23394",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23396",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23397",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23398",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23399",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23400",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23401",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23402",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23403",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23404",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23405",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23407",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23408",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23409",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23410",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23411",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23412",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23413",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23414",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23415",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23416",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23417",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23418",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23419",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23420",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23421",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23422",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23423",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23424",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23425",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23426",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23427",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23428",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "23429",
+    "compartimentos": 3,
+    "tipo": "carreta",
+    "eixos": 2
+  },
+  {
+    "frota": "HX02",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "HX03",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "HX04",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "HX06",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "HX07",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "HX08",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "HX10",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "HX11",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "HX12",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "HX13",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "HX14",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "HX15",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "HX16",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "HX17",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "HX18",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "HX19",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "HX20",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "HX21",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "HX22",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "HX23",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "HX24",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "HX25",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "HX26",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "F-RPX-9016",
+    "compartimentos": 1,
+    "tipo": "prancha",
+    "eixos": null
+  },
+  {
+    "frota": "F-CCM-9033",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "F-RPX-9031",
+    "compartimentos": 1,
+    "tipo": "prancha",
+    "eixos": null
+  },
+  {
+    "frota": "F-CCM-9030",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "F-RPX-9028",
+    "compartimentos": 1,
+    "tipo": "prancha",
+    "eixos": null
+  },
+  {
+    "frota": "F-CCM-9031",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "F-RPX-9020",
+    "compartimentos": 1,
+    "tipo": "prancha",
+    "eixos": null
+  },
+  {
+    "frota": "F-CCM-9032",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "F-RPX-9026",
+    "compartimentos": 1,
+    "tipo": "prancha",
+    "eixos": null
+  },
+  {
+    "frota": "F-CCM-9042",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "F-RPX-9025",
+    "compartimentos": 1,
+    "tipo": "prancha",
+    "eixos": null
+  },
+  {
+    "frota": "F-CCM-9029",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "F-RPX-9015",
+    "compartimentos": 1,
+    "tipo": "prancha",
+    "eixos": null
+  },
+  {
+    "frota": "F-CCM-9027",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "F-RPX-9024",
+    "compartimentos": 1,
+    "tipo": "prancha",
+    "eixos": null
+  },
+  {
+    "frota": "F-CCM-9043",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "F-RPX-9014",
+    "compartimentos": 1,
+    "tipo": "prancha",
+    "eixos": null
+  },
+  {
+    "frota": "F-CCM-9039",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "F-CCM-9025",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "F-RPX-9029",
+    "compartimentos": 1,
+    "tipo": "prancha",
+    "eixos": null
+  },
+  {
+    "frota": "F-CCM-9026",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "F-RPX-9027",
+    "compartimentos": 1,
+    "tipo": "prancha",
+    "eixos": null
+  },
+  {
+    "frota": "F-CCM-9024",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "F-RPX-9021",
+    "compartimentos": 1,
+    "tipo": "prancha",
+    "eixos": null
+  },
+  {
+    "frota": "F-RPX-9018",
+    "compartimentos": 1,
+    "tipo": "prancha",
+    "eixos": null
+  },
+  {
+    "frota": "F-CCM-9041",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "F-RPX-9032",
+    "compartimentos": 1,
+    "tipo": "prancha",
+    "eixos": null
+  },
+  {
+    "frota": "F-CCM-9040",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "F-RPX-9023",
+    "compartimentos": 1,
+    "tipo": "prancha",
+    "eixos": null
+  },
+  {
+    "frota": "F-CCM-9044",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "F-CCM-9028",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "F-RPX-9022",
+    "compartimentos": 1,
+    "tipo": "prancha",
+    "eixos": null
+  },
+  {
+    "frota": "F-RPX-9030",
+    "compartimentos": 1,
+    "tipo": "prancha",
+    "eixos": null
+  },
+  {
+    "frota": "F-CCM-9034",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "F-CCM-9035",
+    "compartimentos": 1,
+    "tipo": "plataforma",
+    "eixos": null
+  },
+  {
+    "frota": "F-CCM-9036",
+    "compartimentos": 1,
+    "tipo": "plataforma",
+    "eixos": null
+  },
+  {
+    "frota": "F-CCM-9037",
+    "compartimentos": 1,
+    "tipo": "plataforma",
+    "eixos": null
+  },
+  {
+    "frota": "F-CCM-9038",
+    "compartimentos": 1,
+    "tipo": "plataforma",
+    "eixos": null
+  },
+  {
+    "frota": "F-CCM-9048",
+    "compartimentos": 1,
+    "tipo": "plataforma",
+    "eixos": null
+  },
+  {
+    "frota": "F-CCM-9049",
+    "compartimentos": 1,
+    "tipo": "plataforma",
+    "eixos": null
+  },
+  {
+    "frota": "F-RPX-9013",
+    "compartimentos": 1,
+    "tipo": "prancha",
+    "eixos": null
+  },
+  {
+    "frota": "F-CCM-9051",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "F-RPX-9019",
+    "compartimentos": 1,
+    "tipo": "prancha",
+    "eixos": null
+  },
+  {
+    "frota": "F-CCM-9062",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "F-IPX-0002",
+    "compartimentos": 1,
+    "tipo": "prancha",
+    "eixos": null
+  },
+  {
+    "frota": "F-CPX-0006",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "F-IPX-0015",
+    "compartimentos": 1,
+    "tipo": "prancha",
+    "eixos": null
+  },
+  {
+    "frota": "F-CPX-0007",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "F-CCM-0055",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "F-IPX-0004",
+    "compartimentos": 1,
+    "tipo": "prancha",
+    "eixos": null
+  },
+  {
+    "frota": "F-CPX-0008",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "F-CCM-0166",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "F-IPX-0009",
+    "compartimentos": 1,
+    "tipo": "prancha",
+    "eixos": null
+  },
+  {
+    "frota": "F-CCM-0167",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "F-IPX-0007",
+    "compartimentos": 1,
+    "tipo": "prancha",
+    "eixos": null
+  },
+  {
+    "frota": "F-CCM-0168",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "F-CCM-2085",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "F-IPX-0005",
+    "compartimentos": 1,
+    "tipo": "prancha",
+    "eixos": null
+  },
+  {
+    "frota": "F-CCM-0253",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  },
+  {
+    "frota": "F-RPX-0011",
+    "compartimentos": 1,
+    "tipo": "prancha",
+    "eixos": null
+  },
+  {
+    "frota": "F-CCM-0253",
+    "compartimentos": 1,
+    "tipo": "cavalo",
+    "eixos": 3
+  }
+]
