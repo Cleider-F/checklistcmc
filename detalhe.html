@@ -465,8 +465,8 @@
                 <div>
                     <label style="font-size:12px;font-weight:bold;color:#555;">Tipo</label>
                     <select id="novoItemTipo">
-                        <option value="avaria">X / Avaria</option>
-                        <option value="normal">Visto / Normal</option>
+                        <option value="avaria">Avaria</option>
+                        <option value="normal">Normal</option>
                         <option value="troca">Troca</option>
                         <option value="vistoria">Vistoria</option>
                     </select>
@@ -595,7 +595,6 @@
         if (tipo === "cavalo_terceiro") return "Cavalo Mecanico Terceirizado";
         return tipo || "Desconhecido";
     }
-
 
     // Helper para formatar o status com cores
 
@@ -1847,7 +1846,7 @@ function gerarPdfTerceirizada(titulo, statusTexto, itens, incluirReinspecao) {
             const localizacao = [item.eixo, item.lado, item.compartimento ? `Comp. ${item.compartimento}` : null]
                 .filter(Boolean)
                 .join(" - ");
-            const pontuacao = item.tipo === "avaria" ? "X" : "Visto";
+            const pontuacao = item.tipo || "-";
             const reinspecao = item.statusReinspecao === "reprovado"
                 ? "X"
                 : item.statusReinspecao === "aprovado"
