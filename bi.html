@@ -208,6 +208,10 @@
       border-color: #90caf9;
     }
 
+    .rank-card.expandable {
+      cursor: default;
+    }
+
     .rank-top {
       display: flex;
       justify-content: space-between;
@@ -251,6 +255,62 @@
       height: 100%;
       border-radius: inherit;
       background: linear-gradient(90deg, var(--primary), var(--success));
+    }
+
+    .expand-btn {
+      width: 38px;
+      min-width: 38px;
+      min-height: 34px;
+      padding: 0;
+      border-radius: 8px;
+      background: #eef2f7;
+      color: #334155;
+      box-shadow: none;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .inspetor-title {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .inspetor-historico {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .historico-item {
+      display: grid;
+      grid-template-columns: minmax(110px, 0.85fr) minmax(90px, 0.6fr) minmax(110px, 0.8fr) minmax(100px, 0.7fr) minmax(120px, 1fr);
+      gap: 8px;
+      align-items: center;
+      padding: 10px;
+      border-radius: 10px;
+      background: #f8fafc;
+      color: #334155;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .historico-item strong {
+      color: #1f2937;
+      font-size: 13px;
+    }
+
+    .historico-status {
+      display: inline-flex;
+      width: fit-content;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #e3f2fd;
+      color: #0d47a1;
+      font-weight: 900;
     }
 
     .empty {
@@ -390,6 +450,10 @@
       .grid-3 {
         grid-template-columns: 1fr;
       }
+
+      .historico-item {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -421,7 +485,8 @@
           <option value="comboio">Comboio</option>
           <option value="cavalo">Cavalo</option>
           <option value="cavprancha">Cavalo Prancha</option>
-<option value="plataforma">Plataforma</option>
+          <option value="plataforma">Plataforma</option>
+          <option value="cavalo_terceiro">Cavalo Terceiro</option>
           
         </select>
       </div>
@@ -518,7 +583,19 @@
       em_inspecao: "Em inspeção",
       aguardando_manutencao: "Aguardando manutenção",
       em_manutencao: "Em manutenção",
-      liberado: "Liberado"
+      liberado: "Liberado",
+      inspecionado_terceiro: "Inspecionado terceirizada",
+      reinspecao_reprovada: "Reinspeção reprovada"
+    };
+
+    const tipoImplementoLabels = {
+      carreta: "Carreta",
+      prancha: "Prancha",
+      comboio: "Comboio",
+      cavalo: "Cavalo",
+      cavprancha: "Cavalo Prancha",
+      plataforma: "Plataforma",
+      cavalo_terceiro: "Cavalo Terceirizado"
     };
 
     const tipoManutencaoLabels = {
@@ -526,7 +603,8 @@
       revisao: "Revisão",
       cnp: "CNP",
       gm: "GM",
-      acidente: "Acidente"
+      acidente: "Acidente",
+      terceirizada: "Terceirizada"
     };
 
     const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
@@ -554,6 +632,7 @@
     let activeView = "executivo";
     let selectedRecurrence = null;
     let selectedFleet = null;
+    let inspetoresExpandidos = new Set();
 
     els.btnAtualizar.addEventListener("click", carregarDados);
     Object.values(els)
@@ -832,11 +911,12 @@
 
     function calcularInspetores(implBase, itensBase, implPorId) {
       const map = new Map();
+      const itensPorInspecao = new Map();
 
       implBase.forEach(impl => {
         const nome = impl.inspecionadoPor || "Não informado";
         if (!map.has(nome)) {
-          map.set(nome, { nome, inspecoes: 0, defeitos: 0, avarias: 0 });
+          map.set(nome, { nome, inspecoes: 0, defeitos: 0, avarias: 0, historico: [] });
         }
         map.get(nome).inspecoes++;
       });
@@ -845,13 +925,44 @@
         const impl = implPorId.get(item.inspecaoId);
         if (!impl) return;
         const nome = impl.inspecionadoPor || "Não informado";
-        if (!map.has(nome)) map.set(nome, { nome, inspecoes: 0, defeitos: 0, avarias: 0 });
+        if (!map.has(nome)) map.set(nome, { nome, inspecoes: 0, defeitos: 0, avarias: 0, historico: [] });
         map.get(nome).defeitos++;
         if (item.tipo === "avaria") map.get(nome).avarias++;
+
+        if (!itensPorInspecao.has(impl.id)) {
+          itensPorInspecao.set(impl.id, { total: 0, avarias: 0 });
+        }
+
+        const resumoItem = itensPorInspecao.get(impl.id);
+        resumoItem.total++;
+        if (item.tipo === "avaria") resumoItem.avarias++;
+      });
+
+      implBase.forEach(impl => {
+        const nome = impl.inspecionadoPor || "Não informado";
+        if (!map.has(nome)) return;
+
+        const resumoItem = itensPorInspecao.get(impl.id) || { total: 0, avarias: 0 };
+        map.get(nome).historico.push({
+          id: impl.id,
+          placa: impl.placa || "-",
+          tipo: impl.tipo || "-",
+          tipoManutencao: impl.tipoManutencao || "-",
+          status: impl.status || "-",
+          dataInspecao: impl.dataInspecao,
+          itens: resumoItem.total,
+          avarias: resumoItem.avarias
+        });
       });
 
       return Array.from(map.values())
-        .map(i => ({ ...i, media: i.inspecoes ? i.defeitos / i.inspecoes : 0 }))
+        .map(i => ({
+          ...i,
+          media: i.inspecoes ? i.defeitos / i.inspecoes : 0,
+          historico: i.historico
+            .sort((a, b) => (toDate(b.dataInspecao)?.getTime() || 0) - (toDate(a.dataInspecao)?.getTime() || 0))
+            .slice(0, 25)
+        }))
         .sort((a, b) => b.inspecoes - a.inspecoes);
     }
 
@@ -974,17 +1085,69 @@
 
       views.inspetores.innerHTML = `
         ${panel("BI dos Inspetores", bi.inspetores.map(row => `
-          <div class="rank-card">
+          <div class="rank-card expandable">
             <div class="rank-top">
-              <div class="rank-title">${escapeHTML(row.nome)}</div>
+              <div class="inspetor-title">
+                <button
+                  type="button"
+                  class="expand-btn"
+                  onclick="toggleHistoricoInspetor(${escapeAttr(JSON.stringify(row.nome))})"
+                  title="${inspetoresExpandidos.has(row.nome) ? "Recolher histórico" : "Expandir histórico"}">
+                  ${inspetoresExpandidos.has(row.nome) ? "⌃" : "⌄"}
+                </button>
+                <div class="rank-title">${escapeHTML(row.nome)}</div>
+              </div>
               <div class="rank-count">${row.inspecoes}</div>
             </div>
             <div class="rank-meta">
               ${row.defeitos} defeito(s) | ${row.avarias} avaria(s) | média ${row.media.toFixed(1)} item(ns)/inspeção
             </div>
             <div class="bar"><span style="width:${Math.max(4, (row.inspecoes / maior) * 100)}%"></span></div>
+            ${inspetoresExpandidos.has(row.nome) ? renderHistoricoInspetor(row) : ""}
           </div>
         `).join("") || empty("Sem dados de inspetores."))}
+      `;
+    }
+
+    window.toggleHistoricoInspetor = function(nome) {
+      if (inspetoresExpandidos.has(nome)) {
+        inspetoresExpandidos.delete(nome);
+      } else {
+        inspetoresExpandidos.add(nome);
+      }
+
+      renderInspetores();
+    };
+
+    function renderHistoricoInspetor(row) {
+      if (!row.historico.length) {
+        return `<div class="inspetor-historico">${empty("Nenhuma inspeção encontrada para este inspetor.")}</div>`;
+      }
+
+      return `
+        <div class="inspetor-historico">
+          <div class="rank-meta">Últimas 25 inspeções dentro do filtro atual.</div>
+          ${row.historico.map(item => `
+            <div class="historico-item">
+              <div>
+                <strong>${escapeHTML(item.placa)}</strong><br>
+                ${escapeHTML(formatarData(item.dataInspecao))}
+              </div>
+              <div>${escapeHTML(formatarTipoImplemento(item.tipo))}</div>
+              <div>${escapeHTML(formatarTipoManutencao(item.tipoManutencao))}</div>
+              <div>
+                ${item.itens} item(ns)<br>
+                ${item.avarias} avaria(s)
+              </div>
+              <div>
+                <span class="historico-status">${escapeHTML(formatarStatus(item.status))}</span>
+                <div style="margin-top:6px;">
+                  <a href="detalhe.html?id=${escapeAttr(item.id)}">Abrir inspeção</a>
+                </div>
+              </div>
+            </div>
+          `).join("")}
+        </div>
       `;
     }
 
@@ -1340,12 +1503,20 @@
       return data ? data.toLocaleString("pt-BR") : "-";
     }
 
+    function formatarStatus(status) {
+      return statusLabels[status] || status || "-";
+    }
+
     function toInputDate(data) {
       return [
         data.getFullYear(),
         String(data.getMonth() + 1).padStart(2, "0"),
         String(data.getDate()).padStart(2, "0")
       ].join("-");
+    }
+
+    function formatarTipoImplemento(tipo) {
+      return tipoImplementoLabels[tipo] || tipo || "-";
     }
 
     function formatarTipoManutencao(tipo) {
