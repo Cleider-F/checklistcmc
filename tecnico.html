@@ -513,7 +513,7 @@ if ("serviceWorker" in navigator) {
     const q = query(
   collection(db, "implementos"),
   orderBy("dataInspecao", "desc"),
-  limit(45)
+  limit(150)
 );
 
 const snap = await getDocs(q);
