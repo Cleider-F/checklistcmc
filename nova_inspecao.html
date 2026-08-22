@@ -317,7 +317,7 @@
             </div>
 
             <div id="avisoTerceirizada" class="aviso-terceirizada">
-                Checklist terceirizado em branco: adicione manualmente todos os itens pontuados pelo inspetor antes de finalizar.
+                Plano terceirizado carregado como item manual. Adicione também os itens pontuados pelo inspetor antes de finalizar.
             </div>
 
             <div class="grid-2">
@@ -495,6 +495,7 @@
     let planoPrancha = [];
     let planoCavalo = [];
     let planoComboioPrev = [];
+    let planoTerceirizada = [];
     let planoCarregado = false;
     let naoConformidades = [];
     let fotosSelecionadas = [];
@@ -517,10 +518,11 @@
         fetch("./plano_manutencao_prancha.json").then(res => res.json()).catch(() => []),
         fetch("./plano_manutencao_cavalo.json").then(res => res.json()).catch(() => []),
         fetch("./plano_manutencao_comboio_preventiva.json").then(res => res.json()).catch(() => []),
+        fetch("./plano_manutencao_terceiros.json").then(res => res.json()).catch(() => []),
         fetch("./frotas.json")
     .then(res => res.json())
     .catch(() => [])
-    ]).then(([dataComboio, dataCarreta, dataCavPrancha, dataPlataforma, dataPrancha, dataCavalo, dataCombPrev, dataFrotas]) => {
+    ]).then(([dataComboio, dataCarreta, dataCavPrancha, dataPlataforma, dataPrancha, dataCavalo, dataCombPrev, dataTerceiros, dataFrotas]) => {
         planoComboio = dataComboio;
         planoCarreta = dataCarreta;
         planoCavPrancha = dataCavPrancha;
@@ -528,6 +530,7 @@
         planoPrancha = dataPrancha;
         planoCavalo = dataCavalo;   
         planoComboioPrev = dataCombPrev;
+        planoTerceirizada = dataTerceiros;
         frotas = dataFrotas;
         planoCarregado = true;
         verificarChecklistAutomatico();
@@ -567,6 +570,7 @@
             naoConformidades = naoConformidades.filter(i => i.origem === "manual");
         } else if (tipoManutencaoInput.value === "terceirizada") {
             tipoManutencaoInput.value = "";
+            naoConformidades = naoConformidades.filter(i => i.origemPlano !== "terceirizada");
         }
 
         renderLista();
@@ -635,7 +639,16 @@
 
         if (tipoImp === "cavalo_terceiro") {
             tipoManutencaoInput.value = "terceirizada";
-            naoConformidades = naoConformidades.filter(i => i.origem === "manual");
+            if (!planoCarregado) {
+                naoConformidades = naoConformidades.filter(i => i.origem === "manual");
+                renderLista();
+                return;
+            }
+
+            const manuais = naoConformidades.filter(i =>
+                i.origem === "manual" && i.origemPlano !== "terceirizada"
+            );
+            naoConformidades = [...manuais, ...gerarChecklistTerceira("terceirizada")];
             renderLista();
             return;
         }
@@ -708,6 +721,35 @@ function gerarChecklistCarreta(tipo) {
                 fotos: [],
                 resolvido: false,
                 origem: "automatico"
+            });
+
+        });
+    });
+
+    return checklist;
+}
+function gerarChecklistTerceira(tipo) {
+    const itensFiltrados = planoTerceirizada.filter(p => p.tipoPlano === tipo);
+
+    let checklist = [];
+
+    itensFiltrados.forEach(grupo => {
+        grupo.itens.forEach(item => {
+
+            checklist.push({
+                grupo: String(grupo.grupo || "MANUAL").toUpperCase(),
+                descricao: item.descricao,
+                eixo: "",
+                lado: "",
+
+                tipo: item.tipo === "T"
+                    ? "troca"
+                    : "vistoria",
+
+                fotos: [],
+                resolvido: false,
+                origem: "manual",
+                origemPlano: "terceirizada"
             });
 
         });
@@ -1062,7 +1104,7 @@ function renderLista() {
         if (tipoImplemento === "cavalo_terceiro") {
             container.innerHTML = `
                 <div class="lista-vazia">
-                    <strong>Checklist terceirizado em branco</strong>
+                    <strong>Nenhum item terceirizado carregado</strong>
                     Adicione manualmente os itens avaliados pelo inspetor.
                 </div>
             `;
