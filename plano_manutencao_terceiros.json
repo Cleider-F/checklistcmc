@@ -1,0 +1,12 @@
+[
+   {
+    "tipoPlano": "terceirizada",
+    "grupo": "manual",
+    "itens": [
+      { "descricao": "Higienizar e medir kit 5ª roda" , "tipo": "V" },
+      { "descricao": "Verificar torque dos estojos de roda e instalar keps" , "tipo": "V" },
+      { "descricao": "Corrigir elétrica geral" , "tipo": "V" },
+      { "descricao": "Regular freio geral" , "tipo": "V" }
+    ]
+  }
+]
