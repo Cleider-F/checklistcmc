@@ -878,7 +878,7 @@
   {
     "frota": "F-CCM-9033",
     "compartimentos": 1,
-    "tipo": "cavalo",
+    "tipo": "cavprancha",
     "eixos": 3
   },
   {
@@ -890,7 +890,7 @@
   {
     "frota": "F-CCM-9030",
     "compartimentos": 1,
-    "tipo": "cavalo",
+    "tipo": "cavprancha",
     "eixos": 3
   },
   {
@@ -902,7 +902,7 @@
   {
     "frota": "F-CCM-9031",
     "compartimentos": 1,
-    "tipo": "cavalo",
+    "tipo": "cavprancha",
     "eixos": 3
   },
   {
@@ -914,7 +914,7 @@
   {
     "frota": "F-CCM-9032",
     "compartimentos": 1,
-    "tipo": "cavalo",
+    "tipo": "cavprancha",
     "eixos": 3
   },
   {
@@ -926,7 +926,7 @@
   {
     "frota": "F-CCM-9042",
     "compartimentos": 1,
-    "tipo": "cavalo",
+    "tipo": "cavprancha",
     "eixos": 3
   },
   {
@@ -938,7 +938,7 @@
   {
     "frota": "F-CCM-9029",
     "compartimentos": 1,
-    "tipo": "cavalo",
+    "tipo": "cavprancha",
     "eixos": 3
   },
   {
@@ -950,7 +950,7 @@
   {
     "frota": "F-CCM-9027",
     "compartimentos": 1,
-    "tipo": "cavalo",
+    "tipo": "cavprancha",
     "eixos": 3
   },
   {
@@ -962,7 +962,7 @@
   {
     "frota": "F-CCM-9043",
     "compartimentos": 1,
-    "tipo": "cavalo",
+    "tipo": "cavprancha",
     "eixos": 3
   },
   {
@@ -974,13 +974,13 @@
   {
     "frota": "F-CCM-9039",
     "compartimentos": 1,
-    "tipo": "cavalo",
+    "tipo": "cavprancha",
     "eixos": 3
   },
   {
     "frota": "F-CCM-9025",
     "compartimentos": 1,
-    "tipo": "cavalo",
+    "tipo": "cavprancha",
     "eixos": 3
   },
   {
@@ -992,7 +992,7 @@
   {
     "frota": "F-CCM-9026",
     "compartimentos": 1,
-    "tipo": "cavalo",
+    "tipo": "cavprancha",
     "eixos": 3
   },
   {
@@ -1004,7 +1004,7 @@
   {
     "frota": "F-CCM-9024",
     "compartimentos": 1,
-    "tipo": "cavalo",
+    "tipo": "cavprancha",
     "eixos": 3
   },
   {
@@ -1022,7 +1022,7 @@
   {
     "frota": "F-CCM-9041",
     "compartimentos": 1,
-    "tipo": "cavalo",
+    "tipo": "cavprancha",
     "eixos": 3
   },
   {
@@ -1034,7 +1034,7 @@
   {
     "frota": "F-CCM-9040",
     "compartimentos": 1,
-    "tipo": "cavalo",
+    "tipo": "cavprancha",
     "eixos": 3
   },
   {
@@ -1046,13 +1046,13 @@
   {
     "frota": "F-CCM-9044",
     "compartimentos": 1,
-    "tipo": "cavalo",
+    "tipo": "cavprancha",
     "eixos": 3
   },
   {
     "frota": "F-CCM-9028",
     "compartimentos": 1,
-    "tipo": "cavalo",
+    "tipo": "cavprancha",
     "eixos": 3
   },
   {
@@ -1070,7 +1070,7 @@
   {
     "frota": "F-CCM-9034",
     "compartimentos": 1,
-    "tipo": "cavalo",
+    "tipo": "cavprancha",
     "eixos": 3
   },
   {
@@ -1118,7 +1118,7 @@
   {
     "frota": "F-CCM-9051",
     "compartimentos": 1,
-    "tipo": "cavalo",
+    "tipo": "cavprancha",
     "eixos": 3
   },
   {
@@ -1130,7 +1130,7 @@
   {
     "frota": "F-CCM-9062",
     "compartimentos": 1,
-    "tipo": "cavalo",
+    "tipo": "cavprancha",
     "eixos": 3
   },
   {
@@ -1142,7 +1142,7 @@
   {
     "frota": "F-CPX-0006",
     "compartimentos": 1,
-    "tipo": "cavalo",
+    "tipo": "cavprancha",
     "eixos": 3
   },
   {
@@ -1154,13 +1154,13 @@
   {
     "frota": "F-CPX-0007",
     "compartimentos": 1,
-    "tipo": "cavalo",
+    "tipo": "cavprancha",
     "eixos": 3
   },
   {
     "frota": "F-CCM-0055",
     "compartimentos": 1,
-    "tipo": "cavalo",
+    "tipo": "cavprancha",
     "eixos": 3
   },
   {
@@ -1172,13 +1172,13 @@
   {
     "frota": "F-CPX-0008",
     "compartimentos": 1,
-    "tipo": "cavalo",
+    "tipo": "cavprancha",
     "eixos": 3
   },
   {
     "frota": "F-CCM-0166",
     "compartimentos": 1,
-    "tipo": "cavalo",
+    "tipo": "cavprancha",
     "eixos": 3
   },
   {
@@ -1190,7 +1190,7 @@
   {
     "frota": "F-CCM-0167",
     "compartimentos": 1,
-    "tipo": "cavalo",
+    "tipo": "cavprancha",
     "eixos": 3
   },
   {
@@ -1202,13 +1202,13 @@
   {
     "frota": "F-CCM-0168",
     "compartimentos": 1,
-    "tipo": "cavalo",
+    "tipo": "cavprancha",
     "eixos": 3
   },
   {
     "frota": "F-CCM-2085",
     "compartimentos": 1,
-    "tipo": "cavalo",
+    "tipo": "cavprancha",
     "eixos": 3
   },
   {
@@ -1220,7 +1220,7 @@
   {
     "frota": "F-CCM-0253",
     "compartimentos": 1,
-    "tipo": "cavalo",
+    "tipo": "cavprancha",
     "eixos": 3
   },
   {
@@ -1232,7 +1232,7 @@
   {
     "frota": "F-CCM-0253",
     "compartimentos": 1,
-    "tipo": "cavalo",
+    "tipo": "cavprancha",
     "eixos": 3
   }
 ]
