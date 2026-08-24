@@ -77,12 +77,28 @@
             right: 0;
             top: calc(100% + 4px);
             z-index: 20;
-            max-height: 220px;
+            max-height: 340px;
             overflow-y: auto;
             border: 1px solid #d1d5db;
             border-radius: 10px;
             background: white;
             box-shadow: 0 12px 28px rgba(0,0,0,0.16);
+            overscroll-behavior: contain;
+            scrollbar-width: thin;
+            scrollbar-color: #94a3b8 #f1f5f9;
+        }
+
+        .sugestoes-descricao::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sugestoes-descricao::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .sugestoes-descricao::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 999px;
         }
 
         .sugestoes-descricao.ativo {
@@ -675,6 +691,7 @@
     placaInput.addEventListener("focus", renderSugestoesPlaca);
     descricaoInput.addEventListener("input", renderSugestoesDescricao);
     descricaoInput.addEventListener("focus", renderSugestoesDescricao);
+    carregarSugestoesDescricao();
     document.addEventListener("click", (event) => {
 
     if (!event.target.closest(".sugestao-wrapper")) {
@@ -1493,10 +1510,22 @@ window.addEventListener("popstate", () => {
 
     async function carregarSugestoesDescricao() {
         try {
-            const snap = await getDocs(collection(db, "sugestoesDescricoesItens"));
+            const [snapSugestoes, snapHistorico] = await Promise.all([
+                getDocs(collection(db, "sugestoesDescricoesItens")),
+                getDocs(collection(db, "naoConformidades"))
+            ]);
             const unicas = new Map();
 
-            snap.forEach(docSnap => {
+            snapSugestoes.forEach(docSnap => {
+                const data = docSnap.data();
+                const descricao = String(data.descricao || "").trim();
+                const chave = normalizarTextoBusca(descricao);
+                if (descricao && chave && !unicas.has(chave)) {
+                    unicas.set(chave, descricao);
+                }
+            });
+
+            snapHistorico.forEach(docSnap => {
                 const data = docSnap.data();
                 const descricao = String(data.descricao || "").trim();
                 const chave = normalizarTextoBusca(descricao);
@@ -1565,7 +1594,7 @@ function renderSugestoesDescricao() {
             b.score - a.score ||
             a.descricao.localeCompare(b.descricao, "pt-BR")
         )
-        .slice(0, 6);
+        .slice(0, 15);
 
     if (!resultados.length) {
         esconderSugestoesDescricao();
