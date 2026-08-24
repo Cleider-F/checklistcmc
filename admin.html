@@ -129,7 +129,25 @@
     .btn-primary { background: var(--primary); }
     .btn-success { background: var(--success); }
     .btn-danger { background: var(--danger); }
-    .btn-muted { background: #64748b; }
+  .btn-muted { background: #64748b; }
+
+    .btn-topbar {
+      min-height: 36px;
+      padding: 8px 12px;
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .topbar-acoes {
+      display: flex;
+      justify-content: flex-end;
+      position: relative;
+      z-index: 1;
+    }
 
     .list {
       max-height: calc(100vh - 265px);
@@ -276,6 +294,9 @@
   <div class="topbar">
     <span class="titulo-topbar">Painel Administrador</span>
     <img src="suzano-logo.png" class="logo-topbar">
+    <div class="topbar-acoes">
+      <button class="btn-topbar" onclick="window.location='sugestoes_descricoes.html'">Sugestoes</button>
+    </div>
   </div>
 
   <main class="page">
