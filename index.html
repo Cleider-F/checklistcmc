@@ -59,6 +59,12 @@
     .botao div { font-size: 28px; margin-bottom: 5px; }
     .botao:active { transform: scale(0.96); }
 
+    .botao-tecnico {
+      grid-column: 1 / -1;
+      justify-self: center;
+      width: min(100%, 320px);
+    }
+
     .credito-desenvolvimento {
       grid-column: 1 / -1;
       text-align: center;
@@ -126,7 +132,7 @@
     <div class="botao" onclick="ir('inspecao.html')"><div>🔍</div>Inspeção</div>
     <div class="botao" onclick="ir('historico_terceirizados.html')"><div>🚛</div>Terceirizados</div>
     <div class="botao" onclick="ir('manutencao.html')"><div>🔧</div>Manutenção</div>
-    <div class="botao" onclick="ir('tecnico.html')"><div>👷🏻‍♂️</div>Técnico</div>
+    <div class="botao botao-tecnico" onclick="ir('tecnico.html')"><div>👷🏻‍♂️</div>Técnico</div>
     <span class="credito-desenvolvimento">Criado e desenvolvido por Cleider Filho</span>
   </div>
 
