@@ -101,6 +101,35 @@ input, select {
   border: 1px solid #ccc;
 }
 
+button {
+  border: none;
+  border-radius: 8px;
+  padding: 11px 12px;
+  background: #1f2937;
+  color: white;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.importacao-asn {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.import-status {
+  grid-column: 1 / -1;
+  color: #555;
+  font-size: 0.8125em;
+}
+
+@media (max-width: 520px) {
+  .importacao-asn {
+    grid-template-columns: 1fr;
+  }
+}
+
 </style>
 </head>
 
@@ -122,6 +151,12 @@ input, select {
     <option value="comboio">Comboio</option>
     <option value="cavalo">Cavalo</option>
   </select>
+
+  <div class="importacao-asn">
+    <input id="arquivoAsn" type="file" accept=".xlsx,.xls">
+    <button id="btnImportarAsn" type="button">Importar ASN</button>
+    <div id="statusImportacaoAsn" class="import-status"></div>
+  </div>
 </div>
 
 <div class="contadores" id="contadores"></div>
@@ -138,12 +173,17 @@ input, select {
 
 <link rel="apple-touch-icon" href="/icone-192.png">
 
+<script src="xlsx.full.min.js"></script>
+
 <script type="module">
 import { db } from "./firebase.js";
 import {
   collection,
+  doc,
   onSnapshot,
   query,
+  serverTimestamp,
+  writeBatch,
   where
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { carregarNavbar } from "./navbar.js";
@@ -160,6 +200,12 @@ if ("serviceWorker" in navigator) {
 
 // 1. DECLARAÇÕES GLOBAIS (Sempre no topo)
 let dados = [];
+let frotasCadastradas = [];
+
+fetch("./frotas.json")
+  .then(res => res.json())
+  .then(data => { frotasCadastradas = Array.isArray(data) ? data : []; })
+  .catch(() => { frotasCadastradas = []; });
 
 // 2. DEFINIÇÃO DA QUERY
 const q = query(
@@ -269,9 +315,295 @@ function atualizarContadores(lista) {
   `;
 }
 
+function obterCadastroFrota(frota) {
+  const chave = normalizarBusca(frota);
+  return frotasCadastradas.find(item =>
+    normalizarBusca(item.frota) === chave ||
+    normalizarBusca(item.placa) === chave
+  );
+}
+
+function normalizarBusca(valor) {
+  return String(valor || "")
+    .trim()
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^A-Z0-9]/g, "");
+}
+
+function normalizarPlaca(valor) {
+  return String(valor || "")
+    .trim()
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^A-Z0-9]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function normalizarTexto(valor) {
+  return String(valor || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ");
+}
+
+function hashTexto(valor) {
+  let hash = 0;
+  const texto = String(valor || "");
+
+  for (let i = 0; i < texto.length; i++) {
+    hash = ((hash << 5) - hash) + texto.charCodeAt(i);
+    hash |= 0;
+  }
+
+  return Math.abs(hash).toString(36);
+}
+
+function idSeguro(valor) {
+  return normalizarBusca(valor) || hashTexto(valor);
+}
+
+function extrairCnpsAsn(rows) {
+  const headerIndex = rows.findIndex(row => {
+    const headers = row.map(normalizarCabecalho);
+    return headers.includes("cnp_id") &&
+      headers.includes("frota") &&
+      headers.includes("descricao_servico");
+  });
+
+  if (headerIndex >= 0) {
+    return extrairCnpsTabela(rows, headerIndex);
+  }
+
+  const cnps = [];
+  let frotaAtual = "";
+
+  rows.forEach(row => {
+    const primeiraColuna = normalizarTexto(row[0]);
+
+    if (primeiraColuna === "frota") {
+      frotaAtual = String(row[1] || "").trim();
+      return;
+    }
+
+    if (primeiraColuna === "os" && frotaAtual) {
+      const servicos = row
+        .slice(1)
+        .map(valor => String(valor || "").trim())
+        .filter(Boolean);
+
+      if (servicos.length) {
+        cnps.push({
+          frota: frotaAtual,
+          statusImportacao: "pendente",
+          servicos: servicos.map(descricao => ({ descricao }))
+        });
+      }
+    }
+  });
+
+  return cnps;
+}
+
+function normalizarCabecalho(valor) {
+  return String(valor || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_|_$/g, "");
+}
+
+function extrairCnpsTabela(rows, headerIndex) {
+  const header = rows[headerIndex].map(normalizarCabecalho);
+  const col = nome => header.indexOf(nome);
+  const idx = {
+    cnpId: col("cnp_id"),
+    frota: col("frota"),
+    tipo: col("tipo"),
+    dataCnp: col("data_cnp"),
+    prioridade: col("prioridade"),
+    descricao: col("descricao_servico"),
+    eixo: col("eixo"),
+    lado: col("lado"),
+    compartimento: col("compartimento"),
+    solicitante: col("solicitante"),
+    observacao: col("observacao"),
+    status: col("status_importacao")
+  };
+
+  const grupos = new Map();
+
+  rows.slice(headerIndex + 1).forEach(row => {
+    const status = String(row[idx.status] || "pendente").trim().toLowerCase();
+    if (["importado", "cancelado"].includes(status)) return;
+
+    const frota = String(row[idx.frota] || "").trim();
+    const descricao = String(row[idx.descricao] || "").trim();
+    if (!frota || !descricao) return;
+
+    const cnpId = String(row[idx.cnpId] || "").trim() || `CNP-${normalizarBusca(frota)}`;
+    const chave = `${cnpId}|${normalizarBusca(frota)}`;
+
+    if (!grupos.has(chave)) {
+      grupos.set(chave, {
+        cnpId,
+        frota,
+        tipo: String(row[idx.tipo] || "").trim(),
+        dataCnp: row[idx.dataCnp] || "",
+        prioridade: String(row[idx.prioridade] || "").trim(),
+        solicitante: String(row[idx.solicitante] || "").trim(),
+        observacao: String(row[idx.observacao] || "").trim(),
+        statusImportacao: status || "pendente",
+        servicos: []
+      });
+    }
+
+    grupos.get(chave).servicos.push({
+      descricao,
+      eixo: String(row[idx.eixo] || "N/A").trim() || "N/A",
+      lado: String(row[idx.lado] || "N/A").trim() || "N/A",
+      compartimento: row[idx.compartimento] || null
+    });
+  });
+
+  return Array.from(grupos.values());
+}
+
+async function lerArquivoAsn(file) {
+  const buffer = await file.arrayBuffer();
+  const workbook = XLSX.read(buffer, { type: "array" });
+  const sheetName = workbook.SheetNames[0];
+  const sheet = workbook.Sheets[sheetName];
+
+  return XLSX.utils.sheet_to_json(sheet, {
+    header: 1,
+    defval: ""
+  });
+}
+
+async function importarAsn() {
+  const input = document.getElementById("arquivoAsn");
+  const statusEl = document.getElementById("statusImportacaoAsn");
+  const btn = document.getElementById("btnImportarAsn");
+  const file = input.files?.[0];
+
+  if (!file) {
+    alert("Selecione a planilha ASN primeiro.");
+    return;
+  }
+
+  if (!window.XLSX) {
+    alert("Biblioteca de leitura Excel não carregou. Verifique a internet e tente novamente.");
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerText = "Importando...";
+  statusEl.textContent = "Lendo planilha ASN...";
+
+  try {
+    const rows = await lerArquivoAsn(file);
+    const cnps = extrairCnpsAsn(rows);
+
+    if (!cnps.length) {
+      statusEl.textContent = "Nenhuma CNP encontrada. Use linhas FROTA e OS na planilha.";
+      return;
+    }
+
+    const batch = writeBatch(db);
+    let totalItens = 0;
+
+    cnps.forEach(cnp => {
+      const placa = normalizarPlaca(cnp.frota);
+      const placaBusca = normalizarBusca(placa);
+      const cadastroFrota = obterCadastroFrota(cnp.frota);
+      const tipo = cnp.tipo || cadastroFrota?.tipo || "carreta";
+      const assinatura = hashTexto(`${placaBusca}|${cnp.servicos.map(item => normalizarTexto(item.descricao)).join("|")}`);
+      const baseId = cnp.cnpId ? `${idSeguro(cnp.cnpId)}_${placaBusca}` : `${placaBusca}_${assinatura}`;
+      const implementoId = `ASN_CNP_${baseId}`;
+      const implementoRef = doc(db, "implementos", implementoId);
+      const inspecaoRef = doc(db, "inspecoes", implementoId);
+
+      batch.set(implementoRef, {
+        placa,
+        placaNormalizada: placa,
+        placaBusca,
+        tipo,
+        status: "aguardando_manutencao",
+        tipoManutencao: "cnp",
+        cnpId: cnp.cnpId || null,
+        prioridade: cnp.prioridade || "normal",
+        solicitante: cnp.solicitante || "",
+        observacoesInspecao: cnp.observacao || "",
+        origem: "planilha_asn",
+        origemPlanilha: file.name,
+        dataInspecao: serverTimestamp(),
+        dataEnvioManutencao: serverTimestamp(),
+        atualizadoEm: serverTimestamp()
+      }, { merge: true });
+
+      batch.set(inspecaoRef, {
+        implementoId,
+        origem: "planilha_asn",
+        origemPlanilha: file.name,
+        tipoManutencao: "cnp",
+        cnpId: cnp.cnpId || null,
+        prioridade: cnp.prioridade || "normal",
+        solicitante: cnp.solicitante || "",
+        observacoesInspecao: cnp.observacao || "",
+        criadoEm: serverTimestamp(),
+        atualizadoEm: serverTimestamp()
+      }, { merge: true });
+
+      cnp.servicos.forEach((servico, index) => {
+        totalItens++;
+        const descricao = servico.descricao;
+        const itemId = `${implementoId}_ASN_${String(index + 1).padStart(3, "0")}`;
+        const itemRef = doc(db, "naoConformidades", itemId);
+
+        batch.set(itemRef, {
+          inspecaoId: implementoId,
+          grupo: "CNP",
+          descricao,
+          eixo: servico.eixo || "N/A",
+          lado: servico.lado || "N/A",
+          compartimento: servico.compartimento || null,
+          tipo: "avaria",
+          fotos: [],
+          origem: "planilha_asn",
+          resolvido: false,
+          status_manutencao: null,
+          criadoEm: serverTimestamp(),
+          atualizadoEm: serverTimestamp()
+        }, { merge: true });
+      });
+    });
+
+    await batch.commit();
+
+    statusEl.textContent = `${cnps.length} CNP(s) importada(s), com ${totalItens} item(ns).`;
+    input.value = "";
+  } catch (e) {
+    console.error(e);
+    statusEl.textContent = "Erro ao importar ASN.";
+    alert("Erro ao importar ASN. Confira o formato da planilha.");
+  } finally {
+    btn.disabled = false;
+    btn.innerText = "Importar ASN";
+  }
+}
+
 // 5. EVENTOS E ATIVAÇÃO DO TEMPO REAL
 document.getElementById("busca").addEventListener("input", aplicarFiltros);
 document.getElementById("filtroTipo").addEventListener("change", aplicarFiltros);
+document.getElementById("btnImportarAsn").addEventListener("click", importarAsn);
 
 onSnapshot(q, (snapshot) => {
   dados = [];

@@ -8,7 +8,9 @@ self.addEventListener("install", event => {
       return cache.addAll([
         "/",
         "/index.html",
-        "/navbar.css"
+        "/navbar.css",
+        "/sugestoes_descricoes.html",
+        "/xlsx.full.min.js"
       ]);
     })
   );
