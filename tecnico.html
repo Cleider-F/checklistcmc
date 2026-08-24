@@ -167,6 +167,9 @@
   .topbar .logo-topbar {
     position: absolute;
     left: 50%;
+    right: auto;
+    grid-column: unset;
+    justify-self: auto;
     transform: translateX(-50%);
   }
 
@@ -513,7 +516,7 @@ if ("serviceWorker" in navigator) {
     const q = query(
   collection(db, "implementos"),
   orderBy("dataInspecao", "desc"),
-  limit(150)
+  limit(45)
 );
 
 const snap = await getDocs(q);

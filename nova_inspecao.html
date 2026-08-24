@@ -105,6 +105,14 @@
             border-bottom: 1px solid #eef2f7;
         }
 
+        .sugestao-descricao-item small {
+            display: block;
+            margin-top: 4px;
+            color: #6b7280;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
         /* Inputs mobile-friendly */
         input, select { 
             width: 100%; 
@@ -320,6 +328,11 @@
                 Plano terceirizado carregado como item manual. Adicione também os itens pontuados pelo inspetor antes de finalizar.
             </div>
 
+            <div id="empresaField" class="form-group" style="display:none;">
+                <label>Empresa</label>
+                <input id="empresa" placeholder="Empresa responsável">
+            </div>
+
             <div class="grid-2">
                 <div id="kmField" style="display:none;" class="form-group">
                     <label>KM</label>
@@ -481,10 +494,13 @@
     const kmField = document.getElementById("kmField");
     const horimetroField = document.getElementById("horimetroField");
     const compartimentosField = document.getElementById("compartimentosField");
+    const compartimentosInput = document.getElementById("compartimentos");
     const compartimentoItem = document.getElementById("compartimentoItem");
     const tipoInput = document.getElementById("tipo");
     const tipoManutencaoInput = document.getElementById("tipoManutencao");
     const avisoTerceirizada = document.getElementById("avisoTerceirizada");
+    const empresaField = document.getElementById("empresaField");
+    const empresaInput = document.getElementById("empresa");
     const foto = document.getElementById("foto");
     const preview = document.getElementById("preview");
 
@@ -507,7 +523,12 @@
     const tipoManutencaoTerceirizadaOption = tipoManutencaoInput.querySelector('option[value="terceirizada"]');
 
     let frotas = [];
+    let placasEmpresas = [];
     let sugestoesDescricao = [];
+    let eixoSelecionado = "N/A";
+    let ladoSelecionado = "N/A";
+    let tipoSelecionado = "normal";
+    let compartimentoSelecionado = 1;
 
     // --- CARREGAMENTO DOS PLANOS ---
     Promise.all([
@@ -519,10 +540,9 @@
         fetch("./plano_manutencao_cavalo.json").then(res => res.json()).catch(() => []),
         fetch("./plano_manutencao_comboio_preventiva.json").then(res => res.json()).catch(() => []),
         fetch("./plano_manutencao_terceiros.json").then(res => res.json()).catch(() => []),
-        fetch("./frotas.json")
-    .then(res => res.json())
-    .catch(() => [])
-    ]).then(([dataComboio, dataCarreta, dataCavPrancha, dataPlataforma, dataPrancha, dataCavalo, dataCombPrev, dataTerceiros, dataFrotas]) => {
+        fetch("./frotas.json").then(res => res.json()).catch(() => []),
+        fetch("./placas_empresas.json").then(res => res.json()).catch(() => [])
+    ]).then(([dataComboio, dataCarreta, dataCavPrancha, dataPlataforma, dataPrancha, dataCavalo, dataCombPrev, dataTerceiros, dataFrotas, dataPlacasEmpresas]) => {
         planoComboio = dataComboio;
         planoCarreta = dataCarreta;
         planoCavPrancha = dataCavPrancha;
@@ -532,6 +552,7 @@
         planoComboioPrev = dataCombPrev;
         planoTerceirizada = dataTerceiros;
         frotas = dataFrotas;
+        placasEmpresas = dataPlacasEmpresas;
         planoCarregado = true;
         verificarChecklistAutomatico();
     });
@@ -553,12 +574,44 @@
         horimetroField.style.display = cfg.horimetro ? "block" : "none";
         compartimentosField.style.display = cfg.compartimentos ? "block" : "none";
         compartimentoItem.style.display = cfg.compartimentos ? "block" : "none";
+        ajustarBotoesCompartimento();
+    }
+
+    function ajustarBotoesCompartimento() {
+        const isCarreta = tipoInput.value === "carreta";
+        const qtd = Number(compartimentosInput.value);
+        const limite = isCarreta && qtd > 0 ? Math.min(qtd, 6) : 6;
+        let selecionadoVisivel = false;
+
+        document.querySelectorAll('#grupoCompartimento [data-grupo="compartimento"]').forEach(btn => {
+            const numero = Number(btn.dataset.value);
+            const visivel = isCarreta && numero <= limite;
+
+            btn.style.display = visivel ? "inline-flex" : "none";
+
+            if (visivel && btn.classList.contains("ativo")) {
+                selecionadoVisivel = true;
+                compartimentoSelecionado = numero;
+            }
+        });
+
+        if (isCarreta && !selecionadoVisivel) {
+            const primeiro = document.querySelector('#grupoCompartimento [data-grupo="compartimento"][data-value="1"]');
+            document.querySelectorAll('#grupoCompartimento [data-grupo="compartimento"]').forEach(btn => btn.classList.remove("ativo"));
+
+            if (primeiro) {
+                primeiro.classList.add("ativo");
+                compartimentoSelecionado = 1;
+            }
+        }
     }
 
     function ajustarFluxoTerceirizada() {
         const terceirizada = tipoInput.value === "cavalo_terceiro";
 
         avisoTerceirizada.style.display = terceirizada ? "block" : "none";
+        empresaField.style.display = terceirizada ? "block" : "none";
+        empresaInput.required = terceirizada;
         tipoManutencaoInput.disabled = terceirizada;
         if (tipoManutencaoTerceirizadaOption) {
             tipoManutencaoTerceirizadaOption.hidden = !terceirizada;
@@ -573,6 +626,10 @@
             naoConformidades = naoConformidades.filter(i => i.origemPlano !== "terceirizada");
         }
 
+        if (!terceirizada) {
+            empresaInput.value = "";
+        }
+
         renderLista();
     }
 
@@ -584,6 +641,8 @@
 
     document.getElementById("horimetro").addEventListener("input", verificarChecklistAutomatico);
     tipoManutencaoInput.addEventListener("change", verificarChecklistAutomatico);
+    compartimentosInput.addEventListener("input", ajustarBotoesCompartimento);
+    compartimentosInput.addEventListener("change", ajustarBotoesCompartimento);
     ajustarCamposTipo(tipoInput.value);
     ajustarFluxoTerceirizada();
 
@@ -591,6 +650,7 @@
     "placa",
     "tipo",
     "tipoManutencao",
+    "empresa",
     "km",
     "horimetro",
     "compartimentos"
@@ -986,11 +1046,6 @@ foto.addEventListener("change", (e) => {
 marcarAlteracao();
 });
 
-let eixoSelecionado = "N/A";
-let ladoSelecionado = "N/A";
-let tipoSelecionado = "normal";
-let compartimentoSelecionado = 1;
-
 document.querySelectorAll(".btn-opcao").forEach(btn => {
 
     btn.addEventListener("click", () => {
@@ -1235,11 +1290,19 @@ window.removerItem = (i) => {
         const tipoVal = tipoInput.value;
         let tipoManutencaoVal = tipoManutencaoInput.value;
         const isTerceirizada = tipoVal === "cavalo_terceiro";
+        const empresaVal = empresaInput.value.trim();
         if (isTerceirizada) tipoManutencaoVal = "terceirizada";
         placaInput.value = placaVal;
 
         if (!placaVal || !tipoVal || !tipoManutencaoVal) {
             alert("Preencha os dados obrigatórios (Placa, Tipo e Manutenção)");
+            btn.disabled = false;
+            btn.innerText = "✅ Finalizar Inspeção";
+            return;
+        }
+
+        if (isTerceirizada && !empresaVal) {
+            alert("Preencha a empresa da inspeção terceirizada.");
             btn.disabled = false;
             btn.innerText = "✅ Finalizar Inspeção";
             return;
@@ -1278,6 +1341,7 @@ await setDoc(implementoRef, {                placa: placaVal,
                 placaNormalizada: placaVal,
                 placaBusca: placaLimpa,
                 tipo: tipoVal,
+                empresa: isTerceirizada ? empresaVal : null,
                 status: "em_inspecao",
                 terceirizada: isTerceirizada,
                 fluxoInspecao: isTerceirizada ? "terceirizada" : "normal",
@@ -1286,7 +1350,9 @@ await setDoc(implementoRef, {                placa: placaVal,
                 dataInspecao: dataInfo.timestamp,
                 dataFormatada: dataInfo.data,
                 horaFormatada: dataInfo.hora,
-                inspecionadoPor: usuario.nome, 
+                inspecionadoPor: usuario.nome,
+                inspetorSelecionado: usuario.nome,
+                inspecionadoPorSistema: usuario.nomeSistema,
                 inspecionadorEmail: usuario.email,
                 tipoManutencao: tipoManutencaoVal
             });
@@ -1299,11 +1365,15 @@ await setDoc(inspecaoRef, {
                 km: Number(document.getElementById("km").value) || null,
                 horimetro: Number(document.getElementById("horimetro").value) || null,
                 compartimentos: Number(document.getElementById("compartimentos").value) || 0,
+                empresa: isTerceirizada ? empresaVal : null,
                 fluxoInspecao: isTerceirizada ? "terceirizada" : "normal",
                 criadoEm: dataInfo.timestamp,
                 data: dataInfo.data,
                 hora: dataInfo.hora,
-                inspecionadoPor: usuario.nome
+                inspecionadoPor: usuario.nome,
+                inspetorSelecionado: usuario.nome,
+                inspecionadoPorSistema: usuario.nomeSistema,
+                inspecionadorEmail: usuario.email
             });
 
 let contadorNc = 1;
@@ -1387,8 +1457,16 @@ window.addEventListener("popstate", () => {
     function getUsuarioLogado() {
         const user = auth.currentUser;
         const nomePadrao = user?.email ? user.email.split('@')[0] : "Desconhecido";
+        const nomeSistema = user?.displayName || nomePadrao;
+        const nomeSelecionado = String(
+            inspetor ||
+            localStorage.getItem("inspetorAtual") ||
+            ""
+        ).trim();
+
         return { 
-            nome: user?.displayName || nomePadrao, 
+            nome: nomeSelecionado || nomeSistema,
+            nomeSistema,
             email: user?.email || null 
         };
     }
@@ -1402,6 +1480,15 @@ window.addEventListener("popstate", () => {
             .replace(/[^A-Z0-9]+/g, "-")
             .replace(/-+/g, "-")
             .replace(/^-|-$/g, "");
+    }
+
+    function normalizarPlacaBusca(valor) {
+        return String(valor || "")
+            .trim()
+            .toUpperCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^A-Z0-9]/g, "");
     }
 
     async function carregarSugestoesDescricao() {
@@ -1516,19 +1603,41 @@ function renderSugestoesDescricao() {
 
 function renderSugestoesPlaca() {
 
-    const termo = placaInput.value.trim().toUpperCase();
+    const termo = normalizarPlacaBusca(placaInput.value);
 
     if (termo.length < 2) {
         esconderSugestoesPlaca();
         return;
     }
 
-    const resultados = frotas
-        .filter(f =>
-            String(f.frota || "")
-                .toUpperCase()
-                .includes(termo)
-        )
+    const sugestoesFrotas = frotas
+        .filter(f => normalizarPlacaBusca(f.frota).includes(termo))
+        .map(frota => ({
+            origem: "frota",
+            placa: frota.frota,
+            empresa: "",
+            detalhe: "Frota cadastrada",
+            dados: frota
+        }));
+
+    const sugestoesTerceirizadas = placasEmpresas
+        .filter(item => normalizarPlacaBusca(item.placa).includes(termo))
+        .map(item => ({
+            origem: "terceirizada",
+            placa: item.placa,
+            empresa: item.empresa || "",
+            detalhe: item.empresa || "Terceirizada",
+            dados: item
+        }));
+
+    const unicas = new Set();
+    const resultados = [...sugestoesTerceirizadas, ...sugestoesFrotas]
+        .filter(item => {
+            const chave = `${item.origem}:${normalizarPlacaBusca(item.placa)}`;
+            if (unicas.has(chave)) return false;
+            unicas.add(chave);
+            return true;
+        })
         .slice(0, 8);
 
     if (!resultados.length) {
@@ -1536,12 +1645,13 @@ function renderSugestoesPlaca() {
         return;
     }
 
-    sugestoesPlacaEl.innerHTML = resultados.map(f => `
+    sugestoesPlacaEl.innerHTML = resultados.map((item, index) => `
         <button
             type="button"
             class="sugestao-descricao-item"
-            data-frota="${f.frota}">
-            ${f.frota}
+            data-index="${index}">
+            ${escapeHTML(item.placa)}
+            <small>${escapeHTML(item.detalhe)}</small>
         </button>
     `).join("");
 
@@ -1552,10 +1662,12 @@ function renderSugestoesPlaca() {
 
             btn.addEventListener("click", () => {
 
-                const frota = frotas.find(f => String(f.frota) === btn.dataset.frota);
+                const item = resultados[Number(btn.dataset.index)];
 
-                if (frota) {
-                    preencherDadosFrota(frota);
+                if (item?.origem === "terceirizada") {
+                    preencherDadosPlacaTerceirizada(item.dados);
+                } else if (item?.dados) {
+                    preencherDadosFrota(item.dados);
                 }
 
                 esconderSugestoesPlaca();
@@ -1563,6 +1675,19 @@ function renderSugestoesPlaca() {
             });
 
         });
+
+}
+
+function preencherDadosPlacaTerceirizada(item) {
+
+    placaInput.value = item.placa || "";
+    empresaInput.value = item.empresa || "";
+    tipoInput.value = "cavalo_terceiro";
+    tipoManutencaoInput.value = "terceirizada";
+
+    tipoInput.dispatchEvent(new Event("change"));
+    tipoManutencaoInput.dispatchEvent(new Event("change"));
+    marcarAlteracao();
 
 }
 
@@ -1606,6 +1731,8 @@ function preencherDadosFrota(frota) {
         });
 
     }
+
+    marcarAlteracao();
 
 }
 

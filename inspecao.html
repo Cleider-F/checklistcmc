@@ -259,6 +259,39 @@ if ("serviceWorker" in navigator) {
 
 }
 
+let empresasTerceirizadas = new Map();
+let listaAtual = [];
+
+carregarEmpresasTerceirizadas().then(renderizarListaAtual);
+
+async function carregarEmpresasTerceirizadas() {
+  try {
+    const lista = await fetch("./placas_empresas.json").then(res => res.json());
+    empresasTerceirizadas = new Map(
+      lista
+        .filter(item => item.placa && item.empresa)
+        .map(item => [normalizarPlacaBusca(item.placa), item.empresa])
+    );
+  } catch (e) {
+    console.error("Erro ao carregar empresas terceirizadas", e);
+  }
+}
+
+function normalizarPlacaBusca(valor) {
+  return String(valor || "")
+    .trim()
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^A-Z0-9]/g, "");
+}
+
+function resolverEmpresaTerceirizada(item) {
+  return String(item?.empresa || "").trim() ||
+    empresasTerceirizadas.get(normalizarPlacaBusca(item?.placa)) ||
+    "";
+}
+
 // 🎨 STATUS
 function getStatusInfo(status) {
   switch(status) {
@@ -294,26 +327,33 @@ const q = query(
 
 onSnapshot(q, (snapshot) => {
 
-  const lista = [];
-  const container = document.getElementById("lista");
-  container.innerHTML = "";
+  listaAtual = [];
 
   snapshot.forEach(doc => {
 
     const data = doc.data();
-    lista.push({ id: doc.id, ...data });
+    listaAtual.push({ id: doc.id, ...data });
 
   });
 
-  const normais = lista.filter(item => !isTerceirizada(item));
-  const terceirizadas = lista.filter(item => isTerceirizada(item));
+  renderizarListaAtual();
+
+});
+
+function renderizarListaAtual() {
+  const container = document.getElementById("lista");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  const normais = listaAtual.filter(item => !isTerceirizada(item));
+  const terceirizadas = listaAtual.filter(item => isTerceirizada(item));
 
   renderSecao(container, "Inspecoes em andamento", normais);
   renderSecao(container, "Cavalos terceirizados", terceirizadas);
 
-  atualizarContadores(lista);
-
-});
+  atualizarContadores(listaAtual);
+}
 
 function renderSecao(container, titulo, itens) {
   if (!itens.length) return;
@@ -325,20 +365,22 @@ function renderSecao(container, titulo, itens) {
 
   itens.forEach(data => {
     const status = getStatusInfo(data.status);
+    const empresa = isTerceirizada(data) ? resolverEmpresaTerceirizada(data) : "";
 
     const div = document.createElement("div");
     div.className = `card status-borda-${status.cor}`;
 
     div.innerHTML = `
       <div class="card-top">
-        <div class="placa">${data.placa}</div>
+        <div class="placa">${escapeHTML(data.placa || "-")}</div>
         <div class="status ${status.cor}">
-          ${status.nome}
+          ${escapeHTML(status.nome)}
         </div>
       </div>
 
       <div class="info">
-        Tipo: ${formatarTipo(data.tipo)}
+        Tipo: ${escapeHTML(formatarTipo(data.tipo))}
+        ${empresa ? `<br>Empresa: ${escapeHTML(empresa)}` : ""}
         ${isTerceirizada(data) ? `<br><span class="tag-terceiro">${data.resultadoReinspecao === "reprovado" ? "Reinspecao reprovada" : "Aguardando reinspecao"}</span>` : ""}
       </div>
     `;
@@ -360,6 +402,13 @@ function isTerceirizada(item) {
 function formatarTipo(tipo) {
   if (tipo === "cavalo_terceiro") return "Cavalo Mecanico Terceirizado";
   return tipo || "-";
+}
+
+function escapeHTML(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
 // ➕ nova inspeção

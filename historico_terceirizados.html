@@ -219,6 +219,7 @@
     const resumoEl = document.getElementById("resumo");
 
     let registros = [];
+    let empresasTerceirizadas = new Map();
 
     const statusLabels = {
       em_inspecao: "Em inspecao",
@@ -243,6 +244,7 @@
           query(baseRef, where("tipo", "==", "cavalo_terceiro"))
         ];
 
+        await carregarEmpresasTerceirizadas();
         const snaps = await Promise.all(consultas.map(qRef => getDocs(qRef)));
         const mapa = new Map();
 
@@ -272,7 +274,8 @@
       if (busca) {
         filtrados = filtrados.filter(item =>
           normalizar(item.placa).includes(busca) ||
-          normalizar(item.placaBusca).includes(busca)
+          normalizar(item.placaBusca).includes(busca) ||
+          normalizar(resolverEmpresaTerceirizada(item)).includes(busca)
         );
       }
 
@@ -332,6 +335,7 @@
       itens.forEach(item => {
         const card = document.createElement("div");
         card.className = `card ${item.status || ""}`;
+        const empresa = resolverEmpresaTerceirizada(item);
 
         card.innerHTML = `
           <div class="card-top">
@@ -339,6 +343,7 @@
             <span class="badge ${item.status || ""}">${escapeHTML(formatarStatusItem(item))}</span>
           </div>
           <div class="info">
+            Empresa: ${escapeHTML(empresa || "-")}<br>
             Inspecao: ${escapeHTML(formatarData(item.dataInspecao))}<br>
             Inspetor: ${escapeHTML(item.inspecionadoPor || "-")}<br>
             Resultado reinspecao: ${escapeHTML(item.resultadoReinspecao || "-")}
@@ -357,6 +362,34 @@
       return item?.terceirizada === true ||
         item?.fluxoInspecao === "terceirizada" ||
         item?.tipo === "cavalo_terceiro";
+    }
+
+    async function carregarEmpresasTerceirizadas() {
+      try {
+        const lista = await fetch("./placas_empresas.json").then(res => res.json());
+        empresasTerceirizadas = new Map(
+          lista
+            .filter(item => item.placa && item.empresa)
+            .map(item => [normalizarPlacaBusca(item.placa), item.empresa])
+        );
+      } catch (e) {
+        console.error("Erro ao carregar empresas terceirizadas", e);
+      }
+    }
+
+    function resolverEmpresaTerceirizada(item) {
+      return String(item?.empresa || "").trim() ||
+        empresasTerceirizadas.get(normalizarPlacaBusca(item?.placa)) ||
+        "";
+    }
+
+    function normalizarPlacaBusca(valor) {
+      return String(valor || "")
+        .trim()
+        .toUpperCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^A-Z0-9]/g, "");
     }
 
     function formatarStatus(status) {

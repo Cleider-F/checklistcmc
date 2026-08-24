@@ -914,7 +914,7 @@
       const itensPorInspecao = new Map();
 
       implBase.forEach(impl => {
-        const nome = impl.inspecionadoPor || "Não informado";
+        const nome = resolverNomeInspetor(impl);
         if (!map.has(nome)) {
           map.set(nome, { nome, inspecoes: 0, defeitos: 0, avarias: 0, historico: [] });
         }
@@ -924,7 +924,7 @@
       itensBase.forEach(item => {
         const impl = implPorId.get(item.inspecaoId);
         if (!impl) return;
-        const nome = impl.inspecionadoPor || "Não informado";
+        const nome = resolverNomeInspetor(impl);
         if (!map.has(nome)) map.set(nome, { nome, inspecoes: 0, defeitos: 0, avarias: 0, historico: [] });
         map.get(nome).defeitos++;
         if (item.tipo === "avaria") map.get(nome).avarias++;
@@ -939,7 +939,7 @@
       });
 
       implBase.forEach(impl => {
-        const nome = impl.inspecionadoPor || "Não informado";
+        const nome = resolverNomeInspetor(impl);
         if (!map.has(nome)) return;
 
         const resumoItem = itensPorInspecao.get(impl.id) || { total: 0, avarias: 0 };
@@ -964,6 +964,44 @@
             .slice(0, 25)
         }))
         .sort((a, b) => b.inspecoes - a.inspecoes);
+    }
+
+    function resolverNomeInspetor(impl) {
+      const candidatos = [
+        impl?.inspetorSelecionado,
+        impl?.nomeInspetor,
+        impl?.inspetor,
+        impl?.inspecionadoPor,
+        impl?.inspecionadoPorSistema
+      ];
+
+      const nome = candidatos
+        .map(valor => String(valor || "").trim())
+        .find(valor => valor && !pareceEmail(valor));
+
+      if (nome) return nome;
+
+      const email = String(impl?.inspecionadorEmail || "").trim();
+      if (email) return formatarNomePorEmail(email);
+
+      const qualquerValor = candidatos
+        .map(valor => String(valor || "").trim())
+        .find(Boolean);
+
+      return qualquerValor || "Não informado";
+    }
+
+    function pareceEmail(valor) {
+      return String(valor || "").includes("@");
+    }
+
+    function formatarNomePorEmail(email) {
+      const prefixo = String(email || "").split("@")[0] || "";
+      if (!prefixo) return "Não informado";
+
+      return prefixo
+        .replace(/[._-]+/g, " ")
+        .replace(/\b\w/g, letra => letra.toUpperCase());
     }
 
     function calcularHeatmap(recorrencias) {

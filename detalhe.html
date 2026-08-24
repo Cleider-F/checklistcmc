@@ -567,7 +567,9 @@
 
     let inspecao = null;
 
-    const EMAIL_TERCEIRIZADA = "cmcmanutencao@outlook.com , lucassilva.cst@suzano.com.br , vagnern.brevi@suzano.com.br , vagnernascimento.cst@suzano.com.br , hreal.breviservicos@suzano.com.br ";
+    let empresasTerceirizadas = null;
+
+    const EMAIL_TERCEIRIZADA = "cmcmanutencao@outlook.com , lucassilva.cst@suzano.com.br , vagnern.brevi@suzano.com.br , hreal.breviservicos@suzano.com.br , brenog.breviservicos@suzano.com.br ";
 
     function isTerceirizada() {
         return implemento?.terceirizada === true ||
@@ -594,6 +596,40 @@
     function formatarTipoImplemento(tipo) {
         if (tipo === "cavalo_terceiro") return "Cavalo Mecanico Terceirizado";
         return tipo || "Desconhecido";
+    }
+
+    function normalizarPlacaBusca(valor) {
+        return String(valor || "")
+            .trim()
+            .toUpperCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^A-Z0-9]/g, "");
+    }
+
+    async function carregarEmpresasTerceirizadas() {
+        if (empresasTerceirizadas) return empresasTerceirizadas;
+
+        empresasTerceirizadas = new Map();
+        try {
+            const lista = await fetch("./placas_empresas.json").then(res => res.json());
+            lista.forEach(item => {
+                const placa = normalizarPlacaBusca(item.placa);
+                if (placa && item.empresa) empresasTerceirizadas.set(placa, item.empresa);
+            });
+        } catch (e) {
+            console.error("Erro ao carregar empresas terceirizadas", e);
+        }
+
+        return empresasTerceirizadas;
+    }
+
+    async function resolverEmpresaTerceirizada(item) {
+        const empresa = String(item?.empresa || "").trim();
+        if (empresa) return empresa;
+
+        const mapa = await carregarEmpresasTerceirizadas();
+        return mapa.get(normalizarPlacaBusca(item?.placa)) || "";
     }
 
     // Helper para formatar o status com cores
@@ -647,6 +683,10 @@
 
 
         implemento = docSnap.data();
+        const empresaTerceirizada = isTerceirizada()
+            ? await resolverEmpresaTerceirizada(implemento)
+            : "";
+        if (empresaTerceirizada) implemento.empresa = empresaTerceirizada;
 
 
         document.getElementById("info").innerHTML = `
@@ -655,9 +695,9 @@
 
                 <div>
 
-                    <h2 class="info-placa">${implemento.placa || 'Sem Placa'}</h2>
+                    <h2 class="info-placa">${escapeHTML(implemento.placa || 'Sem Placa')}</h2>
 
-                    <span class="info-tipo">${formatarTipoImplemento(implemento.tipo)}</span>
+                    <span class="info-tipo">${escapeHTML(formatarTipoImplemento(implemento.tipo))}</span>
 
                 </div>
 
@@ -669,7 +709,9 @@
 
             </div>
 
-            ${implemento.tipoManutencao ? `<div style="margin-top: 10px; font-size: 14px; color: #555;">Manutenção: <strong>${implemento.tipoManutencao.toUpperCase()}</strong></div>` : ''}
+            ${implemento.tipoManutencao ? `<div style="margin-top: 10px; font-size: 14px; color: #555;">Manutenção: <strong>${escapeHTML(implemento.tipoManutencao.toUpperCase())}</strong></div>` : ''}
+
+            ${isTerceirizada() ? `<div style="margin-top: 10px; font-size: 14px; color: #555;">Empresa: <strong>${escapeHTML(empresaTerceirizada || "-")}</strong></div>` : ''}
 
             ${isTerceirizada() ? `<div style="margin-top: 10px; font-size: 14px; color: #555;">Fluxo: <strong>TERCEIRIZADA</strong>${implemento.resultadoReinspecao ? ` | Reinspecao: <strong>${String(implemento.resultadoReinspecao).toUpperCase()}</strong>` : ""}</div>` : ''}
 
@@ -1234,7 +1276,7 @@ window.finalizar = async function () {
         const tipoLimpo = tipoOriginal.trim().toLowerCase();
 
         const responsaveis = {
-                "carreta": "cmcmanutencao@outlook.com , douglassales@suzano.com.br , geraldomsj@suzano.com.br , gleysonmurca@suzano.com.br , italohanss@suzano.com.br , lazaror@suzano.com.br , leonardo.ov@suzano.com.br",
+                "carreta": "cmcmanutencao@outlook.com , douglassales@suzano.com.br , geraldomsj@suzano.com.br , gleysonmurca@suzano.com.br , italohnss@suzano.com.br , lazaror@suzano.com.br , leonardo.ov@suzano.com.br",
                 "prancha": "cmcmanutencao@outlook.com , douglassales@suzano.com.br",
                 "comboio": "cmcmanutencao@outlook.com , cleiton.cp@suzano.com.br, gleysonmurca@suzano.com.br",
                 "cavalo": "cmcmanutencao@outlook.com , robsons@suzano.com.br , gleysonmurca@suzano.com.br",
@@ -1287,6 +1329,16 @@ window.finalizar = async function () {
         pdf.text(implemento.placa || "-", 35, y);
 
         y += 8;
+
+        if (isTerceirizada() && implemento.empresa) {
+            pdf.setFont("helvetica", "bold");
+            pdf.text("Empresa:", 10, y);
+
+            pdf.setFont("helvetica", "normal");
+            pdf.text(String(implemento.empresa), 35, y);
+
+            y += 8;
+        }
 
         pdf.setFont("helvetica", "bold");
         pdf.text("Tipo:", 10, y);
@@ -1508,7 +1560,7 @@ Object.keys(itensAgrupados).forEach(grupo => {
                         message: {
 
                             subject:
-                                `${implemento.placa} - Inspeção finalizada - ${implemento.placa}`,
+                                `Inspeção finalizada - ${implemento.placa}`,
 
                             html: `
                                 <h2>Inspeção finalizada</h2>
@@ -1770,6 +1822,15 @@ function gerarPdfTerceirizada(titulo, statusTexto, itens, incluirReinspecao) {
     pdf.text(implemento.placa || "-", 38, y);
 
     y += 7;
+
+    if (implemento.empresa) {
+        pdf.setFont("helvetica", "bold");
+        pdf.text("Empresa:", 10, y);
+        pdf.setFont("helvetica", "normal");
+        pdf.text(String(implemento.empresa), 38, y);
+        y += 7;
+    }
+
     pdf.setFont("helvetica", "bold");
     pdf.text("Tipo:", 10, y);
     pdf.setFont("helvetica", "normal");
