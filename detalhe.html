@@ -167,6 +167,49 @@
 
         }
 
+        .terceirizada-painel {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .terceirizada-info {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 10px 12px;
+            min-height: 54px;
+        }
+
+        .terceirizada-label {
+            display: block;
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .terceirizada-valor {
+            display: block;
+            color: var(--dark);
+            font-size: 14px;
+            font-weight: 800;
+            line-height: 1.25;
+            word-break: break-word;
+        }
+
+        .terceirizada-info.destaque {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+        }
+
+        .terceirizada-info.destaque .terceirizada-valor {
+            color: #0d47a1;
+        }
+
 
         /* BADGES (Etiquetas) */
 
@@ -370,7 +413,7 @@
             display: none;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
-            margin-top: 10px;
+            margin: 12px 0 0;
         }
 
         .btn-danger { background: var(--danger); color: white; }
@@ -386,6 +429,89 @@
 
         .btn-mini.ativo {
             outline: 3px solid rgba(33, 150, 243, 0.25);
+        }
+
+        .reinspecao-acoes .btn-acao {
+            min-height: 58px;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            box-shadow: 0 8px 18px rgba(31, 41, 55, 0.14);
+        }
+
+        .btn-reinspecao-iniciar {
+            min-height: 58px;
+            margin-top: 12px;
+            border: 1px solid #1d4ed8;
+            background: linear-gradient(180deg, #2f8ff0, #1769c2);
+            box-shadow: 0 8px 18px rgba(33, 150, 243, 0.22);
+        }
+
+        .reinspecao-item-acoes {
+            display: grid;
+            grid-template-columns: repeat(2, 76px);
+            gap: 8px;
+            margin-left: 12px;
+            flex: 0 0 auto;
+        }
+
+        .btn-reinspecao-item {
+            min-height: 46px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            background: #fff;
+            color: #374151;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            font-size: 12px;
+            font-weight: 900;
+            line-height: 1;
+            box-shadow: 0 2px 5px rgba(15, 23, 42, 0.08);
+        }
+
+        .btn-reinspecao-item .btn-symbol {
+            font-size: 18px;
+            line-height: 1;
+        }
+
+        .btn-reinspecao-item.aprovado {
+            border-color: #bbf7d0;
+            color: #166534;
+            background: #f0fdf4;
+        }
+
+        .btn-reinspecao-item.reprovado {
+            border-color: #fecaca;
+            color: #991b1b;
+            background: #fef2f2;
+        }
+
+        .btn-reinspecao-item.ativo {
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .btn-reinspecao-item.aprovado.ativo {
+            background: #16a34a;
+            border-color: #15803d;
+            box-shadow: 0 7px 16px rgba(22, 163, 74, 0.24);
+        }
+
+        .btn-reinspecao-item.reprovado.ativo {
+            background: #dc2626;
+            border-color: #b91c1c;
+            box-shadow: 0 7px 16px rgba(220, 38, 38, 0.24);
+        }
+
+        .badge-reinspecao-pendente {
+            background: #f3f4f6;
+            color: #4b5563;
         }
 
         .badge-danger { background: #ffebee; color: #b71c1c; }
@@ -408,6 +534,43 @@
             border: 1px solid #e5e7eb;
             color: #374151;
             white-space: pre-wrap;
+        }
+
+        @media (max-width: 900px) {
+            .terceirizada-painel {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 640px) {
+            .info-header {
+                gap: 12px;
+                flex-wrap: wrap;
+            }
+
+            .terceirizada-painel {
+                grid-template-columns: 1fr;
+            }
+
+            .item-view {
+                align-items: stretch;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .item-acoes,
+            .reinspecao-item-acoes {
+                margin-left: 0;
+            }
+
+            .reinspecao-item-acoes {
+                grid-template-columns: 1fr 1fr;
+                width: 100%;
+            }
+
+            .reinspecao-acoes {
+                grid-template-columns: 1fr;
+            }
         }
 
 
@@ -514,7 +677,7 @@
 
     </button>
 
-    <button id="btnIniciarReinspecao" class="btn-acao btn-primario" onclick="iniciarReinspecao()" style="display:none;">
+    <button id="btnIniciarReinspecao" class="btn-acao btn-primario btn-reinspecao-iniciar" onclick="iniciarReinspecao()" style="display:none;">
         Iniciar Reinspecao
     </button>
 
@@ -569,7 +732,7 @@
 
     let empresasTerceirizadas = null;
 
-    const EMAIL_TERCEIRIZADA = "cmcmanutencao@outlook.com , lucassilva.cst@suzano.com.br , vagnern.brevi@suzano.com.br , hreal.breviservicos@suzano.com.br";
+    const EMAIL_TERCEIRIZADA = "cmcmanutencao@outlook.com , lucassilva.cst@suzano.com.br , vagnern.brevi@suzano.com.br , hreal.breviservicos@suzano.com.br , brenog.breviservicos@suzano.com.br ";
 
     function isTerceirizada() {
         return implemento?.terceirizada === true ||
@@ -596,6 +759,13 @@
     function formatarTipoImplemento(tipo) {
         if (tipo === "cavalo_terceiro") return "Cavalo Mecanico Terceirizado";
         return tipo || "Desconhecido";
+    }
+
+    function formatarResultadoReinspecao(resultado) {
+        if (resultado === "aprovado") return "Aprovada";
+        if (resultado === "reprovado") return "Reprovada";
+        if (implemento?.reinspecaoEmAndamento) return "Em andamento";
+        return "Pendente";
     }
 
     function normalizarPlacaBusca(valor) {
@@ -709,11 +879,26 @@
 
             </div>
 
-            ${implemento.tipoManutencao ? `<div style="margin-top: 10px; font-size: 14px; color: #555;">Manutenção: <strong>${escapeHTML(implemento.tipoManutencao.toUpperCase())}</strong></div>` : ''}
-
-            ${isTerceirizada() ? `<div style="margin-top: 10px; font-size: 14px; color: #555;">Empresa: <strong>${escapeHTML(empresaTerceirizada || "-")}</strong></div>` : ''}
-
-            ${isTerceirizada() ? `<div style="margin-top: 10px; font-size: 14px; color: #555;">Fluxo: <strong>TERCEIRIZADA</strong>${implemento.resultadoReinspecao ? ` | Reinspecao: <strong>${String(implemento.resultadoReinspecao).toUpperCase()}</strong>` : ""}</div>` : ''}
+            ${isTerceirizada() ? `
+                <div class="terceirizada-painel">
+                    <div class="terceirizada-info">
+                        <span class="terceirizada-label">Empresa</span>
+                        <span class="terceirizada-valor">${escapeHTML(empresaTerceirizada || "-")}</span>
+                    </div>
+                    <div class="terceirizada-info">
+                        <span class="terceirizada-label">Fluxo</span>
+                        <span class="terceirizada-valor">Terceirizada</span>
+                    </div>
+                    <div class="terceirizada-info">
+                        <span class="terceirizada-label">Manutencao</span>
+                        <span class="terceirizada-valor">${escapeHTML(implemento.tipoManutencao ? implemento.tipoManutencao.toUpperCase() : "-")}</span>
+                    </div>
+                    <div class="terceirizada-info destaque">
+                        <span class="terceirizada-label">Reinspecao</span>
+                        <span class="terceirizada-valor">${escapeHTML(formatarResultadoReinspecao(implemento.resultadoReinspecao))}</span>
+                    </div>
+                </div>
+            ` : (implemento.tipoManutencao ? `<div style="margin-top: 10px; font-size: 14px; color: #555;">Manutenção: <strong>${escapeHTML(implemento.tipoManutencao.toUpperCase())}</strong></div>` : '')}
 
         `;
 
@@ -888,6 +1073,11 @@ Object.entries(itensAgrupados).forEach(([grupoNome, compartimentos]) => {
                 : statusReinspecao === "reprovado"
                     ? "X na reinspecao"
                     : "Sem marcacao de reinspecao";
+            const reinspecaoBadgeClass = statusReinspecao === "reprovado"
+                ? "badge-danger"
+                : statusReinspecao === "aprovado"
+                    ? "badge-success"
+                    : "badge-reinspecao-pendente";
 
             const div = document.createElement("div");
 
@@ -921,7 +1111,7 @@ Object.entries(itensAgrupados).forEach(([grupoNome, compartimentos]) => {
 
                         ${isTerceirizada() ? `
                             <div style="margin-top:8px;">
-                                <span class="badge ${statusReinspecao === "reprovado" ? "badge-danger" : "badge-success"}">
+                                <span class="badge ${reinspecaoBadgeClass}">
                                     ${reinspecaoLabel}
                                 </span>
                             </div>
@@ -948,18 +1138,22 @@ Object.entries(itensAgrupados).forEach(([grupoNome, compartimentos]) => {
                     ` : ""}
 
                     ${emReinspecaoTerceirizada ? `
-                    <div class="item-acoes">
+                    <div class="reinspecao-item-acoes">
 
                         <button
-                            class="btn-mini btn-sucesso ${statusReinspecao === "aprovado" ? "ativo" : ""}"
-                            onclick="marcarReinspecaoItem('${item.id}', 'aprovado')">
-                            V
+                            class="btn-reinspecao-item aprovado ${statusReinspecao === "aprovado" ? "ativo" : ""}"
+                            onclick="marcarReinspecaoItem('${item.id}', 'aprovado')"
+                            title="Marcar como visto">
+                            <span class="btn-symbol">✓</span>
+                            <span>Visto</span>
                         </button>
 
                         <button
-                            class="btn-mini btn-danger ${statusReinspecao === "reprovado" ? "ativo" : ""}"
-                            onclick="marcarReinspecaoItem('${item.id}', 'reprovado')">
-                            X
+                            class="btn-reinspecao-item reprovado ${statusReinspecao === "reprovado" ? "ativo" : ""}"
+                            onclick="marcarReinspecaoItem('${item.id}', 'reprovado')"
+                            title="Marcar como reprovado">
+                            <span class="btn-symbol">×</span>
+                            <span>Falha</span>
                         </button>
 
                     </div>
@@ -1276,13 +1470,13 @@ window.finalizar = async function () {
         const tipoLimpo = tipoOriginal.trim().toLowerCase();
 
         const responsaveis = {
-                "carreta": "cmcmanutencao@outlook.com , douglassales@suzano.com.br , geraldomsj@suzano.com.br , gleysonmurca@suzano.com.br , italohanss@suzano.com.br , lazaror@suzano.com.br , leonardo.ov@suzano.com.br",
-                "prancha": "cmcmanutencao@outlook.com , douglassales@suzano.com.br , geraldomsj@suzano.com.br",
-                "comboio": "cmcmanutencao@outlook.com , cleiton.cp@suzano.com.br, gleysonmurca@suzano.com.br , carlos.santos.cs1@suzano.com.br , brunocsantos@suzano.com.br , lpfabiano@suzano.com.br , leonardo.ov@suzano.com.br , geraldomsj@suzano.com.br",
-                "cavalo": "cmcmanutencao@outlook.com , robsons@suzano.com.br , gleysonmurca@suzano.com.br, geraldomsj@suzano.com.br ",
-                "plataforma": "cmcmanutencao@outlook.com , robsons@suzano.com.br , gleysonmurca@suzano.com.br , raedsonaa@suzano.com.br, fernandoms@suzano.com.br, leonardo.ov@suzano.com.br, geraldomsj@suzano.com.br",
-                "cavprancha": "cmcmanutencao@outlook.com , robsons@suzano.com.br , gleysonmurca@suzano.com.br , raedsonaa@suzano.com.br, fernandoms@suzano.com.br, leonardo.ov@suzano.com.br, geraldomsj@suzano.com.br",
-                "cavalo_terceiro": "cmcmanutencao@outlook.com , lucassilva.cst@suzano.com.br , vagnern.brevi@suzano.com.br , hreal.breviservicos@suzano.com.br "
+                "carreta": "cmcmanutencao@outlook.com , douglassales@suzano.com.br , geraldomsj@suzano.com.br , gleysonmurca@suzano.com.br , italohnss@suzano.com.br , lazaror@suzano.com.br , leonardo.ov@suzano.com.br",
+                "prancha": "cmcmanutencao@outlook.com , douglassales@suzano.com.br",
+                "comboio": "cmcmanutencao@outlook.com , cleiton.cp@suzano.com.br, gleysonmurca@suzano.com.br",
+                "cavalo": "cmcmanutencao@outlook.com , robsons@suzano.com.br , gleysonmurca@suzano.com.br",
+                "plataforma": "cmcmanutencao@outlook.com , robsons@suzano.com.br , gleysonmurca@suzano.com.br",
+                "cavprancha": "cmcmanutencao@outlook.com , robsons@suzano.com.br , gleysonmurca@suzano.com.br",
+                "cavalo_terceiro": "cmcmanutencao@outlook.com , lucassilva.cst@suzano.com.br , vagnern.brevi@suzano.com.br , hreal.breviservicos@suzano.com.br , brenog.breviservicos@suzano.com.br"
 
         };
 
