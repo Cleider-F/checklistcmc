@@ -80,6 +80,42 @@
         .item-info strong { font-size: 15px; display: block; margin-bottom: 4px; }
         .item-info small { color: #666; line-height: 1.4; }
 
+        .info-title-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-action-btn {
+            width: 38px;
+            height: 38px;
+            padding: 0;
+            margin: 0;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background: #f8fafc;
+            color: var(--dark);
+            box-shadow: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            line-height: 1;
+        }
+
+        .header-action-btn:hover {
+            background: #eef2f7;
+            border-color: #d1d5db;
+        }
+
         .resolvido { color: var(--success); font-weight: bold; }
         .cancelado { color: var(--danger); font-weight: bold; }
 
@@ -172,11 +208,6 @@
             align-items: center;
             z-index: 1000;
         }
-
-.btn-imprimir {
-    background: var(--dark);
-    color: white;
-}
 
 @media print {
 
@@ -374,10 +405,6 @@
 <div class="topbar">☰ Manutenção</div>
 
 <div id="info" class="card">Carregando dados...</div>
-
-<button class="btn-imprimir no-print" onclick="imprimirListaManutencao()">
-    🖨️ Imprimir Lista de Manutenção
-</button>
 
 <div id="acoesManutencao"></div>
 <div id="acoesNC"></div>
@@ -751,12 +778,18 @@ document.getElementById("info").innerHTML = `
         <!-- LADO ESQUERDO -->
         <div>
 
-            <div style="
-                font-size:28px;
-                font-weight:bold;
-                color:#1f2937;
-            ">
-                ${implemento?.placa || "-"}
+            <div class="info-title-row">
+                <div style="
+                    font-size:28px;
+                    font-weight:bold;
+                    color:#1f2937;
+                ">
+                    ${implemento?.placa || "-"}
+                </div>
+
+                <div class="header-actions no-print">
+                    <button class="header-action-btn" type="button" onclick="imprimirListaManutencao()" title="Imprimir">🖨</button>
+                </div>
             </div>
 
             <div style="
