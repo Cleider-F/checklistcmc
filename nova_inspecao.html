@@ -1532,7 +1532,7 @@ function renderSugestoesDescricao() {
 
     const termo = normalizarTextoBusca(descricaoInput.value);
 
-    if (termo.length < 2) {
+    if (termo.length < 4) {
         esconderSugestoesDescricao();
         return;
     }
