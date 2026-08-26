@@ -1122,7 +1122,6 @@ for (const arquivo of fotosSelecionadas) {
         marcarAlteracao();
         limparCamposItem();
         renderLista();
-        salvarSugestaoDescricao(desc);
     };
 
 function renderLista() {
@@ -1510,22 +1509,10 @@ window.addEventListener("popstate", () => {
 
     async function carregarSugestoesDescricao() {
         try {
-            const [snapSugestoes, snapHistorico] = await Promise.all([
-                getDocs(collection(db, "sugestoesDescricoesItens")),
-                getDocs(collection(db, "naoConformidades"))
-            ]);
+            const snapSugestoes = await getDocs(collection(db, "sugestoesDescricoesItens"));
             const unicas = new Map();
 
             snapSugestoes.forEach(docSnap => {
-                const data = docSnap.data();
-                const descricao = String(data.descricao || "").trim();
-                const chave = normalizarTextoBusca(descricao);
-                if (descricao && chave && !unicas.has(chave)) {
-                    unicas.set(chave, descricao);
-                }
-            });
-
-            snapHistorico.forEach(docSnap => {
                 const data = docSnap.data();
                 const descricao = String(data.descricao || "").trim();
                 const chave = normalizarTextoBusca(descricao);
@@ -1538,34 +1525,6 @@ window.addEventListener("popstate", () => {
                 .sort((a, b) => a.localeCompare(b, "pt-BR"));
         } catch (e) {
             console.error("Erro ao carregar sugestões de descrição", e);
-        }
-    }
-
-    async function salvarSugestaoDescricao(descricao) {
-        const descricaoLimpa = String(descricao || "").trim();
-        const chave = normalizarTextoBusca(descricaoLimpa)
-            .replace(/\s+/g, "_")
-            .slice(0, 120);
-
-        if (!descricaoLimpa || !chave) return;
-
-        const jaExiste = sugestoesDescricao.some(item =>
-            normalizarTextoBusca(item) === normalizarTextoBusca(descricaoLimpa)
-        );
-
-        if (!jaExiste) {
-            sugestoesDescricao.push(descricaoLimpa);
-            sugestoesDescricao.sort((a, b) => a.localeCompare(b, "pt-BR"));
-        }
-
-        try {
-            await setDoc(doc(db, "sugestoesDescricoesItens", chave), {
-                descricao: descricaoLimpa,
-                descricaoNormalizada: normalizarTextoBusca(descricaoLimpa),
-                atualizadoEm: serverTimestamp()
-            }, { merge: true });
-        } catch (e) {
-            console.error("Erro ao salvar sugestão de descrição", e);
         }
     }
 
