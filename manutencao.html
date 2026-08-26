@@ -124,6 +124,20 @@ button {
   font-size: 0.8125em;
 }
 
+.estado-lista {
+  background: white;
+  border-radius: 12px;
+  color: #555;
+  padding: 15px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  font-size: var(--fonte-app);
+}
+
+.estado-lista.erro {
+  border-left: 5px solid #f44336;
+  color: #7f1d1d;
+}
+
 @media (max-width: 520px) {
   .importacao-asn {
     grid-template-columns: 1fr;
@@ -158,7 +172,6 @@ button {
     <div id="statusImportacaoAsn" class="import-status"></div>
   </div>
 </div>
-
 
 <div class="contadores" id="contadores"></div>
 
@@ -202,17 +215,54 @@ if ("serviceWorker" in navigator) {
 // 1. DECLARAÇÕES GLOBAIS (Sempre no topo)
 let dados = [];
 let frotasCadastradas = [];
+const STATUS_MANUTENCAO = ["aguardando_manutencao", "em_manutencao"];
+const snapshotsPorStatus = new Map();
 
 fetch("./frotas.json")
   .then(res => res.json())
   .then(data => { frotasCadastradas = Array.isArray(data) ? data : []; })
   .catch(() => { frotasCadastradas = []; });
 
-// 2. DEFINIÇÃO DA QUERY
-const q = query(
-  collection(db, "implementos"),
-  where("status", "in", ["aguardando_manutencao", "em_manutencao"])
-);
+// 2. DEFINIÇÃO DAS CONSULTAS
+function iniciarListenersManutencao() {
+  exibirEstadoLista("Carregando itens de manutenção...");
+
+  STATUS_MANUTENCAO.forEach(status => {
+    const consulta = query(
+      collection(db, "implementos"),
+      where("status", "==", status)
+    );
+
+    onSnapshot(consulta, snapshot => {
+      const itens = [];
+
+      snapshot.forEach(registro => {
+        itens.push({ id: registro.id, ...registro.data() });
+      });
+
+      snapshotsPorStatus.set(status, itens);
+      sincronizarDadosManutencao();
+    }, erro => {
+      console.error("Erro ao carregar itens de manutenção:", erro);
+      exibirErroCarregamento(erro);
+    });
+  });
+}
+
+function sincronizarDadosManutencao() {
+  const porId = new Map();
+
+  STATUS_MANUTENCAO.forEach(status => {
+    const itens = snapshotsPorStatus.get(status) || [];
+
+    itens.forEach(item => {
+      porId.set(item.id, item);
+    });
+  });
+
+  dados = Array.from(porId.values());
+  aplicarFiltros();
+}
 
 // 3. FUNÇÕES AUXILIARES
 function getStatusInfo(status) {
@@ -247,33 +297,69 @@ function formatarTipoManutencao(tipo) {
   }
 }
 
+function timestampSeconds(ts) {
+  return ts && typeof ts.seconds === "number" ? ts.seconds : 0;
+}
+
+function escapeHTML(value) {
+  return String(value == null ? "" : value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function exibirEstadoLista(mensagem) {
+  const container = document.getElementById("lista");
+  if (!container) return;
+
+  container.innerHTML = `<div class="estado-lista">${escapeHTML(mensagem)}</div>`;
+  atualizarContadores([]);
+}
+
+function exibirErroCarregamento(erro) {
+  const container = document.getElementById("lista");
+  if (!container) return;
+
+  const mensagem = erro && erro.code === "permission-denied"
+    ? "Sem permissão para carregar a manutenção. Faça login novamente e tente abrir a página de novo."
+    : "Não foi possível carregar a lista de manutenção. Verifique a conexão e tente novamente.";
+
+  container.innerHTML = `<div class="estado-lista erro">${escapeHTML(mensagem)}</div>`;
+  atualizarContadores([]);
+}
+
 // 4. LÓGICA DE RENDERIZAÇÃO E FILTRO
 function render(lista) {
-  // Ordenação
-  lista.sort((a, b) => {
+  const ordenada = lista.slice().sort((a, b) => {
     const p1 = prioridade(a.status);
     const p2 = prioridade(b.status);
     if (p1 !== p2) return p1 - p2;
-    const d1 = a.dataInspecao?.seconds || 0;
-    const d2 = b.dataInspecao?.seconds || 0;
+    const d1 = timestampSeconds(a.dataInspecao);
+    const d2 = timestampSeconds(b.dataInspecao);
     return d1 - d2;
   });
 
   const container = document.getElementById("lista");
   container.innerHTML = "";
 
-  lista.forEach(data => {
+  if (!ordenada.length) {
+    exibirEstadoLista("Nenhum item em manutenção no momento.");
+    return;
+  }
+
+  ordenada.forEach(data => {
     const status = getStatusInfo(data.status);
     const div = document.createElement("div");
     div.className = `card status-borda-${status.cor}`;
     div.innerHTML = `
       <div class="card-top">
-        <div class="placa">${data.placa}</div>
-        <div class="status ${status.cor}">${status.nome}</div>
+        <div class="placa">${escapeHTML(data.placa || "-")}</div>
+        <div class="status ${status.cor}">${escapeHTML(status.nome)}</div>
       </div>
       <div class="info">
-        Tipo: ${data.tipo}<br>
-        Manutenção: <strong>${formatarTipoManutencao(data.tipoManutencao)}</strong><br>
+        Tipo: ${escapeHTML(data.tipo || "-")}<br>
+        Manutenção: <strong>${escapeHTML(formatarTipoManutencao(data.tipoManutencao))}</strong><br>
         Inspeção: ${formatarData(data.dataInspecao)}
       </div>
     `;
@@ -291,7 +377,7 @@ function aplicarFiltros() {
   let resultado = dados;
 
   if (busca) {
-    resultado = resultado.filter(i => i.placa.toLowerCase().includes(busca));
+    resultado = resultado.filter(i => String(i.placa || "").toLowerCase().includes(busca));
   }
   if (tipo) {
     resultado = resultado.filter(i => i.tipo === tipo);
@@ -314,6 +400,16 @@ function atualizarContadores(lista) {
       <div class="contador-numero">${cont.em_manutencao}</div>
     </div>
   `;
+}
+
+function completarComZeros(valor, tamanho) {
+  let texto = String(valor);
+
+  while (texto.length < tamanho) {
+    texto = "0" + texto;
+  }
+
+  return texto;
 }
 
 function obterCadastroFrota(frota) {
@@ -478,7 +574,7 @@ function extrairCnpsTabela(rows, headerIndex) {
 }
 
 async function lerArquivoAsn(file) {
-  const buffer = await file.arrayBuffer();
+  const buffer = await lerArquivoComoArrayBuffer(file);
   const workbook = XLSX.read(buffer, { type: "array" });
   const sheetName = workbook.SheetNames[0];
   const sheet = workbook.Sheets[sheetName];
@@ -489,11 +585,24 @@ async function lerArquivoAsn(file) {
   });
 }
 
+function lerArquivoComoArrayBuffer(file) {
+  if (file.arrayBuffer) {
+    return file.arrayBuffer();
+  }
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsArrayBuffer(file);
+  });
+}
+
 async function importarAsn() {
   const input = document.getElementById("arquivoAsn");
   const statusEl = document.getElementById("statusImportacaoAsn");
   const btn = document.getElementById("btnImportarAsn");
-  const file = input.files?.[0];
+  const file = input.files && input.files[0];
 
   if (!file) {
     alert("Selecione a planilha ASN primeiro.");
@@ -525,7 +634,7 @@ async function importarAsn() {
       const placa = normalizarPlaca(cnp.frota);
       const placaBusca = normalizarBusca(placa);
       const cadastroFrota = obterCadastroFrota(cnp.frota);
-      const tipo = cnp.tipo || cadastroFrota?.tipo || "carreta";
+      const tipo = cnp.tipo || (cadastroFrota && cadastroFrota.tipo) || "carreta";
       const assinatura = hashTexto(`${placaBusca}|${cnp.servicos.map(item => normalizarTexto(item.descricao)).join("|")}`);
       const baseId = cnp.cnpId ? `${idSeguro(cnp.cnpId)}_${placaBusca}` : `${placaBusca}_${assinatura}`;
       const implementoId = `ASN_CNP_${baseId}`;
@@ -566,7 +675,7 @@ async function importarAsn() {
       cnp.servicos.forEach((servico, index) => {
         totalItens++;
         const descricao = servico.descricao;
-        const itemId = `${implementoId}_ASN_${String(index + 1).padStart(3, "0")}`;
+        const itemId = `${implementoId}_ASN_${completarComZeros(index + 1, 3)}`;
         const itemRef = doc(db, "naoConformidades", itemId);
 
         batch.set(itemRef, {
@@ -606,13 +715,7 @@ document.getElementById("busca").addEventListener("input", aplicarFiltros);
 document.getElementById("filtroTipo").addEventListener("change", aplicarFiltros);
 document.getElementById("btnImportarAsn").addEventListener("click", importarAsn);
 
-onSnapshot(q, (snapshot) => {
-  dados = [];
-  snapshot.forEach(doc => {
-    dados.push({ id: doc.id, ...doc.data() });
-  });
-  aplicarFiltros(); 
-});
+iniciarListenersManutencao();
 </script>
 </body>
 </html>
